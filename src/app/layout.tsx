@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { ThemeSync } from '@/components/ThemeSync';
+import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'NoteWave | Minimalist Notes',
@@ -24,6 +25,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <ThemeSync />
           {children}
+          <Toaster />
         </FirebaseClientProvider>
       </body>
     </html>
