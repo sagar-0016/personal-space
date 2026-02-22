@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect } from 'react';
@@ -66,22 +65,28 @@ export function ThemeSync() {
       activeTheme = dbTheme;
     }
 
-    if (activeTheme) {
-      const root = document.documentElement;
-      const isDark = resolvedTheme === 'dark';
+    const root = document.documentElement;
+    const isDark = resolvedTheme === 'dark';
 
+    if (activeTheme) {
       // Always apply primary and accent
       root.style.setProperty('--primary', activeTheme.primary || '199 89% 48%');
       
-      // If we are in dark mode, we use the global dark background instead of the theme background
-      // but we update the accent to be more dark-mode friendly
       if (isDark) {
+        // In dark mode, we use a semi-transparent version of the primary as accent
         root.style.setProperty('--accent', `var(--primary) / 0.15`);
-        // We don't override --background in dark mode to keep it deep black/gray
+        // Remove manual background override so the CSS .dark class variables take over
+        root.style.removeProperty('--background');
       } else {
+        // In light mode, apply the theme's background and accent
         root.style.setProperty('--background', activeTheme.background || '0 0% 98%');
         root.style.setProperty('--accent', activeTheme.accent || '199 89% 95%');
       }
+    } else {
+      // If no custom theme is active, ensure properties are cleared to use defaults
+      root.style.removeProperty('--primary');
+      root.style.removeProperty('--background');
+      root.style.removeProperty('--accent');
     }
   }, [profile?.preferredThemeId, dbTheme, resolvedTheme]);
 
