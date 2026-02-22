@@ -105,52 +105,59 @@ export default function Home() {
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : allFilteredNotes.length > 0 ? (
-          <div className="space-y-8 px-4">
+          <div className="space-y-12 px-4 max-w-7xl mx-auto">
             {pinnedNotes.length > 0 && (
-              <div className="space-y-4">
-                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center px-4">
-                  <Pin className="h-3 w-3 mr-2 rotate-45" />
-                  Pinned
-                </h2>
-                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
-                  {pinnedNotes.map((note) => (
-                    <div key={note.id} className="break-inside-avoid">
-                      <NoteCard 
-                        note={note} 
-                        onEdit={handleEditNote} 
-                        onDelete={handleDeleteNote}
-                        onTogglePin={() => handleTogglePin(note)}
-                      />
-                    </div>
-                  ))}
+              <div className="space-y-6">
+                <div className="flex items-center space-x-2 px-4">
+                  <div className="p-1 bg-primary/20 rounded-md">
+                    <Pin className="h-4 w-4 text-primary fill-current" />
+                  </div>
+                  <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                    Pinned
+                  </h2>
                 </div>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {pinnedNotes.length > 0 && (
-                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4">
-                  Others
-                </h2>
-              )}
-              <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
-                {otherNotes.map((note) => (
-                  <div key={note.id} className="break-inside-avoid">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {pinnedNotes.map((note) => (
                     <NoteCard 
+                      key={note.id}
                       note={note} 
                       onEdit={handleEditNote} 
                       onDelete={handleDeleteNote}
                       onTogglePin={() => handleTogglePin(note)}
                     />
-                  </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-6">
+              {pinnedNotes.length > 0 && (
+                <div className="flex items-center space-x-2 px-4">
+                  <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                    Others
+                  </h2>
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {otherNotes.map((note) => (
+                  <NoteCard 
+                    key={note.id}
+                    note={note} 
+                    onEdit={handleEditNote} 
+                    onDelete={handleDeleteNote}
+                    onTogglePin={() => handleTogglePin(note)}
+                  />
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <SearchCode className="h-12 w-12 mb-4 opacity-20" />
-            <p className="text-lg">No notes found matching your search</p>
+          <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
+            <div className="p-6 bg-secondary/50 rounded-full mb-6">
+              <SearchCode className="h-16 w-16 opacity-20" />
+            </div>
+            <p className="text-xl font-medium">No notes match your search</p>
+            <p className="text-sm opacity-60">Try searching for something else or create a new note.</p>
           </div>
         )}
       </main>

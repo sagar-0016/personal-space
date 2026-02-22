@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, User } from 'firebase/auth';
-import { RotateCcw, Loader2 } from 'lucide-react';
+import { RotateCcw, Loader2, Mail, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -74,15 +74,27 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
         syncUserProfile(result.user);
+        toast({
+          title: "Success",
+          description: `Welcome back, ${result.user.displayName || 'User'}!`,
+        });
       }
     } catch (error: any) {
       console.error("Google Sign-In Error:", error);
+      
+      let errorMessage = error.message;
+      if (error.code === 'auth/popup-blocked') {
+        errorMessage = "The login popup was blocked. Please allow popups for this site in your browser settings.";
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = "The login window was closed before finishing. If you didn't close it, check if a browser extension is blocking it.";
+      } else if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = "This domain is not authorized for Google Sign-In. Please add it to your Firebase Console Authorized Domains.";
+      }
+
       toast({
         variant: "destructive",
-        title: "Google Sign-In Error",
-        description: error.code === 'auth/popup-blocked' 
-          ? "The popup was blocked by your browser. Please allow popups for this site." 
-          : error.message,
+        title: "Google Sign-In Failed",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -92,62 +104,72 @@ export default function LoginPage() {
   if (isUserLoading) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md google-shadow">
-        <CardHeader className="text-center space-y-2">
-          <div className="flex justify-center mb-2">
-            <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center">
-              <RotateCcw className="h-7 w-7 text-primary-foreground" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-8">
+      <Card className="w-full max-w-md border-none shadow-2xl bg-card/50 backdrop-blur-sm">
+        <CardHeader className="text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="h-16 w-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg transform -rotate-6">
+              <RotateCcw className="h-9 w-9 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-headline font-bold">Welcome to NoteWave</CardTitle>
-          <CardDescription>
-            {isSignUp ? "Create an account to start taking notes" : "Sign in to access your notes"}
-          </CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-3xl font-bold tracking-tight">NoteWave</CardTitle>
+            <CardDescription className="text-base">
+              {isSignUp ? "Join our community of thinkers" : "Your thoughts, synced and secure"}
+            </CardDescription>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
           <form onSubmit={handleEmailAuth} className="space-y-4">
             <div className="space-y-2">
-              <Input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 h-11"
+                  required
+                />
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 h-11"
+                  required
+                />
+              </div>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (isSignUp ? "Sign Up" : "Sign In")}
+            <Button type="submit" className="w-full h-11 text-base font-medium shadow-md transition-all active:scale-95" disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isSignUp ? "Create Account" : "Sign In")}
             </Button>
           </form>
 
-          <div className="relative my-6">
+          <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-muted" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-card px-2 text-muted-foreground font-medium">Or continue with</span>
             </div>
           </div>
 
           <Button 
             variant="outline" 
-            className="w-full" 
+            className="w-full h-11 text-base bg-background shadow-sm hover:bg-secondary/50 transition-all active:scale-95" 
             onClick={handleGoogleSignIn} 
             disabled={isLoading}
           >
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <>
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                     fill="#4285F4"
@@ -170,13 +192,13 @@ export default function LoginPage() {
             )}
           </Button>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col space-y-2">
           <Button
             variant="link"
-            className="w-full text-sm"
+            className="w-full text-sm text-muted-foreground hover:text-primary transition-colors"
             onClick={() => setIsSignUp(!isSignUp)}
           >
-            {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+            {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Create one"}
           </Button>
         </CardFooter>
       </Card>
