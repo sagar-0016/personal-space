@@ -33,7 +33,7 @@ export function NoteCard({
     <Card 
       onClick={() => !isTrash && onEdit(note)}
       className={cn(
-        "group relative flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card google-shadow-hover note-fade-in rounded-xl overflow-hidden min-h-[160px]",
+        "group relative flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card google-shadow-hover note-fade-in rounded-xl overflow-hidden h-fit",
         "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-primary/40 before:opacity-0 group-hover:before:opacity-100 transition-all",
         note.isPinned && "border-primary/30 ring-1 ring-primary/10"
       )}
@@ -63,8 +63,8 @@ export function NoteCard({
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="text-sm text-foreground/70 line-clamp-[12] pointer-events-none">
-          <MarkdownRenderer content={note.content} className="prose-sm" />
+        <div className="text-sm text-foreground/70 pointer-events-none">
+          <MarkdownRenderer content={note.content} className="prose-sm line-clamp-[15]" />
         </div>
       </div>
 

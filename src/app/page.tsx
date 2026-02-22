@@ -148,7 +148,7 @@ export default function Home() {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex flex-col w-full bg-background font-body transition-colors duration-700 relative overflow-hidden">
-        {/* Glowing Background Blobs - Enhanced Magic */}
+        {/* Glowing Background Blobs */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
           <div className="absolute -top-[15%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary/15 blur-[140px] animate-pulse" />
           <div className="absolute top-[30%] -right-[15%] w-[45%] h-[45%] rounded-full bg-primary/10 blur-[120px] transition-all duration-1000" />
@@ -184,18 +184,19 @@ export default function Home() {
                           Pinned
                         </h2>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
                         {pinnedNotes.map((note) => (
-                          <NoteCard 
-                            key={note.id}
-                            note={note} 
-                            onEdit={handleEditNote} 
-                            onDelete={() => handleTrashNote(note)}
-                            onArchive={() => handleArchiveNote(note)}
-                            onTogglePin={() => handleTogglePin(note)}
-                            isTrash={currentView === 'trash'}
-                            onPermanentDelete={() => handlePermanentDelete(note.id)}
-                          />
+                          <div key={note.id} className="break-inside-avoid-column mb-4">
+                            <NoteCard 
+                              note={note} 
+                              onEdit={handleEditNote} 
+                              onDelete={() => handleTrashNote(note)}
+                              onArchive={() => handleArchiveNote(note)}
+                              onTogglePin={() => handleTogglePin(note)}
+                              isTrash={currentView === 'trash'}
+                              onPermanentDelete={() => handlePermanentDelete(note.id)}
+                            />
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -209,18 +210,19 @@ export default function Home() {
                         </h2>
                       </div>
                     )}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
                       {otherNotes.map((note) => (
-                        <NoteCard 
-                          key={note.id}
-                          note={note} 
-                          onEdit={handleEditNote} 
-                          onDelete={() => handleTrashNote(note)}
-                          onArchive={() => handleArchiveNote(note)}
-                          onTogglePin={() => handleTogglePin(note)}
-                          isTrash={currentView === 'trash'}
-                          onPermanentDelete={() => handlePermanentDelete(note.id)}
-                        />
+                        <div key={note.id} className="break-inside-avoid-column mb-4">
+                          <NoteCard 
+                            note={note} 
+                            onEdit={handleEditNote} 
+                            onDelete={() => handleTrashNote(note)}
+                            onArchive={() => handleArchiveNote(note)}
+                            onTogglePin={() => handleTogglePin(note)}
+                            isTrash={currentView === 'trash'}
+                            onPermanentDelete={() => handlePermanentDelete(note.id)}
+                          />
+                        </div>
                       ))}
                     </div>
                   </div>
