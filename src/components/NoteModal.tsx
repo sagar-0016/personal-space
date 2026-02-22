@@ -1,7 +1,8 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -92,6 +93,8 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleSave()}>
       <DialogContent className="sm:max-w-[800px] w-[95vw] max-h-[90vh] flex flex-col p-0 google-shadow border-none rounded-xl overflow-hidden">
+        <DialogTitle className="sr-only">Note Editor - {title || 'New Note'}</DialogTitle>
+        
         <div className="flex items-center justify-between p-4 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex items-center space-x-4">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-auto">
@@ -197,11 +200,11 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           )}
         </div>
 
-        <DialogFooter className="p-4 bg-secondary/10 border-t flex justify-end">
+        <div className="p-4 bg-secondary/10 border-t flex justify-end">
           <Button variant="ghost" onClick={handleSave} className="font-medium hover:bg-background px-6">
             Done
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

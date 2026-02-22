@@ -1,6 +1,7 @@
+
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -18,6 +19,12 @@ interface MarkdownRendererProps {
 }
 
 export function MarkdownRenderer({ content, className, highContrastCode = false }: MarkdownRendererProps) {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Check if we should strip frontmatter for display
   const parsed = parseNoteFormat(content);
   const contentToRender = parsed.isStructured ? parsed.displayContent : content;
@@ -37,6 +44,8 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
         components={{
+          // Use div for paragraphs to avoid hydration issues with block-level children (like code blocks)
+          p: ({ children }) => <div className="mb-4 last:mb-0 leading-relaxed text-foreground/80">{children}</div>,
           code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
@@ -57,6 +66,15 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
               );
             }
 
+            // Only render SyntaxHighlighter on the client to avoid hydration mismatches
+            if (!mounted) {
+              return (
+                <pre className="bg-muted p-4 rounded-lg overflow-hidden">
+                  <code className={className}>{children}</code>
+                </pre>
+              );
+            }
+
             return (
               <div className="my-6 overflow-hidden rounded-lg border border-border/50 shadow-md group relative">
                 {/* Minimal Header */}
@@ -71,7 +89,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                     )}>
                       {language}
                     </span>
-                  ) : <div />}
+                  ) : <span />}
                   
                   <Button
                     variant="ghost"
