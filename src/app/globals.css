@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,7 +62,7 @@
   }
 }
 
-/* Custom Scrollbar for better UI */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -92,33 +93,4 @@
   box-shadow: 0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15);
 }
 
-/* Typography Overrides for Code Visibility and Theme Response */
-.prose :not(pre) > code {
-  @apply bg-primary/20 text-primary-foreground px-1.5 py-0.5 rounded font-mono text-[0.9em] !important;
-  font-weight: 500;
-}
-
-.prose pre {
-  @apply border border-border shadow-sm rounded-xl overflow-x-auto !important;
-}
-
-.prose pre code {
-  @apply bg-transparent p-0 text-inherit font-mono !important;
-  color: inherit !important;
-}
-
-.code-high-contrast pre {
-  @apply bg-zinc-950 text-zinc-50 border-white/10 !important;
-}
-
-.code-high-contrast pre code {
-  @apply text-zinc-50 !important;
-}
-
-.code-theme-aware pre {
-  @apply bg-muted/50 text-foreground dark:bg-zinc-900/50 dark:text-zinc-100 !important;
-}
-
-.code-theme-aware pre code {
-  @apply text-foreground dark:text-zinc-100 !important;
-}
+/* Code block styles are handled component-side in MarkdownRenderer.tsx */
