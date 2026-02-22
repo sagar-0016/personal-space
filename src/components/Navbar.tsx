@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react';
-import { Search, Menu, RotateCcw, LayoutGrid, Settings, User, LogOut } from 'lucide-react';
+import { Search, Menu, Sparkles, LayoutGrid, Settings, User, LogOut } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
@@ -14,10 +14,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSidebar } from '@/components/ui/sidebar';
 
 export function Navbar({ onSearch }: { onSearch: (val: string) => void }) {
   const { user } = useUser();
   const auth = useAuth();
+  const { toggleSidebar } = useSidebar();
 
   const handleSignOut = () => {
     signOut(auth);
@@ -26,14 +28,14 @@ export function Navbar({ onSearch }: { onSearch: (val: string) => void }) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md px-4 h-16 flex items-center justify-between">
       <div className="flex items-center space-x-4">
-        <Button variant="ghost" size="icon" className="rounded-full">
+        <Button variant="ghost" size="icon" className="rounded-full" onClick={toggleSidebar}>
           <Menu className="h-5 w-5" />
         </Button>
         <div className="flex items-center space-x-2">
           <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-            <RotateCcw className="h-5 w-5 text-primary-foreground" />
+            <Sparkles className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-headline font-semibold hidden sm:inline-block">NoteWave</span>
+          <span className="text-xl font-headline font-semibold hidden sm:inline-block">Personal Space</span>
         </div>
       </div>
 

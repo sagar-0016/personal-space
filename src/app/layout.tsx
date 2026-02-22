@@ -5,8 +5,8 @@ import { ThemeSync } from '@/components/ThemeSync';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'NoteWave | Minimalist Notes',
-  description: 'A clean, simple, and powerful note-taking app for your daily thoughts.',
+  title: 'Personal Space | Your Mind, Organized',
+  description: 'A clean, structured, and powerful space for your daily thoughts and code.',
 };
 
 export default function RootLayout({

@@ -7,10 +7,12 @@ import { Navbar } from '@/components/Navbar';
 import { CreateNote } from '@/components/CreateNote';
 import { NoteCard } from '@/components/NoteCard';
 import { NoteModal } from '@/components/NoteModal';
+import { AppSidebar } from '@/components/AppSidebar';
 import { SearchCode, Loader2, Pin } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
@@ -94,80 +96,88 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background font-body transition-colors duration-500">
-      <Navbar onSearch={setSearchQuery} />
-      
-      <main className="container mx-auto py-8">
-        <CreateNote onSave={handleCreateNote} />
+    <SidebarProvider defaultOpen={true}>
+      <div className="min-h-screen flex flex-col w-full bg-background font-body transition-colors duration-500">
+        <Navbar onSearch={setSearchQuery} />
+        
+        <div className="flex flex-1 overflow-hidden">
+          <AppSidebar />
+          
+          <SidebarInset className="flex-1 overflow-y-auto">
+            <main className="container mx-auto py-8">
+              <CreateNote onSave={handleCreateNote} />
 
-        {isNotesLoading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : allFilteredNotes.length > 0 ? (
-          <div className="space-y-12 px-4 max-w-7xl mx-auto">
-            {pinnedNotes.length > 0 && (
-              <div className="space-y-6">
-                <div className="flex items-center space-x-2 px-4">
-                  <div className="p-1 bg-primary/20 rounded-md">
-                    <Pin className="h-4 w-4 text-primary fill-current" />
+              {isNotesLoading ? (
+                <div className="flex justify-center py-20">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : allFilteredNotes.length > 0 ? (
+                <div className="space-y-12 px-4 max-w-7xl mx-auto">
+                  {pinnedNotes.length > 0 && (
+                    <div className="space-y-6">
+                      <div className="flex items-center space-x-2 px-4">
+                        <div className="p-1 bg-primary/20 rounded-md">
+                          <Pin className="h-4 w-4 text-primary fill-current" />
+                        </div>
+                        <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                          Pinned
+                        </h2>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {pinnedNotes.map((note) => (
+                          <NoteCard 
+                            key={note.id}
+                            note={note} 
+                            onEdit={handleEditNote} 
+                            onDelete={handleDeleteNote}
+                            onTogglePin={() => handleTogglePin(note)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-6">
+                    {pinnedNotes.length > 0 && (
+                      <div className="flex items-center space-x-2 px-4">
+                        <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                          Others
+                        </h2>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {otherNotes.map((note) => (
+                        <NoteCard 
+                          key={note.id}
+                          note={note} 
+                          onEdit={handleEditNote} 
+                          onDelete={handleDeleteNote}
+                          onTogglePin={() => handleTogglePin(note)}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                    Pinned
-                  </h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {pinnedNotes.map((note) => (
-                    <NoteCard 
-                      key={note.id}
-                      note={note} 
-                      onEdit={handleEditNote} 
-                      onDelete={handleDeleteNote}
-                      onTogglePin={() => handleTogglePin(note)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-6">
-              {pinnedNotes.length > 0 && (
-                <div className="flex items-center space-x-2 px-4">
-                  <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                    Others
-                  </h2>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
+                  <div className="p-6 bg-secondary/50 rounded-full mb-6">
+                    <SearchCode className="h-16 w-16 opacity-20" />
+                  </div>
+                  <p className="text-xl font-medium">No notes match your search</p>
+                  <p className="text-sm opacity-60">Try searching for something else or create a new note.</p>
                 </div>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {otherNotes.map((note) => (
-                  <NoteCard 
-                    key={note.id}
-                    note={note} 
-                    onEdit={handleEditNote} 
-                    onDelete={handleDeleteNote}
-                    onTogglePin={() => handleTogglePin(note)}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
-            <div className="p-6 bg-secondary/50 rounded-full mb-6">
-              <SearchCode className="h-16 w-16 opacity-20" />
-            </div>
-            <p className="text-xl font-medium">No notes match your search</p>
-            <p className="text-sm opacity-60">Try searching for something else or create a new note.</p>
-          </div>
-        )}
-      </main>
+            </main>
+          </SidebarInset>
+        </div>
 
-      <NoteModal 
-        note={editingNote} 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSave={handleUpdateNote}
-      />
-    </div>
+        <NoteModal 
+          note={editingNote} 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          onSave={handleUpdateNote}
+        />
+      </div>
+    </SidebarProvider>
   );
 }

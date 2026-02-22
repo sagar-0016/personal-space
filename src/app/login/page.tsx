@@ -15,7 +15,7 @@ import {
   User,
   getRedirectResult
 } from 'firebase/auth';
-import { RotateCcw, Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Sparkles, Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -37,23 +37,18 @@ export default function LoginPage() {
   useEffect(() => {
     if (!auth) return;
 
-    console.log("Checking for redirect result...");
     getRedirectResult(auth)
       .then((result) => {
         if (result?.user) {
-          console.log("Redirect sign-in successful:", result.user.email);
           syncUserProfile(result.user);
           toast({ 
             title: "Welcome Back!", 
             description: `Successfully signed in as ${result.user.email}` 
           });
           router.push('/');
-        } else {
-          console.log("No redirect result found.");
         }
       })
       .catch((error) => {
-        console.error("Redirect Error:", error);
         toast({
           variant: "destructive",
           title: "Redirect Sign-In Failed",
@@ -71,7 +66,6 @@ export default function LoginPage() {
 
   const syncUserProfile = (user: User) => {
     if (!db) return;
-    console.log("Syncing user profile for:", user.uid);
     const userRef = doc(db, 'users', user.uid);
     setDocumentNonBlocking(userRef, {
       id: user.uid,
@@ -111,21 +105,15 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       if (useRedirect) {
-        console.log("Initiating Google Sign-In with Redirect...");
         await signInWithRedirect(auth, provider);
-        // Page will redirect, code below won't execute on success
       } else {
-        console.log("Initiating Google Sign-In with Popup...");
         const result = await signInWithPopup(auth, provider);
         if (result.user) {
-          console.log("Popup sign-in successful:", result.user.email);
           syncUserProfile(result.user);
           router.push('/');
         }
       }
     } catch (error: any) {
-      console.error("Google Sign-In Error:", error);
-      
       let errorMessage = error.message;
       if (error.code === 'auth/popup-closed-by-user') {
         errorMessage = "The login popup was interrupted. We've enabled 'Redirect Mode' for you—please try clicking the Google button again.";
@@ -150,13 +138,13 @@ export default function LoginPage() {
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <div className="h-16 w-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg transform -rotate-6">
-              <RotateCcw className="h-9 w-9 text-primary-foreground" />
+              <Sparkles className="h-9 w-9 text-primary-foreground" />
             </div>
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-3xl font-bold tracking-tight">NoteWave</CardTitle>
+            <CardTitle className="text-3xl font-bold tracking-tight">Personal Space</CardTitle>
             <CardDescription className="text-base">
-              {isSignUp ? "Join our community of thinkers" : "Your thoughts, synced and secure"}
+              {isSignUp ? "Join our community of thinkers" : "Your thoughts, structured and secure"}
             </CardDescription>
           </div>
         </CardHeader>
@@ -243,16 +231,9 @@ export default function LoginPage() {
                 className="rounded border-muted text-primary focus:ring-primary"
               />
               <label htmlFor="redirect-mode" className="text-xs text-muted-foreground cursor-pointer">
-                Use Redirect Mode (recommended for cloud IDEs)
+                Use Redirect Mode (recommended)
               </label>
             </div>
-
-            {useRedirect && (
-              <p className="text-[10px] text-center text-muted-foreground flex items-center justify-center gap-1 mt-2">
-                <AlertCircle className="h-3 w-3" />
-                Redirect mode works best when popups are blocked by browser security.
-              </p>
-            )}
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
