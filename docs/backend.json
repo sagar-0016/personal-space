@@ -1,0 +1,176 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the NoteWave application, associated with authentication and preferences.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user.",
+          "format": "email"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The display name of the user, often provided by the authentication system."
+        },
+        "preferredThemeId": {
+          "type": "string",
+          "description": "Reference to the Theme entity representing the user's selected interface theme. (Relationship: User 1:1 Theme)"
+        }
+      },
+      "required": [
+        "id",
+        "email"
+      ]
+    },
+    "Note": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Note",
+      "type": "object",
+      "description": "Represents a single note created by a user in the NoteWave application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Note entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User entity who owns this note. (Relationship: User 1:N Note)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title or headline of the note."
+        },
+        "content": {
+          "type": "string",
+          "description": "The main text content of the note."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the note was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the note was last updated.",
+          "format": "date-time"
+        },
+        "isPinned": {
+          "type": "boolean",
+          "description": "Flag indicating if the note is pinned for quick access."
+        },
+        "isArchived": {
+          "type": "boolean",
+          "description": "Flag indicating if the note has been archived."
+        },
+        "isDeleted": {
+          "type": "boolean",
+          "description": "Flag indicating if the note has been soft-deleted (moved to trash)."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "title",
+        "content",
+        "createdAt",
+        "updatedAt",
+        "isPinned",
+        "isArchived",
+        "isDeleted"
+      ]
+    },
+    "Theme": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Theme",
+      "type": "object",
+      "description": "Defines the visual characteristics of an application theme that users can select.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Theme entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "A human-readable name for the theme (e.g., 'Light Mode', 'Dark Mode', 'Soft Blue Theme')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the theme's visual style."
+        },
+        "primaryColor": {
+          "type": "string",
+          "description": "Hexadecimal color code for the theme's primary UI elements."
+        },
+        "backgroundColor": {
+          "type": "string",
+          "description": "Hexadecimal color code for the theme's background."
+        },
+        "accentColor": {
+          "type": "string",
+          "description": "Hexadecimal color code for the theme's accent elements and highlights."
+        },
+        "fontFamily": {
+          "type": "string",
+          "description": "The primary font family to be used for text within this theme."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "primaryColor",
+        "backgroundColor",
+        "accentColor",
+        "fontFamily"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores individual user profiles. Each document ID (`userId`) must match the Firebase Authentication UID. Includes 'preferredThemeId' for the user's selected interface theme. Access is restricted to the user owning the profile."
+        }
+      },
+      {
+        "path": "/users/{userId}/notes/{noteId}",
+        "definition": {
+          "entityName": "Note",
+          "schema": {
+            "$ref": "#/backend/entities/Note"
+          },
+          "description": "Stores individual notes for a specific user. The 'userId' in the path ensures ownership. The document also includes a denormalized 'userId' field for robust authorization and data integrity checks. Access is restricted to the user who owns the note."
+        }
+      },
+      {
+        "path": "/themes/{themeId}",
+        "definition": {
+          "entityName": "Theme",
+          "schema": {
+            "$ref": "#/backend/entities/Theme"
+          },
+          "description": "Stores predefined application themes. These documents are global and read-only for all authenticated users, allowing users to select their preferred theme."
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to be secure, scalable, and debuggable, strictly adhering to the core design principles. \n\n**1. Authorization Independence:**\n*   **User Profiles (`/users/{userId}`):** Each user's profile is stored at a path directly corresponding to their authentication UID. Authorization rules for this collection will simply verify `request.auth.uid == userId`. This ensures that a user can only read/write their own profile data, completely eliminating the need for `get()` calls in rules.\n*   **User Notes (`/users/{userId}/notes/{noteId}`):** Notes are stored as a subcollection under the respective user's profile. This path structure inherently denormalizes the ownership context into the path itself. Rules for notes will check `request.auth.uid == userId`, making authorization atomic and independent of the parent `user` document's attributes. The `Note` document itself also contains a `userId` field, which acts as a denormalized confirmation of ownership. While the path primarily enforces access for the owner, this field is useful for data integrity checks and flexible queries (e.g., by an admin if roles were present) without relying on `get()` in rules.\n*   **Global Themes (`/themes/{themeId}`):** Themes are global, read-only configurations. Their access does not depend on any user-specific data. Rules for this collection will grant read access to all authenticated users (or potentially all users, including unauthenticated, if themes are needed for a login page). This makes them authorization-independent.\n\n**2. Query Authorization Patterns (QAPs):**\n*   **User-Specific Data:** For `/users/{userId}/notes`, the `list` operation is inherently secure and efficient. A client can only query notes for the `userId` matching their `request.auth.uid`. This means `Firestore` security rules can easily ensure `allow list: if request.auth.uid == userId;`, fulfilling the QAP principle that rules are not filters. The client implicitly provides the filter in the path, and the rule validates it.\n*   **Global Data:** For `/themes`, all documents have the same security posture (read-only for all). A `list` operation on `/themes` is allowed for all authenticated users, as there's no sensitive data and no filtering required by security rules.\n\n**3. Structural Segregation & Access Modeling:**\n*   `users` collection is for private user data.\n*   `notes` subcollection under a user is for private, user-owned content.\n*   `themes` collection is for global, public, read-only application configurations.\nThis clear segregation ensures homogeneous security requirements within each collection/subcollection, simplifying security rules significantly. The structure consistently uses path-based ownership for private user data (`/users/{userId}/...`) and a flat, global collection for shared, read-only data (`/themes`). The `preferredThemeId` in the `User` document correctly models the 1:1 relationship without violating independence."
+  }
+}
