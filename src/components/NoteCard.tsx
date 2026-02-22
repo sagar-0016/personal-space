@@ -32,13 +32,14 @@ export function NoteCard({
     <Card 
       onClick={() => !isTrash && onEdit(note)}
       className={cn(
-        "group relative flex flex-col p-4 cursor-default transition-all duration-200 border bg-card hover:bg-card google-shadow-hover note-fade-in",
-        note.color ? `bg-[${note.color}]` : ""
+        "group relative flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card google-shadow-hover note-fade-in rounded-xl overflow-hidden",
+        "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-primary/40 before:opacity-0 group-hover:before:opacity-100 transition-all",
+        note.isPinned && "border-primary/30 ring-1 ring-primary/10"
       )}
     >
-      <div className="flex justify-between items-start mb-2">
+      <div className="flex justify-between items-start mb-3">
         {note.title && (
-          <h3 className="text-base font-medium line-clamp-2 text-foreground/90 pr-6">
+          <h3 className="text-lg font-bold line-clamp-2 text-foreground/90 pr-8 tracking-tight">
             {note.title}
           </h3>
         )}
@@ -47,8 +48,8 @@ export function NoteCard({
             variant="ghost"
             size="icon"
             className={cn(
-              "h-8 w-8 rounded-full absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity",
-              note.isPinned ? "opacity-100 text-primary" : "text-muted-foreground"
+              "h-8 w-8 rounded-full absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300",
+              note.isPinned ? "opacity-100 text-primary bg-primary/10" : "text-muted-foreground hover:bg-muted"
             )}
             onClick={(e) => {
               e.stopPropagation();
@@ -60,14 +61,14 @@ export function NoteCard({
         )}
       </div>
       
-      <div className="text-sm text-foreground/75 whitespace-pre-wrap break-words line-clamp-[12]">
+      <div className="text-sm text-foreground/70 whitespace-pre-wrap break-words line-clamp-[10] leading-relaxed">
         {note.content}
       </div>
 
       {note.labels && note.labels.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-1">
+        <div className="mt-5 flex flex-wrap gap-1.5">
           {note.labels.map(label => (
-            <Badge key={label} variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-none flex items-center gap-1">
+            <Badge key={label} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1 hover:bg-primary/20 transition-colors uppercase tracking-wider">
               <Tag className="h-2 w-2" />
               {label}
             </Badge>
@@ -75,13 +76,13 @@ export function NoteCard({
         </div>
       )}
       
-      <div className="mt-4 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity space-x-1">
+      <div className="mt-6 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-all duration-300 space-x-1.5 translate-y-2 group-hover:translate-y-0">
         {isTrash ? (
           <>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-full"
               title="Restore"
               onClick={(e) => {
                 e.stopPropagation();
@@ -93,7 +94,7 @@ export function NoteCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
               title="Delete permanently"
               onClick={(e) => {
                 e.stopPropagation();
@@ -108,7 +109,7 @@ export function NoteCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(note);
@@ -120,8 +121,8 @@ export function NoteCard({
               variant="ghost"
               size="icon"
               className={cn(
-                "h-8 w-8 text-muted-foreground hover:text-foreground",
-                note.isArchived && "text-primary opacity-100"
+                "h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full",
+                note.isArchived && "text-primary bg-primary/10 opacity-100"
               )}
               title={note.isArchived ? "Unarchive" : "Archive"}
               onClick={(e) => {
@@ -134,7 +135,7 @@ export function NoteCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(note.id);

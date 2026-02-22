@@ -7,6 +7,8 @@ import {
   Tag, 
   Archive, 
   Trash2,
+  Layers,
+  TagIcon
 } from 'lucide-react';
 import {
   Sidebar,
@@ -39,20 +41,50 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
                 isActive={currentView === 'notes'}
                 onClick={() => onViewChange('notes')}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all",
-                  currentView === 'notes' && "bg-primary/10 text-primary font-semibold"
+                  "rounded-r-full mr-2 transition-all duration-300",
+                  currentView === 'notes' && "bg-primary/15 text-primary font-bold shadow-sm"
                 )}
               >
                 <Lightbulb className={cn(currentView === 'notes' && "text-primary")} />
                 <span>Notes</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                tooltip="All Notes" 
+                isActive={currentView === 'all'}
+                onClick={() => onViewChange('all')}
+                className={cn(
+                  "rounded-r-full mr-2 transition-all duration-300",
+                  currentView === 'all' && "bg-primary/15 text-primary font-bold shadow-sm"
+                )}
+              >
+                <Layers className={cn(currentView === 'all' && "text-primary")} />
+                <span>All Notes</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 text-[10px] uppercase tracking-widest font-bold opacity-50">Labels</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 text-[10px] uppercase tracking-widest font-black opacity-60 text-primary">Labels</SidebarGroupLabel>
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                tooltip="Untagged" 
+                isActive={currentView === 'untagged'}
+                onClick={() => onViewChange('untagged')}
+                className={cn(
+                  "rounded-r-full mr-2 transition-all duration-300",
+                  currentView === 'untagged' && "bg-primary/15 text-primary font-bold shadow-sm"
+                )}
+              >
+                <TagIcon className={cn("h-4 w-4", currentView === 'untagged' && "text-primary")} />
+                <span>Untagged</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
             {labels.map((label) => (
               <SidebarMenuItem key={label}>
                 <SidebarMenuButton 
@@ -60,8 +92,8 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
                   isActive={currentView === `label:${label}`}
                   onClick={() => onViewChange(`label:${label}`)}
                   className={cn(
-                    "rounded-r-full mr-2 transition-all",
-                    currentView === `label:${label}` && "bg-primary/10 text-primary font-semibold"
+                    "rounded-r-full mr-2 transition-all duration-300",
+                    currentView === `label:${label}` && "bg-primary/15 text-primary font-bold shadow-sm"
                   )}
                 >
                   <Tag className={cn("h-4 w-4", currentView === `label:${label}` && "text-primary")} />
@@ -69,11 +101,6 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
-            {labels.length === 0 && (
-              <div className="px-6 py-2 text-[11px] text-muted-foreground italic opacity-50">
-                No labels yet
-              </div>
-            )}
           </SidebarMenu>
         </SidebarGroup>
 
@@ -85,8 +112,8 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
                 isActive={currentView === 'archive'}
                 onClick={() => onViewChange('archive')}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all",
-                  currentView === 'archive' && "bg-primary/10 text-primary font-semibold"
+                  "rounded-r-full mr-2 transition-all duration-300",
+                  currentView === 'archive' && "bg-primary/15 text-primary font-bold shadow-sm"
                 )}
               >
                 <Archive className={cn(currentView === 'archive' && "text-primary")} />
@@ -99,8 +126,8 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
                 isActive={currentView === 'trash'}
                 onClick={() => onViewChange('trash')}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all",
-                  currentView === 'trash' && "bg-primary/10 text-primary font-semibold"
+                  "rounded-r-full mr-2 transition-all duration-300",
+                  currentView === 'trash' && "bg-primary/15 text-primary font-bold shadow-sm"
                 )}
               >
                 <Trash2 className={cn(currentView === 'trash' && "text-primary")} />
