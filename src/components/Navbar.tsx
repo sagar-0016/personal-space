@@ -1,11 +1,28 @@
 "use client"
 
 import React from 'react';
-import { Search, Menu, RotateCcw, LayoutGrid, Settings, User } from 'lucide-react';
+import { Search, Menu, RotateCcw, LayoutGrid, Settings, User, LogOut } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useAuth, useUser } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { ThemeSelector } from './ThemeSelector';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Navbar({ onSearch }: { onSearch: (val: string) => void }) {
+  const { user } = useUser();
+  const auth = useAuth();
+
+  const handleSignOut = () => {
+    signOut(auth);
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md px-4 h-16 flex items-center justify-between">
       <div className="flex items-center space-x-4">
@@ -34,18 +51,35 @@ export function Navbar({ onSearch }: { onSearch: (val: string) => void }) {
       </div>
 
       <div className="flex items-center space-x-2">
-        <Button variant="ghost" size="icon" className="rounded-full hidden sm:flex">
-          <RotateCcw className="h-5 w-5" />
-        </Button>
+        <ThemeSelector />
         <Button variant="ghost" size="icon" className="rounded-full hidden sm:flex">
           <LayoutGrid className="h-5 w-5" />
         </Button>
         <Button variant="ghost" size="icon" className="rounded-full">
           <Settings className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-full ml-2">
-          <User className="h-5 w-5" />
-        </Button>
+        
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full ml-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.photoURL || undefined} />
+                  <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem className="text-xs text-muted-foreground truncate max-w-[200px]">
+                {user.email}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </header>
   );
