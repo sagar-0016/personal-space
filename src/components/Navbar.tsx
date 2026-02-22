@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { ThemeSelector } from './ThemeSelector';
+import { ModeToggle } from './ModeToggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +55,7 @@ export function Navbar({ onSearch }: { onSearch: (val: string) => void }) {
       </div>
 
       <div className="flex items-center space-x-2">
+        <ModeToggle />
         <ThemeSelector />
         <Button variant="ghost" size="icon" className="rounded-full hidden sm:flex">
           <LayoutGrid className="h-5 w-5" />

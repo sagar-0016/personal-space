@@ -1,9 +1,11 @@
+
 "use client"
 
 import { useEffect } from 'react';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Theme } from '@/lib/types';
+import { useTheme } from 'next-themes';
 
 const BUILTIN_THEMES: Theme[] = [
   {
@@ -39,6 +41,7 @@ const BUILTIN_THEMES: Theme[] = [
 export function ThemeSync() {
   const { user } = useUser();
   const db = useFirestore();
+  const { resolvedTheme } = useTheme();
 
   const userProfileRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -65,11 +68,22 @@ export function ThemeSync() {
 
     if (activeTheme) {
       const root = document.documentElement;
+      const isDark = resolvedTheme === 'dark';
+
+      // Always apply primary and accent
       root.style.setProperty('--primary', activeTheme.primary || '199 89% 48%');
-      root.style.setProperty('--background', activeTheme.background || '0 0% 98%');
-      root.style.setProperty('--accent', activeTheme.accent || '199 89% 95%');
+      
+      // If we are in dark mode, we use the global dark background instead of the theme background
+      // but we update the accent to be more dark-mode friendly
+      if (isDark) {
+        root.style.setProperty('--accent', `var(--primary) / 0.15`);
+        // We don't override --background in dark mode to keep it deep black/gray
+      } else {
+        root.style.setProperty('--background', activeTheme.background || '0 0% 98%');
+        root.style.setProperty('--accent', activeTheme.accent || '199 89% 95%');
+      }
     }
-  }, [profile?.preferredThemeId, dbTheme]);
+  }, [profile?.preferredThemeId, dbTheme, resolvedTheme]);
 
   return null;
 }
