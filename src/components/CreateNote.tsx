@@ -103,7 +103,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       )}>
         {!isExpanded ? (
           <div 
-            className="flex items-center px-4 py-3 cursor-text group"
+            className="flex items-center px-6 py-4 cursor-text group"
             onClick={() => setIsExpanded(true)}
           >
             <span className="text-muted-foreground/60 font-medium flex-1 text-sm sm:text-base">Take a note...</span>
@@ -116,7 +116,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
         ) : (
           <div className="flex flex-col note-fade-in">
             {/* Header / Title Area */}
-            <div className="flex items-start px-4 pt-4 pb-2">
+            <div className="flex items-start px-6 pt-5 pb-2">
               <Input
                 placeholder="Title"
                 value={title}
@@ -150,7 +150,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
             </div>
 
             {/* Content Area */}
-            <div className="px-4 py-2">
+            <div className="px-6 py-2">
               <Textarea
                 placeholder="Take a note..."
                 value={content}
@@ -166,7 +166,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
             </div>
 
             {/* Toolbar Area */}
-            <div className="flex items-center justify-between px-2 pt-3 pb-2 mt-2">
+            <div className="flex items-center justify-between px-4 pt-3 pb-2 mt-2">
               <div className="flex items-center space-x-0.5 overflow-x-auto">
                 <TooltipProvider>
                   {toolbarIcons.map((item, idx) => (
