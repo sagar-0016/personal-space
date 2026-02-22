@@ -9,7 +9,8 @@ import { useAuth, useUser, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, User } from 'firebase/auth';
 import { RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function LoginPage() {
   const { user: authUser, isUserLoading } = useUser();
@@ -29,18 +30,15 @@ export default function LoginPage() {
     }
   }, [authUser, isUserLoading, router]);
 
-  const syncUserProfile = async (user: User) => {
-    try {
-      const userRef = doc(db, 'users', user.uid);
-      await setDoc(userRef, {
-        id: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        updatedAt: Date.now()
-      }, { merge: true });
-    } catch (error) {
-      console.error("Error syncing user profile:", error);
-    }
+  const syncUserProfile = (user: User) => {
+    if (!db) return;
+    const userRef = doc(db, 'users', user.uid);
+    // Non-blocking update to sync user profile data defined in backend.json
+    setDocumentNonBlocking(userRef, {
+      id: user.uid,
+      email: user.email,
+      displayName: user.displayName || '',
+    }, { merge: true });
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -54,7 +52,7 @@ export default function LoginPage() {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
       }
       if (userCredential.user) {
-        await syncUserProfile(userCredential.user);
+        syncUserProfile(userCredential.user);
       }
     } catch (error: any) {
       toast({
@@ -72,7 +70,7 @@ export default function LoginPage() {
     try {
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
-        await syncUserProfile(result.user);
+        syncUserProfile(result.user);
       }
     } catch (error: any) {
       toast({

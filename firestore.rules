@@ -1,47 +1,20 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * NoteWave Security Rules
-     * 
-     * Core Philosophy: 
-     * This ruleset implements a strict User-Ownership model. Private data (profiles and notes) 
-     * is physically segregated by user ID in the document path.
-     */
-
-    // --- Helper Functions ---
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    // --- Collection Rules ---
-
-    /**
-     * @description Rules for the User profile documents.
-     */
+    // Rules for User profile documents and their subcollections
     match /users/{userId} {
-      // Direct ownership check for the user's own profile document.
-      allow read, write: if isOwner(userId);
+      // Allow the owner to read and write their own profile
+      allow read, write: if request.auth != null && request.auth.uid == userId;
       
-      /**
-       * @description Rules for notes belonging to a specific user.
-       */
+      // Allow the owner to manage their own notes
       match /notes/{noteId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
 
-    /**
-     * @description Rules for global application themes.
-     */
+    // Rules for global application themes
     match /themes/{themeId} {
-      allow read: if isSignedIn();
+      allow read: if request.auth != null;
       allow write: if false;
     }
   }
