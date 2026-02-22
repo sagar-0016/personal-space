@@ -37,21 +37,6 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton 
-                tooltip="Notes" 
-                isActive={currentView === 'notes'}
-                onClick={() => onViewChange('notes')}
-                className={cn(
-                  "rounded-r-full mr-2 transition-all duration-300",
-                  currentView === 'notes' && "bg-primary/15 text-primary font-bold shadow-sm"
-                )}
-              >
-                <Lightbulb className={cn(currentView === 'notes' && "text-primary")} />
-                <span>Notes</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            
-            <SidebarMenuItem>
-              <SidebarMenuButton 
                 tooltip="All Notes" 
                 isActive={currentView === 'all'}
                 onClick={() => onViewChange('all')}

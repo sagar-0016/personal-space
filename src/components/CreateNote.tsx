@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -98,7 +99,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     <div className="w-full max-w-2xl mx-auto mb-12 px-4" ref={containerRef}>
       <Card className={cn(
         "transition-all duration-300 google-shadow border border-border/40 bg-card/80 backdrop-blur-md overflow-hidden rounded-xl",
-        isExpanded ? "p-2" : "p-1"
+        isExpanded ? "p-3" : "p-1"
       )}>
         {!isExpanded ? (
           <div 
@@ -115,12 +116,12 @@ export function CreateNote({ onSave }: CreateNoteProps) {
         ) : (
           <div className="flex flex-col note-fade-in">
             {/* Header / Title Area */}
-            <div className="flex items-start px-4 pt-3 pb-1">
+            <div className="flex items-start px-4 pt-4 pb-2">
               <Input
                 placeholder="Title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="border-none shadow-none focus-visible:ring-0 text-lg sm:text-xl font-bold px-0 h-auto placeholder:text-muted-foreground/20 bg-transparent"
+                className="border-none shadow-none focus-visible:ring-0 text-xl sm:text-2xl font-bold px-0 h-auto placeholder:text-muted-foreground/20 bg-transparent"
                 autoFocus
               />
               <TooltipProvider>
@@ -134,7 +135,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                         setIsPinned(!isPinned);
                       }}
                       className={cn(
-                        "h-10 w-10 rounded-full transition-colors",
+                        "h-10 w-10 rounded-full transition-colors shrink-0",
                         isPinned ? "text-primary" : "text-muted-foreground/40 hover:text-foreground"
                       )}
                     >
@@ -149,12 +150,12 @@ export function CreateNote({ onSave }: CreateNoteProps) {
             </div>
 
             {/* Content Area */}
-            <div className="px-4 py-1">
+            <div className="px-4 py-2">
               <Textarea
                 placeholder="Take a note..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="border-none shadow-none focus-visible:ring-0 resize-none min-h-[48px] px-0 py-2 text-sm sm:text-base leading-relaxed placeholder:text-muted-foreground/20 overflow-hidden bg-transparent"
+                className="border-none shadow-none focus-visible:ring-0 resize-none min-h-[60px] px-0 py-2 text-base sm:text-lg leading-relaxed placeholder:text-muted-foreground/20 overflow-hidden bg-transparent"
                 style={{ height: 'auto' }}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
@@ -165,7 +166,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
             </div>
 
             {/* Toolbar Area */}
-            <div className="flex items-center justify-between px-2 pt-2 pb-1 mt-2">
+            <div className="flex items-center justify-between px-2 pt-3 pb-2 mt-2">
               <div className="flex items-center space-x-0.5 overflow-x-auto">
                 <TooltipProvider>
                   {toolbarIcons.map((item, idx) => (
@@ -175,7 +176,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                           variant="ghost" 
                           size="icon" 
                           onClick={item.onClick}
-                          className="h-8 w-8 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 rounded-full shrink-0"
+                          className="h-9 w-9 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 rounded-full shrink-0"
                         >
                           <item.icon className="h-4 w-4" />
                         </Button>
@@ -191,7 +192,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
               <Button 
                 variant="ghost" 
                 onClick={handleClose}
-                className="hover:bg-accent/20 font-bold text-sm px-5 h-9"
+                className="hover:bg-accent/20 font-bold text-sm px-6 h-10"
               >
                 Close
               </Button>

@@ -9,21 +9,21 @@ import { CreateNote } from '@/components/CreateNote';
 import { NoteCard } from '@/components/NoteCard';
 import { NoteModal } from '@/components/NoteModal';
 import { AppSidebar } from '@/components/AppSidebar';
-import { SearchCode, Loader2, Pin, Trash2, Archive, Layers } from 'lucide-react';
+import { SearchCode, Loader2, Pin, Trash2, Archive, Layers, Tag as TagIcon } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 export default function Home() {
-  const { user, isUserLoading } = userUser();
+  const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentView, setCurrentView] = useState('notes'); 
+  const [currentView, setCurrentView] = useState('all'); 
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -112,9 +112,6 @@ export default function Home() {
     
     if (!matchesSearch) return false;
 
-    if (currentView === 'notes') {
-      return !n.isArchived && !n.isDeleted;
-    }
     if (currentView === 'all') {
       return !n.isDeleted;
     }
@@ -131,7 +128,7 @@ export default function Home() {
       const label = currentView.split(':')[1];
       return n.labels?.includes(label) && !n.isDeleted;
     }
-    return true;
+    return !n.isArchived && !n.isDeleted; // Default fallthrough
   }).sort((a, b) => b.updatedAt - a.updatedAt);
 
   const pinnedNotes = allFilteredNotes.filter(n => n.isPinned);
@@ -169,7 +166,7 @@ export default function Home() {
           
           <SidebarInset className="flex-1 overflow-y-auto bg-transparent">
             <main className="container mx-auto py-8">
-              {(currentView === 'notes' || currentView === 'all' || currentView === 'untagged') && <CreateNote onSave={handleCreateNote} />}
+              {(currentView === 'all' || currentView === 'untagged') && <CreateNote onSave={handleCreateNote} />}
 
               {isNotesLoading ? (
                 <div className="flex justify-center py-20">
@@ -244,7 +241,7 @@ export default function Home() {
                      "No notes match your search"}
                   </p>
                   <p className="text-sm opacity-60 max-w-xs text-center mt-3 leading-relaxed">
-                    {currentView === 'notes' ? "Try creating a new note to capture your brilliant thoughts." : "Notes you interact with will show up here."}
+                    {currentView === 'all' ? "Try creating a new note to capture your brilliant thoughts." : "Notes you interact with will show up here."}
                   </p>
                 </div>
               )}
@@ -261,9 +258,4 @@ export default function Home() {
       </div>
     </SidebarProvider>
   );
-}
-
-// Fixed userUser typo in the component
-function userUser() {
-  return useUser();
 }
