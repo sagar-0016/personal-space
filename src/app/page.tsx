@@ -123,7 +123,7 @@ export default function Home() {
     }
     if (currentView.startsWith('label:')) {
       const label = currentView.split(':')[1];
-      return n.labels?.includes(label) && !n.isArchived && !n.isDeleted;
+      return n.labels?.includes(label) && !n.isDeleted;
     }
     return true;
   }).sort((a, b) => b.updatedAt - a.updatedAt);
@@ -132,7 +132,7 @@ export default function Home() {
   const otherNotes = allFilteredNotes.filter(n => !n.isPinned);
 
   // Extract labels for Sidebar
-  const allLabels = Array.from(new Set((notes || []).flatMap(n => n.labels || [])));
+  const allLabels = Array.from(new Set((notes || []).flatMap(n => n.labels || []))).sort();
 
   if (isUserLoading || !user) {
     return (
@@ -144,7 +144,13 @@ export default function Home() {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex flex-col w-full bg-background font-body transition-colors duration-500">
+      <div className="min-h-screen flex flex-col w-full bg-background font-body transition-colors duration-500 relative overflow-hidden">
+        {/* Glowing Background Blobs */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+          <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px] animate-pulse" />
+          <div className="absolute top-[40%] -right-[10%] w-[35%] h-[35%] rounded-full bg-primary/5 blur-[100px]" />
+        </div>
+
         <Navbar onSearch={setSearchQuery} />
         
         <div className="flex flex-1 overflow-hidden">
@@ -154,7 +160,7 @@ export default function Home() {
             labels={allLabels}
           />
           
-          <SidebarInset className="flex-1 overflow-y-auto">
+          <SidebarInset className="flex-1 overflow-y-auto bg-transparent">
             <main className="container mx-auto py-8">
               {currentView === 'notes' && <CreateNote onSave={handleCreateNote} />}
 
@@ -170,7 +176,7 @@ export default function Home() {
                         <div className="p-1 bg-primary/20 rounded-md">
                           <Pin className="h-4 w-4 text-primary fill-current" />
                         </div>
-                        <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                        <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">
                           Pinned
                         </h2>
                       </div>
@@ -194,7 +200,7 @@ export default function Home() {
                   <div className="space-y-6">
                     {pinnedNotes.length > 0 && (
                       <div className="flex items-center space-x-2 px-4">
-                        <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                        <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">
                           Others
                         </h2>
                       </div>
@@ -217,18 +223,19 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
-                  <div className="p-6 bg-secondary/50 rounded-full mb-6">
-                    {currentView === 'trash' ? <Trash2 className="h-16 w-16 opacity-20" /> : 
-                     currentView === 'archive' ? <Archive className="h-16 w-16 opacity-20" /> :
-                     <SearchCode className="h-16 w-16 opacity-20" />}
+                  <div className="p-8 bg-secondary/30 rounded-full mb-6 backdrop-blur-sm">
+                    {currentView === 'trash' ? <Trash2 className="h-16 w-16 opacity-30" /> : 
+                     currentView === 'archive' ? <Archive className="h-16 w-16 opacity-30" /> :
+                     <SearchCode className="h-16 w-16 opacity-30" />}
                   </div>
                   <p className="text-xl font-medium">
                     {currentView === 'trash' ? "Trash is empty" : 
                      currentView === 'archive' ? "Archive is empty" :
+                     currentView.startsWith('label:') ? `No notes with label "${currentView.split(':')[1]}"` :
                      "No notes match your search"}
                   </p>
-                  <p className="text-sm opacity-60">
-                    {currentView === 'notes' ? "Try creating a new note to get started." : "Notes you interact with will show up here."}
+                  <p className="text-sm opacity-60 max-w-xs text-center mt-2">
+                    {currentView === 'notes' ? "Try creating a new note to capture your thoughts." : "Notes you interact with will show up here."}
                   </p>
                 </div>
               )}

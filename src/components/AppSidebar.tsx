@@ -29,8 +29,8 @@ interface AppSidebarProps {
 
 export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProps) {
   return (
-    <Sidebar collapsible="icon" className="border-r-0 pt-16">
-      <SidebarContent>
+    <Sidebar collapsible="icon" className="border-r-0 pt-16 bg-transparent">
+      <SidebarContent className="bg-transparent">
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
@@ -38,9 +38,12 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
                 tooltip="Notes" 
                 isActive={currentView === 'notes'}
                 onClick={() => onViewChange('notes')}
-                className="rounded-r-full mr-2"
+                className={cn(
+                  "rounded-r-full mr-2 transition-all",
+                  currentView === 'notes' && "bg-primary/10 text-primary font-semibold"
+                )}
               >
-                <Lightbulb />
+                <Lightbulb className={cn(currentView === 'notes' && "text-primary")} />
                 <span>Notes</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -48,7 +51,7 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Labels</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 text-[10px] uppercase tracking-widest font-bold opacity-50">Labels</SidebarGroupLabel>
           <SidebarMenu>
             {labels.map((label) => (
               <SidebarMenuItem key={label}>
@@ -56,15 +59,18 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
                   tooltip={label} 
                   isActive={currentView === `label:${label}`}
                   onClick={() => onViewChange(`label:${label}`)}
-                  className="rounded-r-full mr-2"
+                  className={cn(
+                    "rounded-r-full mr-2 transition-all",
+                    currentView === `label:${label}` && "bg-primary/10 text-primary font-semibold"
+                  )}
                 >
-                  <Tag className="h-4 w-4" />
+                  <Tag className={cn("h-4 w-4", currentView === `label:${label}` && "text-primary")} />
                   <span>{label}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
             {labels.length === 0 && (
-              <div className="px-4 py-2 text-xs text-muted-foreground italic">
+              <div className="px-6 py-2 text-[11px] text-muted-foreground italic opacity-50">
                 No labels yet
               </div>
             )}
@@ -78,9 +84,12 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
                 tooltip="Archive" 
                 isActive={currentView === 'archive'}
                 onClick={() => onViewChange('archive')}
-                className="rounded-r-full mr-2"
+                className={cn(
+                  "rounded-r-full mr-2 transition-all",
+                  currentView === 'archive' && "bg-primary/10 text-primary font-semibold"
+                )}
               >
-                <Archive />
+                <Archive className={cn(currentView === 'archive' && "text-primary")} />
                 <span>Archive</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -89,9 +98,12 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
                 tooltip="Trash" 
                 isActive={currentView === 'trash'}
                 onClick={() => onViewChange('trash')}
-                className="rounded-r-full mr-2"
+                className={cn(
+                  "rounded-r-full mr-2 transition-all",
+                  currentView === 'trash' && "bg-primary/10 text-primary font-semibold"
+                )}
               >
-                <Trash2 />
+                <Trash2 className={cn(currentView === 'trash' && "text-primary")} />
                 <span>Trash</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
