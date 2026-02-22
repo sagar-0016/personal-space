@@ -5,7 +5,9 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus, prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
+// Correcting imports for syntax highlighter styles to specific file paths
+import vscDarkPlus from 'react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus';
+import prism from 'react-syntax-highlighter/dist/esm/styles/prism/prism';
 import { cn } from '@/lib/utils';
 
 interface MarkdownRendererProps {
