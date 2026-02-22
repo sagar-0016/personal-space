@@ -113,37 +113,17 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "User profiles and settings."
-        }
-      },
-      {
-        "path": "/users/{userId}/notes/{noteId}",
-        "definition": {
-          "entityName": "Note",
-          "schema": {
-            "$ref": "#/backend/entities/Note"
-          },
-          "description": "User-specific notes."
-        }
-      },
-      {
-        "path": "/themes/{themeId}",
-        "definition": {
-          "entityName": "Theme",
-          "schema": {
-            "$ref": "#/backend/entities/Theme"
-          },
-          "description": "Global predefined themes."
-        }
-      }
-    ]
+    "/users/{userId}": {
+      "schema": { "$ref": "#/backend/entities/User" },
+      "description": "User profiles and settings."
+    },
+    "/users/{userId}/notes/{noteId}": {
+      "schema": { "$ref": "#/backend/entities/Note" },
+      "description": "User-specific notes."
+    },
+    "/themes/{themeId}": {
+      "schema": { "$ref": "#/backend/entities/Theme" },
+      "description": "Global predefined themes."
+    }
   }
 }

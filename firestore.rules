@@ -1,18 +1,17 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Rules for User profile documents and their subcollections
+    // User profile and settings
     match /users/{userId} {
-      // Allow the owner to read and write their own profile
       allow read, write: if request.auth != null && request.auth.uid == userId;
       
-      // Allow the owner to manage their own notes
+      // User-specific notes
       match /notes/{noteId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
 
-    // Rules for global application themes
+    // Global application themes
     match /themes/{themeId} {
       allow read: if request.auth != null;
       allow write: if false;

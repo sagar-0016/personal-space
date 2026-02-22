@@ -3,7 +3,7 @@
 import React from 'react';
 import { Note } from '@/lib/types';
 import { Card } from '@/components/ui/card';
-import { Trash2, Edit3, MoreVertical } from 'lucide-react';
+import { Trash2, Edit3, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -11,9 +11,10 @@ interface NoteCardProps {
   note: Note;
   onEdit: (note: Note) => void;
   onDelete: (id: string) => void;
+  onTogglePin: () => void;
 }
 
-export function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
+export function NoteCard({ note, onEdit, onDelete, onTogglePin }: NoteCardProps) {
   return (
     <Card 
       onClick={() => onEdit(note)}
@@ -22,11 +23,28 @@ export function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
         note.color ? `bg-[${note.color}]` : ""
       )}
     >
-      {note.title && (
-        <h3 className="text-base font-medium mb-2 line-clamp-2 text-foreground/90">
-          {note.title}
-        </h3>
-      )}
+      <div className="flex justify-between items-start mb-2">
+        {note.title && (
+          <h3 className="text-base font-medium line-clamp-2 text-foreground/90 pr-6">
+            {note.title}
+          </h3>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-8 w-8 rounded-full absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity",
+            note.isPinned ? "opacity-100 text-primary" : "text-muted-foreground"
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            onTogglePin();
+          }}
+        >
+          <Pin className={cn("h-4 w-4", note.isPinned ? "fill-current" : "rotate-45")} />
+        </Button>
+      </div>
+      
       <div className="text-sm text-foreground/75 whitespace-pre-wrap break-words line-clamp-[12]">
         {note.content}
       </div>

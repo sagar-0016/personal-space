@@ -7,7 +7,7 @@ import { Navbar } from '@/components/Navbar';
 import { CreateNote } from '@/components/CreateNote';
 import { NoteCard } from '@/components/NoteCard';
 import { NoteModal } from '@/components/NoteModal';
-import { SearchCode, Loader2 } from 'lucide-react';
+import { SearchCode, Loader2, Pin } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -21,14 +21,12 @@ export default function Home() {
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Redirect if not logged in
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/login');
     }
   }, [user, isUserLoading, router]);
 
-  // Firestore Notes Query
   const notesQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return collection(db, 'users', user.uid, 'notes');
@@ -65,15 +63,27 @@ export default function Home() {
     deleteDocumentNonBlocking(noteRef);
   };
 
+  const handleTogglePin = (note: Note) => {
+    if (!db || !user) return;
+    const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
+    updateDocumentNonBlocking(noteRef, {
+      isPinned: !note.isPinned,
+      updatedAt: Date.now()
+    });
+  };
+
   const handleEditNote = (note: Note) => {
     setEditingNote(note);
     setIsModalOpen(true);
   };
 
-  const filteredNotes = (notes || []).filter(n => 
+  const allFilteredNotes = (notes || []).filter(n => 
     n.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
     n.content.toLowerCase().includes(searchQuery.toLowerCase())
   ).sort((a, b) => b.updatedAt - a.updatedAt);
+
+  const pinnedNotes = allFilteredNotes.filter(n => n.isPinned);
+  const otherNotes = allFilteredNotes.filter(n => !n.isPinned);
 
   if (isUserLoading || !user) {
     return (
@@ -94,17 +104,48 @@ export default function Home() {
           <div className="flex justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        ) : filteredNotes.length > 0 ? (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 px-4 space-y-4">
-            {filteredNotes.map((note) => (
-              <div key={note.id} className="break-inside-avoid">
-                <NoteCard 
-                  note={note} 
-                  onEdit={handleEditNote} 
-                  onDelete={handleDeleteNote}
-                />
+        ) : allFilteredNotes.length > 0 ? (
+          <div className="space-y-8 px-4">
+            {pinnedNotes.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center px-4">
+                  <Pin className="h-3 w-3 mr-2 rotate-45" />
+                  Pinned
+                </h2>
+                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+                  {pinnedNotes.map((note) => (
+                    <div key={note.id} className="break-inside-avoid">
+                      <NoteCard 
+                        note={note} 
+                        onEdit={handleEditNote} 
+                        onDelete={handleDeleteNote}
+                        onTogglePin={() => handleTogglePin(note)}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            )}
+
+            <div className="space-y-4">
+              {pinnedNotes.length > 0 && (
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4">
+                  Others
+                </h2>
+              )}
+              <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+                {otherNotes.map((note) => (
+                  <div key={note.id} className="break-inside-avoid">
+                    <NoteCard 
+                      note={note} 
+                      onEdit={handleEditNote} 
+                      onDelete={handleDeleteNote}
+                      onTogglePin={() => handleTogglePin(note)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
