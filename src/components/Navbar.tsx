@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react';
-import { Search, Menu, Sparkles, LayoutGrid, Settings, User, LogOut } from 'lucide-react';
+import { Search, Menu, Lightbulb, LayoutGrid, Settings, LogOut } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
@@ -33,7 +33,7 @@ export function Navbar({ onSearch }: { onSearch: (val: string) => void }) {
         </Button>
         <div className="flex items-center space-x-2">
           <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-            <Sparkles className="h-5 w-5 text-primary-foreground" />
+            <Lightbulb className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="text-xl font-headline font-semibold hidden sm:inline-block">Personal Space</span>
         </div>

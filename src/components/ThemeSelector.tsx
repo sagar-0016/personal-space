@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Palette, Check, Loader2, Sparkles } from 'lucide-react';
+import { Palette, Check, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Theme } from '@/lib/types';
@@ -57,7 +57,7 @@ export function ThemeSelector() {
     return collection(db, 'themes');
   }, [db]);
 
-  const { data: dbThemes, isLoading } = useCollection<Theme>(themesRef);
+  const { data: dbThemes } = useCollection<Theme>(themesRef);
 
   const userProfileRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -82,7 +82,7 @@ export function ThemeSelector() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64 p-2 rounded-xl border-none google-shadow">
         <DropdownMenuLabel className="flex items-center gap-2 text-muted-foreground font-medium">
-          <Sparkles className="h-4 w-4 text-primary" />
+          <Lightbulb className="h-4 w-4 text-primary" />
           Choose Workspace Theme
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

@@ -15,7 +15,7 @@ import {
   User,
   getRedirectResult
 } from 'firebase/auth';
-import { Sparkles, Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Lightbulb, Loader2, Mail, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -33,7 +33,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [useRedirect, setUseRedirect] = useState(false);
 
-  // Handle redirect result on mount
   useEffect(() => {
     if (!auth) return;
 
@@ -57,7 +56,6 @@ export default function LoginPage() {
       });
   }, [auth, router, toast]);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (!isUserLoading && authUser) {
       router.push('/');
@@ -138,7 +136,7 @@ export default function LoginPage() {
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <div className="h-16 w-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg transform -rotate-6">
-              <Sparkles className="h-9 w-9 text-primary-foreground" />
+              <Lightbulb className="h-9 w-9 text-primary-foreground" />
             </div>
           </div>
           <div className="space-y-1">
