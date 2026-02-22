@@ -14,6 +14,7 @@ import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { parseNoteFormat } from '@/lib/note-parser';
+import { cn } from '@/lib/utils';
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
@@ -24,6 +25,7 @@ export default function Home() {
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentView, setCurrentView] = useState('all'); 
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -41,7 +43,6 @@ export default function Home() {
   const handleCreateNote = (newNoteData: { title: string; content: string; isPinned: boolean; isArchived?: boolean }) => {
     if (!db || !user) return;
     
-    // Check for structured format
     const parsed = parseNoteFormat(newNoteData.content);
     const finalTitle = parsed.isStructured && parsed.title ? parsed.title : newNoteData.title;
     const finalLabels = parsed.isStructured ? parsed.labels : [];
@@ -64,7 +65,6 @@ export default function Home() {
   const handleUpdateNote = (updatedNote: Note) => {
     if (!db || !user) return;
     
-    // Final check for structured format on update
     const parsed = parseNoteFormat(updatedNote.content);
     const finalTitle = parsed.isStructured && parsed.title ? parsed.title : updatedNote.title;
     const finalLabels = parsed.isStructured ? Array.from(new Set([...(updatedNote.labels || []), ...parsed.labels])) : updatedNote.labels;
@@ -119,36 +119,26 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
-  // View Filtering Logic
   const allFilteredNotes = (notes || []).filter(n => {
     const matchesSearch = n.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          n.content.toLowerCase().includes(searchQuery.toLowerCase());
     
     if (!matchesSearch) return false;
 
-    if (currentView === 'all') {
-      return !n.isDeleted;
-    }
-    if (currentView === 'untagged') {
-      return !n.isArchived && !n.isDeleted && (!n.labels || n.labels.length === 0);
-    }
-    if (currentView === 'archive') {
-      return n.isArchived && !n.isDeleted;
-    }
-    if (currentView === 'trash') {
-      return n.isDeleted;
-    }
+    if (currentView === 'all') return !n.isDeleted;
+    if (currentView === 'untagged') return !n.isArchived && !n.isDeleted && (!n.labels || n.labels.length === 0);
+    if (currentView === 'archive') return n.isArchived && !n.isDeleted;
+    if (currentView === 'trash') return n.isDeleted;
     if (currentView.startsWith('label:')) {
       const label = currentView.split(':')[1];
       return n.labels?.includes(label) && !n.isDeleted;
     }
-    return !n.isArchived && !n.isDeleted; // Default fallthrough
+    return !n.isArchived && !n.isDeleted;
   }).sort((a, b) => b.updatedAt - a.updatedAt);
 
   const pinnedNotes = allFilteredNotes.filter(n => n.isPinned);
   const otherNotes = allFilteredNotes.filter(n => !n.isPinned);
 
-  // Extract labels for Sidebar
   const allLabels = Array.from(new Set((notes || []).flatMap(n => n.labels || []))).sort();
 
   if (isUserLoading || !user) {
@@ -159,17 +149,27 @@ export default function Home() {
     );
   }
 
+  const gridClassName = cn(
+    "gap-4 max-w-7xl mx-auto px-4",
+    viewMode === 'grid' 
+      ? "columns-1 sm:columns-2 lg:columns-3 xl:columns-4" 
+      : "flex flex-col max-w-3xl"
+  );
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex flex-col w-full bg-background font-body transition-colors duration-700 relative overflow-hidden">
-        {/* Glowing Background Blobs */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
           <div className="absolute -top-[15%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary/15 blur-[140px] animate-pulse" />
           <div className="absolute top-[30%] -right-[15%] w-[45%] h-[45%] rounded-full bg-primary/10 blur-[120px] transition-all duration-1000" />
           <div className="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] rounded-full bg-primary/5 blur-[100px]" />
         </div>
 
-        <Navbar onSearch={setSearchQuery} />
+        <Navbar 
+          onSearch={setSearchQuery} 
+          viewMode={viewMode}
+          onViewModeToggle={() => setViewMode(prev => prev === 'grid' ? 'list' : 'grid')}
+        />
         
         <div className="flex flex-1 overflow-hidden">
           <AppSidebar 
@@ -187,10 +187,10 @@ export default function Home() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : allFilteredNotes.length > 0 ? (
-                <div className="space-y-12 px-4 max-w-7xl mx-auto">
+                <div className="space-y-12">
                   {pinnedNotes.length > 0 && (
                     <div className="space-y-6">
-                      <div className="flex items-center space-x-2 px-4">
+                      <div className="flex items-center space-x-2 px-8 max-w-7xl mx-auto">
                         <div className="p-1 bg-primary/20 rounded-md">
                           <Pin className="h-4 w-4 text-primary fill-current" />
                         </div>
@@ -198,7 +198,7 @@ export default function Home() {
                           Pinned
                         </h2>
                       </div>
-                      <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+                      <div className={gridClassName}>
                         {pinnedNotes.map((note) => (
                           <div key={note.id} className="break-inside-avoid-column mb-4">
                             <NoteCard 
@@ -218,13 +218,13 @@ export default function Home() {
 
                   <div className="space-y-6">
                     {pinnedNotes.length > 0 && (
-                      <div className="flex items-center space-x-2 px-4">
+                      <div className="flex items-center space-x-2 px-8 max-w-7xl mx-auto">
                         <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">
                           Others
                         </h2>
                       </div>
                     )}
-                    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+                    <div className={gridClassName}>
                       {otherNotes.map((note) => (
                         <div key={note.id} className="break-inside-avoid-column mb-4">
                           <NoteCard 

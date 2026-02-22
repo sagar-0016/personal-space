@@ -1,8 +1,7 @@
-
 "use client"
 
 import React from 'react';
-import { Search, Menu, Lightbulb, LayoutGrid, Settings, LogOut } from 'lucide-react';
+import { Search, Menu, Lightbulb, LayoutGrid, List, Settings, LogOut } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
@@ -17,11 +16,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSidebar } from '@/components/ui/sidebar';
+import { useToast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-export function Navbar({ onSearch }: { onSearch: (val: string) => void }) {
+interface NavbarProps {
+  onSearch: (val: string) => void;
+  viewMode: 'grid' | 'list';
+  onViewModeToggle: () => void;
+}
+
+export function Navbar({ onSearch, viewMode, onViewModeToggle }: NavbarProps) {
   const { user } = useUser();
   const auth = useAuth();
   const { toggleSidebar } = useSidebar();
+  const { toast } = useToast();
 
   const handleSignOut = () => {
     signOut(auth);
@@ -55,14 +63,42 @@ export function Navbar({ onSearch }: { onSearch: (val: string) => void }) {
       </div>
 
       <div className="flex items-center space-x-2">
-        <ModeToggle />
-        <ThemeSelector />
-        <Button variant="ghost" size="icon" className="rounded-full hidden sm:flex">
-          <LayoutGrid className="h-5 w-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <Settings className="h-5 w-5" />
-        </Button>
+        <TooltipProvider>
+          <ModeToggle />
+          <ThemeSelector />
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full hidden sm:flex" 
+                onClick={onViewModeToggle}
+              >
+                {viewMode === 'grid' ? <List className="h-5 w-5" /> : <LayoutGrid className="h-5 w-5" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{viewMode === 'grid' ? 'List view' : 'Grid view'}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full"
+                onClick={() => toast({ title: "Settings", description: "Settings panel will be implemented in a future update." })}
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Settings</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         
         {user && (
           <DropdownMenu>
