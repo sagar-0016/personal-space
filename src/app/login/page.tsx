@@ -5,14 +5,16 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth, useUser } from '@/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { useAuth, useUser, useFirestore } from '@/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, User } from 'firebase/auth';
 import { RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { doc, setDoc } from 'firebase/firestore';
 
 export default function LoginPage() {
-  const { user, isUserLoading } = useUser();
+  const { user: authUser, isUserLoading } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   
@@ -22,19 +24,37 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!isUserLoading && user) {
+    if (!isUserLoading && authUser) {
       router.push('/');
     }
-  }, [user, isUserLoading, router]);
+  }, [authUser, isUserLoading, router]);
+
+  const syncUserProfile = async (user: User) => {
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, {
+        id: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        updatedAt: Date.now()
+      }, { merge: true });
+    } catch (error) {
+      console.error("Error syncing user profile:", error);
+    }
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      let userCredential;
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+      }
+      if (userCredential.user) {
+        await syncUserProfile(userCredential.user);
       }
     } catch (error: any) {
       toast({
@@ -50,7 +70,10 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        await syncUserProfile(result.user);
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",

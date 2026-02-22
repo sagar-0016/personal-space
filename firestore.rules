@@ -7,98 +7,42 @@ service cloud.firestore {
      * 
      * Core Philosophy: 
      * This ruleset implements a strict User-Ownership model. Private data (profiles and notes) 
-     * is physically segregated by user ID in the document path to ensure that authorization 
-     * is performant and implicitly handled by the database structure.
-     * 
-     * Data Structure:
-     * - /users/{userId}: Private user profiles and preferences.
-     * - /users/{userId}/notes/{noteId}: Private notes owned by the specific user.
-     * - /themes/{themeId}: Global, read-only visual configurations available to all users.
-     * 
-     * Key Security Decisions:
-     * - Path-Based Authorization: Access to any user-specific data requires the document's 
-     *   parent path to match the requester's Firebase Auth UID.
-     * - Relational Integrity: During creation and updates, the rules enforce that internal 
-     *   'userId' or 'id' fields remain consistent with the authenticated user to prevent 
-     *   data spoofing.
-     * - Prototyping Flexibility: While ownership is strictly enforced, the specific shape 
-     *   of content (titles, body text, colors) is not validated to allow for rapid iteration.
-     * - Immutable Identity: Critical relational fields like 'userId' are made immutable after 
-     *   creation to prevent ownership transfer.
+     * is physically segregated by user ID in the document path.
      */
 
     // --- Helper Functions ---
 
-    /** @description Checks if the request is from a signed-in user. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the authenticated user's UID matches the provided userId. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /** @description Checks ownership and ensures the document exists for state-changing operations. */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
     }
 
     // --- Collection Rules ---
 
     /**
      * @description Rules for the User profile documents.
-     * @path /users/{userId}
-     * @allow (get) If the user is viewing their own profile.
-     * @allow (create) If the user's UID matches the path and the internal 'id' field.
-     * @deny (list) Users cannot list the entire users collection (prevents user discovery).
-     * @principle Enforces strict path-based ownership and validates self-creation integrity.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false; // Users should not be able to browse or search other users.
+      // Direct ownership check for the user's own profile document.
+      allow read, write: if isOwner(userId);
       
-      allow create: if isOwner(userId) 
-                    && request.resource.data.id == userId;
-      
-      allow update: if isExistingOwner(userId) 
-                    && request.resource.data.id == resource.data.id;
-      
-      allow delete: if isExistingOwner(userId);
-
       /**
        * @description Rules for notes belonging to a specific user.
-       * @path /users/{userId}/notes/{noteId}
-       * @allow (list) If the authenticated user is the parent 'userId'.
-       * @allow (create) If the user owns the path and sets the 'userId' field correctly.
-       * @deny (update) If the user attempts to change the 'userId' field (ownership transfer).
-       * @principle Subcollection ownership pattern with denormalized field validation.
        */
       match /notes/{noteId} {
-        allow get, list: if isOwner(userId);
-        
-        allow create: if isOwner(userId) 
-                      && request.resource.data.userId == userId;
-        
-        allow update: if isExistingOwner(userId) 
-                      && request.resource.data.userId == resource.data.userId;
-        
-        allow delete: if isExistingOwner(userId);
+        allow read, write: if isOwner(userId);
       }
     }
 
     /**
      * @description Rules for global application themes.
-     * @path /themes/{themeId}
-     * @allow (get, list) If the user is authenticated.
-     * @deny (create, update, delete) All write operations are denied via API (System-only).
-     * @principle Provides global read-only access for system configurations.
      */
     match /themes/{themeId} {
-      allow get, list: if isSignedIn();
-      
-      // Writes are not allowed for any user. These should be managed via Admin SDK/Console.
-      allow create, update, delete: if false;
+      allow read: if isSignedIn();
+      allow write: if false;
     }
   }
 }
