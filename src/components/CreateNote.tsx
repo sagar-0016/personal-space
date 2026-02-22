@@ -5,17 +5,30 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Check, Plus } from 'lucide-react';
+import { 
+  Plus, 
+  Pin, 
+  Bell, 
+  UserPlus, 
+  Palette, 
+  Image as ImageIcon, 
+  Archive, 
+  MoreVertical, 
+  Undo2, 
+  Redo2 
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface CreateNoteProps {
-  onSave: (note: { title: string; content: string }) => void;
+  onSave: (note: { title: string; content: string; isPinned: boolean }) => void;
 }
 
 export function CreateNote({ onSave }: CreateNoteProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [isPinned, setIsPinned] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,13 +42,14 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [title, content]);
+  }, [title, content, isPinned]);
 
   const handleSave = () => {
     if (title.trim() || content.trim()) {
-      onSave({ title, content });
+      onSave({ title, content, isPinned });
       setTitle('');
       setContent('');
+      setIsPinned(false);
     }
   };
 
@@ -44,44 +58,114 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     setIsExpanded(false);
   };
 
+  const toolbarIcons = [
+    { icon: Bell, label: "Remind me" },
+    { icon: UserPlus, label: "Collaborator" },
+    { icon: Palette, label: "Background options" },
+    { icon: ImageIcon, label: "Add image" },
+    { icon: Archive, label: "Archive" },
+    { icon: MoreVertical, label: "More" },
+    { icon: Undo2, label: "Undo" },
+    { icon: Redo2, label: "Redo" },
+  ];
+
   return (
-    <div className="w-full max-w-2xl mx-auto mb-8 px-4" ref={containerRef}>
+    <div className="w-full max-w-2xl mx-auto mb-12 px-4" ref={containerRef}>
       <Card className={cn(
-        "transition-all duration-200 google-shadow bg-card overflow-hidden",
-        isExpanded ? "p-4" : "p-1"
+        "transition-all duration-300 google-shadow border border-border/40 bg-card overflow-hidden rounded-xl",
+        isExpanded ? "p-0" : "p-1"
       )}>
         {!isExpanded ? (
           <div 
-            className="flex items-center px-4 py-2 cursor-text"
+            className="flex items-center px-4 py-2.5 cursor-text group"
             onClick={() => setIsExpanded(true)}
           >
-            <span className="text-muted-foreground font-medium flex-1">Take a note...</span>
-            <div className="flex space-x-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Plus className="h-5 w-5 text-muted-foreground" />
+            <span className="text-muted-foreground/70 font-medium flex-1 text-sm sm:text-base">Take a note...</span>
+            <div className="flex space-x-1">
+              <Button variant="ghost" size="icon" className="h-9 w-9 opacity-60 group-hover:opacity-100">
+                <Plus className="h-5 w-5" />
               </Button>
             </div>
           </div>
         ) : (
-          <div className="space-y-3 note-fade-in">
-            <Input
-              placeholder="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="border-none shadow-none focus-visible:ring-0 text-lg font-semibold px-0 h-auto placeholder:text-muted-foreground/50"
-              autoFocus
-            />
-            <Textarea
-              placeholder="Take a note..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="border-none shadow-none focus-visible:ring-0 resize-none min-h-[100px] px-0 py-0 placeholder:text-muted-foreground/50"
-            />
-            <div className="flex justify-end pt-2">
+          <div className="flex flex-col note-fade-in">
+            {/* Header / Title Area */}
+            <div className="flex items-start px-4 pt-4">
+              <Input
+                placeholder="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="border-none shadow-none focus-visible:ring-0 text-lg font-bold px-0 h-auto placeholder:text-muted-foreground/30"
+                autoFocus
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPinned(!isPinned);
+                      }}
+                      className={cn(
+                        "h-10 w-10 rounded-full transition-colors",
+                        isPinned ? "text-primary" : "text-muted-foreground/50 hover:text-foreground"
+                      )}
+                    >
+                      <Pin className={cn("h-5 w-5", isPinned && "fill-current")} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isPinned ? "Unpin note" : "Pin note"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {/* Content Area */}
+            <div className="px-4">
+              <Textarea
+                placeholder="Take a note..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="border-none shadow-none focus-visible:ring-0 resize-none min-h-[48px] px-0 py-3 text-sm sm:text-base leading-relaxed placeholder:text-muted-foreground/30 overflow-hidden"
+                style={{ height: 'auto' }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = 'auto';
+                  target.style.height = `${target.scrollHeight}px`;
+                }}
+              />
+            </div>
+
+            {/* Toolbar Area */}
+            <div className="flex items-center justify-between px-2 pb-2 mt-2">
+              <div className="flex items-center space-x-0.5">
+                <TooltipProvider>
+                  {toolbarIcons.map((item, idx) => (
+                    <Tooltip key={idx}>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-full"
+                        >
+                          <item.icon className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-[10px] px-2 py-1">
+                        <p>{item.label}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
+              </div>
+              
               <Button 
                 variant="ghost" 
                 onClick={handleClose}
-                className="hover:bg-accent/20 font-medium"
+                className="hover:bg-accent/20 font-semibold text-sm px-6 h-9"
               >
                 Close
               </Button>

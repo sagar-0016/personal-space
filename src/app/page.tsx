@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -38,7 +37,7 @@ export default function Home() {
 
   const { data: notes, isLoading: isNotesLoading } = useCollection<Note>(notesQuery);
 
-  const handleCreateNote = (newNoteData: { title: string; content: string }) => {
+  const handleCreateNote = (newNoteData: { title: string; content: string; isPinned: boolean }) => {
     if (!db || !user) return;
     const noteRef = collection(db, 'users', user.uid, 'notes');
     const newNote = {
@@ -47,7 +46,7 @@ export default function Home() {
       userId: user.uid,
       updatedAt: Date.now(),
       createdAt: Date.now(),
-      isPinned: false,
+      isPinned: newNoteData.isPinned,
       isArchived: false,
       isDeleted: false,
       labels: []
