@@ -57,8 +57,22 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body antialiased;
   }
+}
+
+/* Custom Scrollbar for better UI */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30 transition-colors;
 }
 
 .note-fade-in {
@@ -76,4 +90,13 @@
 
 .google-shadow-hover:hover {
   box-shadow: 0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15);
+}
+
+/* Typography Overrides for Code Visibility */
+.prose pre {
+  @apply bg-zinc-950 text-zinc-50 border border-white/10 shadow-xl !important;
+}
+
+.prose code {
+  @apply font-mono !important;
 }
