@@ -1,0 +1,11 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "notewave-hero",
+      "description": "Minimalist note taking workspace",
+      "imageUrl": "https://picsum.photos/seed/notewave1/1200/600",
+      "imageHint": "minimalist workspace"
+    }
+  ]
+}
