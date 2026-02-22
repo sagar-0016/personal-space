@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -9,10 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Note } from '@/lib/types';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, Edit2, X, Terminal, Code2, Tag, Plus, X as CloseIcon } from 'lucide-react';
+import { Eye, Edit2, X, Terminal, Code2, Tag, Plus, X as CloseIcon, Sparkles } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { parseNoteFormat } from '@/lib/note-parser';
 
 interface NoteModalProps {
   note: Note | null;
@@ -28,6 +28,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
   const [newLabel, setNewLabel] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('preview');
   const [highContrastCode, setHighContrastCode] = useState(false);
+  const [isSynced, setIsSynced] = useState(false);
 
   useEffect(() => {
     if (note) {
@@ -35,18 +36,44 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
       setContent(note.content);
       setLabels(note.labels || []);
       setActiveTab('preview');
+      setIsSynced(false);
     }
   }, [note, isOpen]);
 
+  // Real-time processing for structured format
+  useEffect(() => {
+    if (activeTab === 'edit' && content) {
+      const parsed = parseNoteFormat(content);
+      if (parsed.isStructured) {
+        if (parsed.title) setTitle(parsed.title);
+        if (parsed.labels.length > 0) {
+          // Merge unique labels
+          const merged = Array.from(new Set([...labels, ...parsed.labels]));
+          setLabels(merged);
+        }
+        setIsSynced(true);
+      } else {
+        setIsSynced(false);
+      }
+    }
+  }, [content, activeTab]);
+
   const handleSave = () => {
-    if (note && (title !== note.title || content !== note.content || JSON.stringify(labels) !== JSON.stringify(note.labels))) {
-      onSave({
-        ...note,
-        title,
-        content,
-        labels,
-        updatedAt: Date.now()
-      });
+    if (note) {
+      // Final parse check before saving
+      const parsed = parseNoteFormat(content);
+      const finalTitle = parsed.isStructured && parsed.title ? parsed.title : title;
+      const finalLabels = parsed.isStructured && parsed.labels.length > 0 ? Array.from(new Set([...labels, ...parsed.labels])) : labels;
+
+      if (finalTitle !== note.title || content !== note.content || JSON.stringify(finalLabels) !== JSON.stringify(note.labels)) {
+        onSave({
+          ...note,
+          title: finalTitle,
+          content,
+          labels: finalLabels,
+          updatedAt: Date.now()
+        });
+      }
     }
     onClose();
   };
@@ -82,26 +109,35 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
             
             <div className="h-6 w-px bg-border hidden sm:block" />
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className={cn(
-                      "rounded-full h-8 w-8 transition-colors",
-                      highContrastCode ? "bg-primary/20 text-primary" : "text-muted-foreground"
-                    )}
-                    onClick={() => setHighContrastCode(!highContrastCode)}
-                  >
-                    {highContrastCode ? <Terminal className="h-4 w-4" /> : <Code2 className="h-4 w-4" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{highContrastCode ? "Switch to Standard Code" : "Switch to High-Contrast Code"}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex items-center space-x-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={cn(
+                        "rounded-full h-8 w-8 transition-colors",
+                        highContrastCode ? "bg-primary/20 text-primary" : "text-muted-foreground"
+                      )}
+                      onClick={() => setHighContrastCode(!highContrastCode)}
+                    >
+                      {highContrastCode ? <Terminal className="h-4 w-4" /> : <Code2 className="h-4 w-4" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{highContrastCode ? "Switch to Standard Code" : "Switch to High-Contrast Code"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {isSynced && (
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
+                  <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Format Synced</span>
+                </div>
+              )}
+            </div>
           </div>
           
           <Button variant="ghost" size="icon" onClick={handleSave} className="rounded-full h-8 w-8">
@@ -115,6 +151,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="border-none shadow-none focus-visible:ring-0 text-3xl font-bold px-0 h-auto placeholder:text-muted-foreground/20"
+            disabled={isSynced}
           />
 
           <div className="flex flex-wrap items-center gap-2 pb-2">

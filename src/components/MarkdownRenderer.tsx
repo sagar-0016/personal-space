@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState } from 'react';
@@ -10,6 +9,7 @@ import prism from 'react-syntax-highlighter/dist/esm/styles/prism/prism';
 import { cn } from '@/lib/utils';
 import { Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { parseNoteFormat } from '@/lib/note-parser';
 
 interface MarkdownRendererProps {
   content: string;
@@ -18,6 +18,10 @@ interface MarkdownRendererProps {
 }
 
 export function MarkdownRenderer({ content, className, highContrastCode = false }: MarkdownRendererProps) {
+  // Check if we should strip frontmatter for display
+  const parsed = parseNoteFormat(content);
+  const contentToRender = parsed.isStructured ? parsed.displayContent : content;
+
   return (
     <div className={cn(
       "prose prose-sm sm:prose-base dark:prose-invert max-w-none",
@@ -109,7 +113,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
           }
         }}
       >
-        {content}
+        {contentToRender}
       </ReactMarkdown>
     </div>
   );

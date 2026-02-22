@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -14,6 +13,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { parseNoteFormat } from '@/lib/note-parser';
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
@@ -38,28 +38,42 @@ export default function Home() {
 
   const { data: notes, isLoading: isNotesLoading } = useCollection<Note>(notesQuery);
 
-  const handleCreateNote = (newNoteData: { title: string; content: string; isPinned: boolean }) => {
+  const handleCreateNote = (newNoteData: { title: string; content: string; isPinned: boolean; isArchived?: boolean }) => {
     if (!db || !user) return;
+    
+    // Check for structured format
+    const parsed = parseNoteFormat(newNoteData.content);
+    const finalTitle = parsed.isStructured && parsed.title ? parsed.title : newNoteData.title;
+    const finalLabels = parsed.isStructured ? parsed.labels : [];
+
     const noteRef = collection(db, 'users', user.uid, 'notes');
     const newNote = {
-      title: newNoteData.title,
+      title: finalTitle,
       content: newNoteData.content,
       userId: user.uid,
       updatedAt: Date.now(),
       createdAt: Date.now(),
       isPinned: newNoteData.isPinned,
-      isArchived: false,
+      isArchived: !!newNoteData.isArchived,
       isDeleted: false,
-      labels: []
+      labels: finalLabels
     };
     addDocumentNonBlocking(noteRef, newNote);
   };
 
   const handleUpdateNote = (updatedNote: Note) => {
     if (!db || !user) return;
+    
+    // Final check for structured format on update
+    const parsed = parseNoteFormat(updatedNote.content);
+    const finalTitle = parsed.isStructured && parsed.title ? parsed.title : updatedNote.title;
+    const finalLabels = parsed.isStructured ? Array.from(new Set([...(updatedNote.labels || []), ...parsed.labels])) : updatedNote.labels;
+
     const noteRef = doc(db, 'users', user.uid, 'notes', updatedNote.id);
     updateDocumentNonBlocking(noteRef, {
       ...updatedNote,
+      title: finalTitle,
+      labels: finalLabels,
       updatedAt: Date.now()
     });
   };
