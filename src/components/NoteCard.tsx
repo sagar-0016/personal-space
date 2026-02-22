@@ -8,6 +8,7 @@ import { Trash2, Edit3, Pin, Archive, RotateCcw, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 interface NoteCardProps {
   note: Note;
@@ -32,7 +33,7 @@ export function NoteCard({
     <Card 
       onClick={() => !isTrash && onEdit(note)}
       className={cn(
-        "group relative flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card google-shadow-hover note-fade-in rounded-xl overflow-hidden",
+        "group relative flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card google-shadow-hover note-fade-in rounded-xl overflow-hidden min-h-[160px]",
         "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-primary/40 before:opacity-0 group-hover:before:opacity-100 transition-all",
         note.isPinned && "border-primary/30 ring-1 ring-primary/10"
       )}
@@ -61,8 +62,10 @@ export function NoteCard({
         )}
       </div>
       
-      <div className="text-sm text-foreground/70 whitespace-pre-wrap break-words line-clamp-[10] leading-relaxed">
-        {note.content}
+      <div className="flex-1 overflow-hidden">
+        <div className="text-sm text-foreground/70 line-clamp-[12] pointer-events-none">
+          <MarkdownRenderer content={note.content} className="prose-sm" />
+        </div>
       </div>
 
       {note.labels && note.labels.length > 0 && (
