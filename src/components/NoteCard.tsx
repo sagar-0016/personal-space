@@ -1,23 +1,36 @@
+
 "use client"
 
 import React from 'react';
 import { Note } from '@/lib/types';
 import { Card } from '@/components/ui/card';
-import { Trash2, Edit3, Pin } from 'lucide-react';
+import { Trash2, Edit3, Pin, Archive, RotateCcw, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 interface NoteCardProps {
   note: Note;
   onEdit: (note: Note) => void;
   onDelete: (id: string) => void;
+  onArchive: () => void;
   onTogglePin: () => void;
+  isTrash?: boolean;
+  onPermanentDelete?: () => void;
 }
 
-export function NoteCard({ note, onEdit, onDelete, onTogglePin }: NoteCardProps) {
+export function NoteCard({ 
+  note, 
+  onEdit, 
+  onDelete, 
+  onArchive, 
+  onTogglePin, 
+  isTrash, 
+  onPermanentDelete 
+}: NoteCardProps) {
   return (
     <Card 
-      onClick={() => onEdit(note)}
+      onClick={() => !isTrash && onEdit(note)}
       className={cn(
         "group relative flex flex-col p-4 cursor-default transition-all duration-200 border bg-card hover:bg-card google-shadow-hover note-fade-in",
         note.color ? `bg-[${note.color}]` : ""
@@ -29,49 +42,108 @@ export function NoteCard({ note, onEdit, onDelete, onTogglePin }: NoteCardProps)
             {note.title}
           </h3>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "h-8 w-8 rounded-full absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity",
-            note.isPinned ? "opacity-100 text-primary" : "text-muted-foreground"
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
-            onTogglePin();
-          }}
-        >
-          <Pin className={cn("h-4 w-4", note.isPinned ? "fill-current" : "rotate-45")} />
-        </Button>
+        {!isTrash && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "h-8 w-8 rounded-full absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity",
+              note.isPinned ? "opacity-100 text-primary" : "text-muted-foreground"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              onTogglePin();
+            }}
+          >
+            <Pin className={cn("h-4 w-4", note.isPinned ? "fill-current" : "rotate-45")} />
+          </Button>
+        )}
       </div>
       
       <div className="text-sm text-foreground/75 whitespace-pre-wrap break-words line-clamp-[12]">
         {note.content}
       </div>
+
+      {note.labels && note.labels.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-1">
+          {note.labels.map(label => (
+            <Badge key={label} variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-none flex items-center gap-1">
+              <Tag className="h-2 w-2" />
+              {label}
+            </Badge>
+          ))}
+        </div>
+      )}
       
       <div className="mt-4 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity space-x-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(note);
-          }}
-        >
-          <Edit3 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(note.id);
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        {isTrash ? (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              title="Restore"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(note.id); // Toggle deleted state
+              }}
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              title="Delete permanently"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPermanentDelete?.();
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(note);
+              }}
+            >
+              <Edit3 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-8 w-8 text-muted-foreground hover:text-foreground",
+                note.isArchived && "text-primary opacity-100"
+              )}
+              title={note.isArchived ? "Unarchive" : "Archive"}
+              onClick={(e) => {
+                e.stopPropagation();
+                onArchive();
+              }}
+            >
+              <Archive className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(note.id);
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </>
+        )}
       </div>
     </Card>
   );

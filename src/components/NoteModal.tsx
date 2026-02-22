@@ -9,9 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Note } from '@/lib/types';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, Edit2, X, Terminal, Code2 } from 'lucide-react';
+import { Eye, Edit2, X, Terminal, Code2, Tag, Plus, X as CloseIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 interface NoteModalProps {
   note: Note | null;
@@ -23,6 +24,8 @@ interface NoteModalProps {
 export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [labels, setLabels] = useState<string[]>([]);
+  const [newLabel, setNewLabel] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('preview');
   const [highContrastCode, setHighContrastCode] = useState(false);
 
@@ -30,20 +33,33 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     if (note) {
       setTitle(note.title);
       setContent(note.content);
+      setLabels(note.labels || []);
       setActiveTab('preview');
     }
   }, [note, isOpen]);
 
   const handleSave = () => {
-    if (note && (title !== note.title || content !== note.content)) {
+    if (note && (title !== note.title || content !== note.content || JSON.stringify(labels) !== JSON.stringify(note.labels))) {
       onSave({
         ...note,
         title,
         content,
+        labels,
         updatedAt: Date.now()
       });
     }
     onClose();
+  };
+
+  const handleAddLabel = () => {
+    if (newLabel.trim() && !labels.includes(newLabel.trim())) {
+      setLabels([...labels, newLabel.trim()]);
+      setNewLabel('');
+    }
+  };
+
+  const handleRemoveLabel = (labelToRemove: string) => {
+    setLabels(labels.filter(l => l !== labelToRemove));
   };
 
   return (
@@ -100,6 +116,30 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
             onChange={(e) => setTitle(e.target.value)}
             className="border-none shadow-none focus-visible:ring-0 text-3xl font-bold px-0 h-auto placeholder:text-muted-foreground/20"
           />
+
+          <div className="flex flex-wrap items-center gap-2 pb-2">
+            <Tag className="h-4 w-4 text-muted-foreground" />
+            {labels.map(label => (
+              <Badge key={label} variant="secondary" className="bg-primary/10 text-primary border-none hover:bg-primary/20 transition-colors">
+                {label}
+                <button onClick={() => handleRemoveLabel(label)} className="ml-1 hover:text-destructive">
+                  <CloseIcon className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+            <div className="flex items-center gap-1 ml-2">
+              <Input 
+                placeholder="Add label..." 
+                value={newLabel}
+                onChange={(e) => setNewLabel(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddLabel()}
+                className="h-7 w-24 text-xs bg-secondary border-none focus-visible:ring-1"
+              />
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleAddLabel}>
+                <Plus className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
           
           {activeTab === 'edit' ? (
             <Textarea

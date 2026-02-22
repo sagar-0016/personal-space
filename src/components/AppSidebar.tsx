@@ -4,12 +4,9 @@
 import React from 'react';
 import { 
   Lightbulb, 
-  Bell, 
-  Pencil, 
+  Tag, 
   Archive, 
   Trash2,
-  Settings,
-  HelpCircle
 } from 'lucide-react';
 import {
   Sidebar,
@@ -22,66 +19,82 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { cn } from '@/lib/utils';
 
-const mainNavItems = [
-  { title: "Notes", icon: Lightbulb, active: true },
-  { title: "Reminders", icon: Bell },
-];
+interface AppSidebarProps {
+  currentView: string;
+  onViewChange: (view: string) => void;
+  labels: string[];
+}
 
-const labelItems = [
-  { title: "Edit labels", icon: Pencil },
-];
-
-const archiveItems = [
-  { title: "Archive", icon: Archive },
-  { title: "Trash", icon: Trash2 },
-];
-
-export function AppSidebar() {
+export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" className="border-r-0 pt-16">
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {mainNavItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton 
-                  tooltip={item.title} 
-                  isActive={item.active}
-                  className="rounded-r-full mr-2"
-                >
-                  <item.icon />
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                tooltip="Notes" 
+                isActive={currentView === 'notes'}
+                onClick={() => onViewChange('notes')}
+                className="rounded-r-full mr-2"
+              >
+                <Lightbulb />
+                <span>Notes</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
           <SidebarGroupLabel>Labels</SidebarGroupLabel>
           <SidebarMenu>
-            {labelItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton tooltip={item.title} className="rounded-r-full mr-2">
-                  <item.icon />
-                  <span>{item.title}</span>
+            {labels.map((label) => (
+              <SidebarMenuItem key={label}>
+                <SidebarMenuButton 
+                  tooltip={label} 
+                  isActive={currentView === `label:${label}`}
+                  onClick={() => onViewChange(`label:${label}`)}
+                  className="rounded-r-full mr-2"
+                >
+                  <Tag className="h-4 w-4" />
+                  <span>{label}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
+            {labels.length === 0 && (
+              <div className="px-4 py-2 text-xs text-muted-foreground italic">
+                No labels yet
+              </div>
+            )}
           </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
           <SidebarMenu>
-            {archiveItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton tooltip={item.title} className="rounded-r-full mr-2">
-                  <item.icon />
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                tooltip="Archive" 
+                isActive={currentView === 'archive'}
+                onClick={() => onViewChange('archive')}
+                className="rounded-r-full mr-2"
+              >
+                <Archive />
+                <span>Archive</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                tooltip="Trash" 
+                isActive={currentView === 'trash'}
+                onClick={() => onViewChange('trash')}
+                className="rounded-r-full mr-2"
+              >
+                <Trash2 />
+                <span>Trash</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

@@ -1,3 +1,4 @@
+
 export type Note = {
   id: string;
   title: string;
@@ -7,6 +8,9 @@ export type Note = {
   createdAt: number;
   updatedAt: number;
   isPinned?: boolean;
+  isArchived?: boolean;
+  isDeleted?: boolean;
+  labels?: string[];
 };
 
 export type UserProfile = {

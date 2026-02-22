@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -8,7 +9,7 @@ import { CreateNote } from '@/components/CreateNote';
 import { NoteCard } from '@/components/NoteCard';
 import { NoteModal } from '@/components/NoteModal';
 import { AppSidebar } from '@/components/AppSidebar';
-import { SearchCode, Loader2, Pin } from 'lucide-react';
+import { SearchCode, Loader2, Pin, Trash2, Archive } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -22,6 +23,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentView, setCurrentView] = useState('notes'); // 'notes', 'archive', 'trash', or 'label:name'
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -45,7 +47,10 @@ export default function Home() {
       userId: user.uid,
       updatedAt: Date.now(),
       createdAt: Date.now(),
-      isPinned: false
+      isPinned: false,
+      isArchived: false,
+      isDeleted: false,
+      labels: []
     };
     addDocumentNonBlocking(noteRef, newNote);
   };
@@ -59,10 +64,30 @@ export default function Home() {
     });
   };
 
-  const handleDeleteNote = (id: string) => {
+  const handlePermanentDelete = (id: string) => {
     if (!db || !user) return;
     const noteRef = doc(db, 'users', user.uid, 'notes', id);
     deleteDocumentNonBlocking(noteRef);
+  };
+
+  const handleArchiveNote = (note: Note) => {
+    if (!db || !user) return;
+    const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
+    updateDocumentNonBlocking(noteRef, {
+      isArchived: !note.isArchived,
+      isPinned: false,
+      updatedAt: Date.now()
+    });
+  };
+
+  const handleTrashNote = (note: Note) => {
+    if (!db || !user) return;
+    const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
+    updateDocumentNonBlocking(noteRef, {
+      isDeleted: !note.isDeleted,
+      isPinned: false,
+      updatedAt: Date.now()
+    });
   };
 
   const handleTogglePin = (note: Note) => {
@@ -70,6 +95,7 @@ export default function Home() {
     const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
     updateDocumentNonBlocking(noteRef, {
       isPinned: !note.isPinned,
+      isArchived: false,
       updatedAt: Date.now()
     });
   };
@@ -79,13 +105,34 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
-  const allFilteredNotes = (notes || []).filter(n => 
-    n.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    n.content.toLowerCase().includes(searchQuery.toLowerCase())
-  ).sort((a, b) => b.updatedAt - a.updatedAt);
+  // View Filtering Logic
+  const allFilteredNotes = (notes || []).filter(n => {
+    const matchesSearch = n.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         n.content.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    if (currentView === 'notes') {
+      return !n.isArchived && !n.isDeleted;
+    }
+    if (currentView === 'archive') {
+      return n.isArchived && !n.isDeleted;
+    }
+    if (currentView === 'trash') {
+      return n.isDeleted;
+    }
+    if (currentView.startsWith('label:')) {
+      const label = currentView.split(':')[1];
+      return n.labels?.includes(label) && !n.isArchived && !n.isDeleted;
+    }
+    return true;
+  }).sort((a, b) => b.updatedAt - a.updatedAt);
 
   const pinnedNotes = allFilteredNotes.filter(n => n.isPinned);
   const otherNotes = allFilteredNotes.filter(n => !n.isPinned);
+
+  // Extract labels for Sidebar
+  const allLabels = Array.from(new Set((notes || []).flatMap(n => n.labels || [])));
 
   if (isUserLoading || !user) {
     return (
@@ -101,11 +148,15 @@ export default function Home() {
         <Navbar onSearch={setSearchQuery} />
         
         <div className="flex flex-1 overflow-hidden">
-          <AppSidebar />
+          <AppSidebar 
+            currentView={currentView} 
+            onViewChange={setCurrentView} 
+            labels={allLabels}
+          />
           
           <SidebarInset className="flex-1 overflow-y-auto">
             <main className="container mx-auto py-8">
-              <CreateNote onSave={handleCreateNote} />
+              {currentView === 'notes' && <CreateNote onSave={handleCreateNote} />}
 
               {isNotesLoading ? (
                 <div className="flex justify-center py-20">
@@ -129,8 +180,11 @@ export default function Home() {
                             key={note.id}
                             note={note} 
                             onEdit={handleEditNote} 
-                            onDelete={handleDeleteNote}
+                            onDelete={() => handleTrashNote(note)}
+                            onArchive={() => handleArchiveNote(note)}
                             onTogglePin={() => handleTogglePin(note)}
+                            isTrash={currentView === 'trash'}
+                            onPermanentDelete={() => handlePermanentDelete(note.id)}
                           />
                         ))}
                       </div>
@@ -151,8 +205,11 @@ export default function Home() {
                           key={note.id}
                           note={note} 
                           onEdit={handleEditNote} 
-                          onDelete={handleDeleteNote}
+                          onDelete={() => handleTrashNote(note)}
+                          onArchive={() => handleArchiveNote(note)}
                           onTogglePin={() => handleTogglePin(note)}
+                          isTrash={currentView === 'trash'}
+                          onPermanentDelete={() => handlePermanentDelete(note.id)}
                         />
                       ))}
                     </div>
@@ -161,10 +218,18 @@ export default function Home() {
               ) : (
                 <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
                   <div className="p-6 bg-secondary/50 rounded-full mb-6">
-                    <SearchCode className="h-16 w-16 opacity-20" />
+                    {currentView === 'trash' ? <Trash2 className="h-16 w-16 opacity-20" /> : 
+                     currentView === 'archive' ? <Archive className="h-16 w-16 opacity-20" /> :
+                     <SearchCode className="h-16 w-16 opacity-20" />}
                   </div>
-                  <p className="text-xl font-medium">No notes match your search</p>
-                  <p className="text-sm opacity-60">Try searching for something else or create a new note.</p>
+                  <p className="text-xl font-medium">
+                    {currentView === 'trash' ? "Trash is empty" : 
+                     currentView === 'archive' ? "Archive is empty" :
+                     "No notes match your search"}
+                  </p>
+                  <p className="text-sm opacity-60">
+                    {currentView === 'notes' ? "Try creating a new note to get started." : "Notes you interact with will show up here."}
+                  </p>
                 </div>
               )}
             </main>
