@@ -1,14 +1,15 @@
 
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-// Correcting imports for syntax highlighter styles to specific file paths
 import vscDarkPlus from 'react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus';
 import prism from 'react-syntax-highlighter/dist/esm/styles/prism/prism';
 import { cn } from '@/lib/utils';
+import { Check, Copy } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface MarkdownRendererProps {
   content: string;
@@ -35,6 +36,14 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
           code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
+            const codeString = String(children).replace(/\n$/, '');
+            const [copied, setCopied] = useState(false);
+
+            const handleCopy = () => {
+              navigator.clipboard.writeText(codeString);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            };
             
             if (inline) {
               return (
@@ -45,25 +54,32 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
             }
 
             return (
-              <div className="my-6 overflow-hidden rounded-xl border border-border/50 shadow-lg group">
-                {/* Terminal Header */}
+              <div className="my-6 overflow-hidden rounded-lg border border-border/50 shadow-md group relative">
+                {/* Minimal Header */}
                 <div className={cn(
                   "flex items-center justify-between px-4 py-2 border-b",
                   highContrastCode ? "bg-zinc-900 border-zinc-800" : "bg-muted/30 border-border/30"
                 )}>
-                  <div className="flex space-x-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                  </div>
-                  {language && (
+                  {language ? (
                     <span className={cn(
                       "text-[10px] uppercase font-bold tracking-widest",
                       highContrastCode ? "text-zinc-500" : "text-muted-foreground/60"
                     )}>
                       {language}
                     </span>
-                  )}
+                  ) : <div />}
+                  
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-6 w-6 rounded-md transition-all",
+                      highContrastCode ? "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                    onClick={handleCopy}
+                  >
+                    {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  </Button>
                 </div>
 
                 {/* Code Highlighter */}
@@ -74,7 +90,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                   className="!m-0 !p-4 !bg-transparent font-mono text-sm leading-relaxed"
                   customStyle={{
                     margin: 0,
-                    padding: '1rem',
+                    padding: '1.25rem',
                     backgroundColor: 'transparent',
                     fontSize: '0.875rem',
                   }}
@@ -86,7 +102,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                   }}
                   {...props}
                 >
-                  {String(children).replace(/\n$/, '')}
+                  {codeString}
                 </SyntaxHighlighter>
               </div>
             );

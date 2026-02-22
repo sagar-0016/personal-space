@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Note } from '@/lib/types';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, Edit2, X, Monitor, Zap } from 'lucide-react';
+import { Eye, Edit2, X, Terminal, Code2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -29,7 +30,6 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     if (note) {
       setTitle(note.title);
       setContent(note.content);
-      // Default to preview when opening an existing note
       setActiveTab('preview');
     }
   }, [note, isOpen]);
@@ -78,11 +78,11 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                     )}
                     onClick={() => setHighContrastCode(!highContrastCode)}
                   >
-                    {highContrastCode ? <Zap className="h-4 w-4" /> : <Monitor className="h-4 w-4" />}
+                    {highContrastCode ? <Terminal className="h-4 w-4" /> : <Code2 className="h-4 w-4" />}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{highContrastCode ? "Switch to Theme-Aware Code" : "Switch to High-Contrast Code"}</p>
+                  <p>{highContrastCode ? "Switch to Standard Code" : "Switch to High-Contrast Code"}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
