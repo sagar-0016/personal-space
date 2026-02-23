@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, useCallback, memo } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper, NodeViewContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -52,7 +52,7 @@ const lowlight = createLowlight(common);
 /**
  * Custom NodeView for Code Blocks to match the Home Screen Preview exactly.
  */
-const CodeBlockComponent = ({ node, updateAttributes, extension }: any) => {
+const CodeBlockComponent = ({ node, updateAttributes }: any) => {
   const [copied, setCopied] = useState(false);
   const language = node.attrs.language || 'source code';
 
@@ -66,7 +66,7 @@ const CodeBlockComponent = ({ node, updateAttributes, extension }: any) => {
     <NodeViewWrapper className="not-prose my-6 overflow-hidden rounded-xl border border-white/5 bg-[#0d0d0d] shadow-2xl group relative">
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/5">
         <span className="text-[9px] uppercase font-black tracking-[0.2em] text-white/30">
-          {language}
+          {language === 'source code' ? 'SOURCE CODE' : language.toUpperCase()}
         </span>
         <div className="flex items-center space-x-1">
           <select 
@@ -80,6 +80,7 @@ const CodeBlockComponent = ({ node, updateAttributes, extension }: any) => {
             <option value="css">CSS</option>
             <option value="python">PY</option>
             <option value="markdown">MD</option>
+            <option value="source code">AUTO</option>
           </select>
           <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-white/10" onClick={handleCopy}>
             {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3 text-white/20" />}
@@ -292,9 +293,6 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => editor.chain().focus().setHorizontalRule().run()}>
                 <Minus className="h-4 w-4 mr-2" /> Horizontal Rule
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => editor.chain().focus().insertContent('<details><summary>Title</summary>Content</details>').run()}>
-                <ChevronDown className="h-4 w-4 mr-2" /> Collapsible Section
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

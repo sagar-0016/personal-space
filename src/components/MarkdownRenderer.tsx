@@ -48,7 +48,7 @@ const CodeBlock = memo(({ language, codeString }: { language: string; codeString
     <div className="my-6 overflow-hidden rounded-xl border border-white/5 bg-[#0d0d0d] shadow-2xl group relative google-shadow">
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/5">
         <span className="text-[9px] uppercase font-black tracking-[0.2em] text-white/30">
-          {language || 'source code'}
+          {language ? language.toUpperCase() : 'SOURCE CODE'}
         </span>
         <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-white/10" onClick={handleCopy}>
           {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3 text-white/20" />}
@@ -56,7 +56,7 @@ const CodeBlock = memo(({ language, codeString }: { language: string; codeString
       </div>
       <div className="p-5 font-mono text-[13px] overflow-x-auto text-white/90">
         <SyntaxHighlighter
-          language={language}
+          language={language || 'text'}
           style={modernDarkTheme}
           PreTag="div"
           className="!m-0 !p-0 !bg-transparent"
