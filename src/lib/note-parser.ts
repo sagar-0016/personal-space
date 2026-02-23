@@ -1,5 +1,6 @@
 /**
  * Utility to parse and stringify structured markdown with custom metadata blocks.
+ * Designed to strictly adhere to the technical hierarchy requested.
  */
 
 export interface NoteMetadata {
@@ -39,7 +40,7 @@ export function parseNoteFormat(content: string): ParsedNote {
   const metadataStr = match[1];
   const body = match[2];
 
-  // Extract metadata fields using flexible regex
+  // Extract metadata fields using flexible regex that respects backslashes and title syntax
   const titleMatch = metadataStr.match(/##\s*title:\s*["'](.+?)["']/);
   const categoryMatch = metadataStr.match(/category:\s*["'](.+?)["']/);
   const typeMatch = metadataStr.match(/type:\s*["'](.+?)["']/);
@@ -72,6 +73,7 @@ export function parseNoteFormat(content: string): ParsedNote {
 export function stringifyNote(parsed: ParsedNote): string {
   const updatedDate = new Date().toISOString().split('T')[0];
   
+  // Reconstruct the exact format with backslashes for the metadata block
   const metadataLines = [
     '---',
     '',
