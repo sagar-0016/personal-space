@@ -13,7 +13,6 @@ import {
   X as CloseIcon, 
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { parseNoteFormat } from '@/lib/note-parser';
 import { cn } from '@/lib/utils';
 
 interface NoteModalProps {
@@ -39,12 +38,9 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
 
   const handleSave = () => {
     if (note) {
-      const parsed = parseNoteFormat(content);
-      const finalTitle = parsed.isStructured && parsed.title ? parsed.title : title;
-      
       onSave({
         ...note,
-        title: finalTitle,
+        title: title || 'Untitled Note',
         content,
         labels,
         updatedAt: Date.now()
@@ -93,7 +89,14 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                 placeholder="Add label..." 
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (newLabel.trim() && !labels.includes(newLabel.trim())) && (setLabels([...labels, newLabel.trim()]), setNewLabel(''))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newLabel.trim()) {
+                    if (!labels.includes(newLabel.trim())) {
+                      setLabels([...labels, newLabel.trim()]);
+                    }
+                    setNewLabel('');
+                  }
+                }}
                 className="h-6 w-24 text-[10px] bg-secondary/50 border-none focus-visible:ring-1 px-1.5 rounded-md"
               />
             </div>

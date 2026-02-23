@@ -4,7 +4,7 @@
 import React, { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/placeholder';
+import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Table from '@tiptap/extension-table';
@@ -50,7 +50,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        codeBlock: false, // We'll use a better one or just stick to basics
+        codeBlock: false,
         dropcursor: { color: 'hsl(var(--primary))', width: 2 },
       }),
       Placeholder.configure({ placeholder }),
@@ -73,7 +73,9 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
     ],
     content,
     onUpdate: ({ editor }) => {
-      onChange(editor.storage.markdown.getMarkdown());
+      // Get the markdown string from the extension storage
+      const markdown = (editor.storage.markdown as any).getMarkdown();
+      onChange(markdown);
     },
     editorProps: {
       attributes: {
@@ -94,9 +96,8 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
     },
   });
 
-  // Keep content in sync if it changes externally (e.g. initial load or modal open)
   useEffect(() => {
-    if (editor && content !== editor.storage.markdown.getMarkdown()) {
+    if (editor && content !== (editor.storage.markdown as any).getMarkdown()) {
       editor.commands.setContent(content, false);
     }
   }, [content, editor]);
