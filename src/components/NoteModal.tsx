@@ -7,10 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Note } from '@/lib/types';
 import { RichEditor } from './RichEditor';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   X, 
   Tag, 
   X as CloseIcon, 
+  FileText,
+  Eye
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -27,6 +30,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
   const [content, setContent] = useState('');
   const [labels, setLabels] = useState<string[]>([]);
   const [newLabel, setNewLabel] = useState('');
+  const [editMode, setEditMode] = useState<'visual' | 'markdown'>('visual');
 
   useEffect(() => {
     if (note) {
@@ -56,7 +60,18 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
         
         <div className="flex items-center justify-between p-4 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex items-center space-x-4">
-            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest px-2">Visual Editor</h2>
+            <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2">
+              {editMode === 'visual' ? 'Visual Editor' : 'Markdown Source'}
+            </h2>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setEditMode(editMode === 'visual' ? 'markdown' : 'visual')}
+              className="h-7 px-3 text-[9px] font-black uppercase tracking-tighter bg-primary/5 text-primary hover:bg-primary/10 transition-all rounded-full"
+            >
+              {editMode === 'visual' ? <FileText className="h-3 w-3 mr-1.5" /> : <Eye className="h-3 w-3 mr-1.5" />}
+              {editMode === 'visual' ? 'Switch to Raw' : 'Switch to Visual'}
+            </Button>
           </div>
           
           <Button variant="ghost" size="icon" onClick={handleSave} className="rounded-full h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-colors">
@@ -103,22 +118,31 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           </div>
           
           <div className="px-8 min-h-[400px]">
-            <RichEditor 
-              content={content} 
-              onChange={setContent} 
-              className="min-h-[400px]"
-              placeholder="What's on your mind? Type in Markdown or use the toolbar..."
-            />
+            {editMode === 'visual' ? (
+              <RichEditor 
+                content={content} 
+                onChange={setContent} 
+                className="min-h-[400px]"
+                placeholder="What's on your mind? Type in Markdown or use the toolbar..."
+              />
+            ) : (
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Edit raw Markdown..."
+                className="min-h-[400px] border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-base resize-none"
+              />
+            )}
           </div>
         </div>
 
         <div className="p-4 bg-secondary/10 border-t flex justify-between items-center backdrop-blur-md">
           <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest px-4">
-            Markdown managed in background
+            Changes are saved to Markdown format
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose} className="rounded-lg px-6 hover:bg-destructive/5 hover:text-destructive">Discard</Button>
-            <Button onClick={handleSave} className="rounded-lg px-10 google-shadow font-bold">Done</Button>
+            <Button variant="outline" onClick={onClose} className="rounded-lg px-6 hover:bg-destructive/5 hover:text-destructive transition-all">Discard</Button>
+            <Button onClick={handleSave} className="rounded-lg px-10 google-shadow font-bold transition-all hover:scale-[1.02] active:scale-[0.98]">Done</Button>
           </div>
         </div>
       </DialogContent>

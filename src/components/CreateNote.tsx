@@ -5,9 +5,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Pin } from 'lucide-react';
+import { Plus, Pin, FileText, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
+import { Textarea } from '@/components/ui/textarea';
 
 interface CreateNoteProps {
   onSave: (note: { title: string; content: string; isPinned: boolean; isArchived?: boolean }) => void;
@@ -18,6 +19,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isPinned, setIsPinned] = useState(false);
+  const [editMode, setEditMode] = useState<'visual' | 'markdown'>('visual');
   
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -41,6 +43,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       setContent('');
       setIsPinned(false);
       setIsExpanded(false);
+      setEditMode('visual');
     }
   };
 
@@ -53,9 +56,11 @@ export function CreateNote({ onSave }: CreateNoteProps) {
         {!isExpanded ? (
           <div className="flex items-center px-6 py-4 cursor-text" onClick={() => setIsExpanded(true)}>
             <span className="text-muted-foreground/60 font-medium flex-1 text-sm sm:text-base">Take a visual note...</span>
-            <Button variant="ghost" size="icon" className="h-9 w-9 opacity-40 hover:bg-primary/10 hover:text-primary transition-all rounded-full">
-              <Plus className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="icon" className="h-9 w-9 opacity-40 hover:bg-primary/10 hover:text-primary transition-all rounded-full">
+                <Plus className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col note-fade-in">
@@ -67,24 +72,44 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                 className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all"
                 autoFocus
               />
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setIsPinned(!isPinned)}
-                className={cn("h-10 w-10 rounded-full transition-all", isPinned ? "text-primary bg-primary/5" : "text-muted-foreground/40")}
-              >
-                <Pin className={cn("h-5 w-5", isPinned && "fill-current")} />
-              </Button>
+              <div className="flex items-center space-x-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setEditMode(editMode === 'visual' ? 'markdown' : 'visual')}
+                  className="h-8 px-2 text-[10px] font-bold uppercase tracking-tighter opacity-60 hover:opacity-100 transition-all"
+                >
+                  {editMode === 'visual' ? <FileText className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
+                  {editMode === 'visual' ? 'Raw Markdown' : 'Visual Editor'}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setIsPinned(!isPinned)}
+                  className={cn("h-10 w-10 rounded-full transition-all", isPinned ? "text-primary bg-primary/5" : "text-muted-foreground/40")}
+                >
+                  <Pin className={cn("h-5 w-5", isPinned && "fill-current")} />
+                </Button>
+              </div>
             </div>
 
             <div className="px-6 py-2">
-              <RichEditor 
-                content={content} 
-                onChange={setContent}
-                placeholder="Start writing structured Markdown..."
-                className="min-h-[120px]"
-                showToolbar={true}
-              />
+              {editMode === 'visual' ? (
+                <RichEditor 
+                  content={content} 
+                  onChange={setContent}
+                  placeholder="Start writing structured content..."
+                  className="min-h-[120px]"
+                  showToolbar={true}
+                />
+              ) : (
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Edit raw Markdown..."
+                  className="min-h-[120px] border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm resize-none"
+                />
+              )}
             </div>
 
             <div className="flex justify-end px-6 pb-3 pt-2 border-t border-border/10 bg-secondary/5">
