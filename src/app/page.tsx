@@ -29,8 +29,6 @@ export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [currentView, setCurrentView] = useState('all'); 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
-  // Settings
   const [hideEmptyLabels, setHideEmptyLabels] = useState(false);
 
   useEffect(() => {
@@ -55,7 +53,7 @@ export default function Home() {
 
     const noteRef = collection(db, 'users', user.uid, 'notes');
     const newNote = {
-      title: finalTitle,
+      title: finalTitle || 'Untitled Note',
       content: newNoteData.content,
       userId: user.uid,
       updatedAt: Date.now(),

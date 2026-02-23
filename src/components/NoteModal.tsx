@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,7 +17,7 @@ import {
   X as CloseIcon, 
   Bold, 
   Italic, 
-  Heading1, 
+  Heading2, 
   List, 
   Code2, 
   Quote
@@ -39,7 +39,38 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
   const [labels, setLabels] = useState<string[]>([]);
   const [newLabel, setNewLabel] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('preview');
+  const [activeStyles, setActiveStyles] = useState<{ [key: string]: boolean }>({});
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const checkActiveStyles = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const text = textarea.value;
+    const lines = text.split('\n');
+    
+    let currentPos = 0;
+    let currentLine = '';
+    for (const line of lines) {
+      if (start >= currentPos && start <= currentPos + line.length) {
+        currentLine = line;
+        break;
+      }
+      currentPos += line.length + 1;
+    }
+
+    const styles: { [key: string]: boolean } = {
+      bold: text.substring(start - 2, start) === '**' || (text.substring(start - 2, start + 2).includes('**') && text.lastIndexOf('**', start) !== -1),
+      italic: text.substring(start - 1, start) === '_' || (text.substring(start - 1, start + 1).includes('_') && text.lastIndexOf('_', start) !== -1),
+      heading: currentLine.startsWith('## '),
+      list: currentLine.startsWith('- '),
+      code: text.substring(start - 1, start) === '`' || (text.substring(start - 1, start + 1).includes('`')),
+      quote: currentLine.startsWith('> ')
+    };
+    
+    setActiveStyles(styles);
+  }, []);
 
   useEffect(() => {
     if (note) {
@@ -77,15 +108,16 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     const text = textarea.value;
 
     if (suffix) {
-      // Pair-based formatting (Bold, Italic, Inline Code)
+      // Pair-based formatting
       const isInside = text.substring(start - prefix.length, start) === prefix && 
                        text.substring(end, end + suffix.length) === suffix;
 
       if (isInside) {
-        // Toggle OFF: Exit formatting
+        // EXIT: Jump out of markers
         const newPos = end + suffix.length;
         textarea.setSelectionRange(newPos, newPos);
         textarea.focus();
+        checkActiveStyles();
         return;
       }
 
@@ -96,6 +128,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
         setTimeout(() => {
           textarea.setSelectionRange(start + prefix.length, end + prefix.length);
           textarea.focus();
+          checkActiveStyles();
         }, 0);
       } else {
         const newText = text.substring(0, start) + prefix + suffix + text.substring(end);
@@ -104,6 +137,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
         setTimeout(() => {
           textarea.setSelectionRange(newPos, newPos);
           textarea.focus();
+          checkActiveStyles();
         }, 0);
       }
     } else {
@@ -132,6 +166,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           setTimeout(() => {
             textarea.setSelectionRange(newPos, newPos);
             textarea.focus();
+            checkActiveStyles();
           }, 0);
         } else {
           lines[targetLineIndex] = prefix + line;
@@ -141,6 +176,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           setTimeout(() => {
             textarea.setSelectionRange(newPos, newPos);
             textarea.focus();
+            checkActiveStyles();
           }, 0);
         }
       }
@@ -171,39 +207,81 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('**', '**')}><Bold className="h-4 w-4" /></Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={cn("h-8 w-8", activeStyles.bold ? "text-primary bg-primary/10" : "text-muted-foreground")} 
+                      onClick={() => smartMarkdown('**', '**')}
+                    >
+                      <Bold className="h-4 w-4" />
+                    </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Bold (Toggle)</TooltipContent>
+                  <TooltipContent>Bold (Toggle/Exit)</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('_', '_')}><Italic className="h-4 w-4" /></Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={cn("h-8 w-8", activeStyles.italic ? "text-primary bg-primary/10" : "text-muted-foreground")} 
+                      onClick={() => smartMarkdown('_', '_')}
+                    >
+                      <Italic className="h-4 w-4" />
+                    </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Italic (Toggle)</TooltipContent>
+                  <TooltipContent>Italic (Toggle/Exit)</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('## ')}><Heading1 className="h-4 w-4" /></Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={cn("h-8 w-8", activeStyles.heading ? "text-primary bg-primary/10" : "text-muted-foreground")} 
+                      onClick={() => smartMarkdown('## ')}
+                    >
+                      <Heading2 className="h-4 w-4" />
+                    </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Heading (Toggle Line)</TooltipContent>
+                  <TooltipContent>Heading (Line Toggle)</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('- ')}><List className="h-4 w-4" /></Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={cn("h-8 w-8", activeStyles.list ? "text-primary bg-primary/10" : "text-muted-foreground")} 
+                      onClick={() => smartMarkdown('- ')}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
                   </TooltipTrigger>
-                  <TooltipContent>List (Toggle Line)</TooltipContent>
+                  <TooltipContent>List (Line Toggle)</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('`', '`')}><Code2 className="h-4 w-4" /></Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={cn("h-8 w-8", activeStyles.code ? "text-primary bg-primary/10" : "text-muted-foreground")} 
+                      onClick={() => smartMarkdown('`', '`')}
+                    >
+                      <Code2 className="h-4 w-4" />
+                    </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Inline Code (Toggle)</TooltipContent>
+                  <TooltipContent>Inline Code (Toggle/Exit)</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('> ')}><Quote className="h-4 w-4" /></Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={cn("h-8 w-8", activeStyles.quote ? "text-primary bg-primary/10" : "text-muted-foreground")} 
+                      onClick={() => smartMarkdown('> ')}
+                    >
+                      <Quote className="h-4 w-4" />
+                    </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Quote (Toggle Line)</TooltipContent>
+                  <TooltipContent>Quote (Line Toggle)</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
@@ -251,7 +329,13 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                 ref={textareaRef}
                 placeholder="Write your note in Markdown..."
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  checkActiveStyles();
+                }}
+                onClick={checkActiveStyles}
+                onKeyUp={checkActiveStyles}
+                onSelect={checkActiveStyles}
                 className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none resize-none min-h-[400px] px-0 py-0 text-base font-mono leading-relaxed placeholder:text-muted-foreground/20 bg-transparent"
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
