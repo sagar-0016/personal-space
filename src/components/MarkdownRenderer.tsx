@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { cn } from '@/lib/utils';
-import { Check, Copy, Info, Clock, Tag as TagIcon, Layers } from 'lucide-react';
+import { Check, Copy, Info, Clock, Tag as TagIcon, Layers, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { parseNoteFormat } from '@/lib/note-parser';
@@ -32,13 +32,7 @@ const modernDarkTheme: any = {
   'operator': { color: '#ff7b72' },
 };
 
-interface CodeBlockProps {
-  language: string;
-  codeString: string;
-  isDarkMode: boolean;
-}
-
-const CodeBlock = memo(({ language, codeString, isDarkMode }: CodeBlockProps) => {
+const CodeBlock = memo(({ language, codeString, isDarkMode }: { language: string; codeString: string; isDarkMode: boolean }) => {
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -67,7 +61,7 @@ const CodeBlock = memo(({ language, codeString, isDarkMode }: CodeBlockProps) =>
     <div className="my-6 overflow-hidden rounded-xl border border-border/50 bg-muted/30 shadow-sm group relative">
       <div className="flex items-center justify-between px-4 py-2 border-b border-border/50 bg-muted/50">
         <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">
-          {language || 'code'}
+          {language || 'source code'}
         </span>
         <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md" onClick={handleCopy}>
           {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
@@ -79,7 +73,6 @@ const CodeBlock = memo(({ language, codeString, isDarkMode }: CodeBlockProps) =>
           style={activeSyntaxTheme}
           PreTag="div"
           className="!m-0 !p-0 !bg-transparent"
-          customStyle={{ margin: 0, padding: 0, backgroundColor: 'transparent' }}
         >
           {codeString}
         </SyntaxHighlighter>
@@ -119,30 +112,30 @@ export function MarkdownRenderer({ content, className, hideMetadata = false }: M
       className
     )}>
       {parsed.isStructured && !hideMetadata && (
-        <div className="not-prose mb-8 p-4 rounded-xl bg-primary/5 border border-primary/10 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
+        <div className="not-prose mb-8 p-6 rounded-2xl bg-secondary/30 border border-border/50 grid grid-cols-2 sm:grid-cols-4 gap-6 text-[11px] google-shadow-sm">
+          <div className="space-y-1.5">
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5 opacity-60">
               <Info className="h-3 w-3" /> Status
             </span>
-            <Badge variant="outline" className="text-[10px] bg-background capitalize">{parsed.status}</Badge>
+            <Badge variant="outline" className="text-[9px] font-bold bg-background/50 capitalize border-primary/20 text-primary">{parsed.status}</Badge>
           </div>
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
+          <div className="space-y-1.5">
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5 opacity-60">
               <Layers className="h-3 w-3" /> Category
             </span>
-            <p className="font-semibold text-foreground/80">{parsed.category}</p>
+            <p className="font-bold text-foreground/80">{parsed.category}</p>
           </div>
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
-              <Clock className="h-3 w-3" /> Updated
+          <div className="space-y-1.5">
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5 opacity-60">
+              <Clock className="h-3 w-3" /> Recorded
             </span>
-            <p className="font-semibold text-foreground/80">{parsed.updated}</p>
+            <p className="font-bold text-foreground/80">{parsed.created}</p>
           </div>
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
-              <TagIcon className="h-3 w-3" /> Type
+          <div className="space-y-1.5">
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5 opacity-60">
+              <FileText className="h-3 w-3" /> Type
             </span>
-            <p className="font-semibold text-foreground/80">{parsed.type}</p>
+            <p className="font-bold text-foreground/80">{parsed.type}</p>
           </div>
         </div>
       )}
@@ -151,8 +144,10 @@ export function MarkdownRenderer({ content, className, hideMetadata = false }: M
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          p: ({ children }) => <div className="mb-4 leading-relaxed text-foreground/80">{children}</div>,
+          // Use div for paragraphs to avoid hydration nesting issues
+          p: ({ children }) => <div className="mb-4 leading-relaxed text-foreground/85">{children}</div>,
           pre: ({ children }) => <div className="not-prose">{children}</div>,
+          blockquote: ({ children }) => <blockquote className="border-l-4 border-primary/40 bg-primary/5 py-2 px-6 rounded-r-lg italic my-6">{children}</blockquote>,
           input: ({ type, checked }) => {
             if (type === 'checkbox') {
               return (

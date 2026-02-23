@@ -1,8 +1,8 @@
 /**
- * Utility to parse and stringify structured markdown with YAML frontmatter.
+ * Utility to parse and stringify structured markdown with custom metadata blocks.
  * Specifically handles the format:
  * ---
- * title: "..."
+ * ## title: "..."
  * category: "..."
  * tags: ["...", "..."]
  * created: YYYY-MM-DD
@@ -30,9 +30,9 @@ export interface ParsedNote extends NoteMetadata {
 }
 
 export function parseNoteFormat(content: string): ParsedNote {
-  // Regex to match YAML frontmatter block
-  const frontmatterRegex = /^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/;
-  const match = content.match(frontmatterRegex);
+  // Regex to match the metadata block between --- and ---
+  const blockRegex = /^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/;
+  const match = content.match(blockRegex);
 
   const defaultMetadata: NoteMetadata = {
     title: null,
@@ -48,23 +48,18 @@ export function parseNoteFormat(content: string): ParsedNote {
     return { ...defaultMetadata, displayContent: content, isStructured: false };
   }
 
-  const yaml = match[1];
+  const metadataStr = match[1];
   const body = match[2];
 
-  // Verify the required '## Context' header exists in the body
-  if (!body.includes('## Context')) {
-    return { ...defaultMetadata, displayContent: content, isStructured: false };
-  }
-
-  // Extract metadata fields from YAML
-  const titleMatch = yaml.match(/title:\s*["'](.+?)["']/);
-  const categoryMatch = yaml.match(/category:\s*["'](.+?)["']/);
-  const typeMatch = yaml.match(/type:\s*["'](.+?)["']/);
-  const statusMatch = yaml.match(/status:\s*["'](.+?)["']/);
-  const createdMatch = yaml.match(/created:\s*([\d-]+)/);
-  const updatedMatch = yaml.match(/updated:\s*([\d-]+)/);
+  // Extract metadata fields using flexible regex that handles the user's specific '##' and '\' syntax
+  const titleMatch = metadataStr.match(/##\s*title:\s*["'](.+?)["']/);
+  const categoryMatch = metadataStr.match(/category:\s*["'](.+?)["']/);
+  const typeMatch = metadataStr.match(/type:\s*["'](.+?)["']/);
+  const statusMatch = metadataStr.match(/status:\s*["'](.+?)["']/);
+  const createdMatch = metadataStr.match(/created:\s*([\d-]+)/);
+  const updatedMatch = metadataStr.match(/updated:\s*([\d-]+)/);
   
-  const tagsMatch = yaml.match(/tags:\s*\[([\s\S]*?)\]/);
+  const tagsMatch = metadataStr.match(/tags:\s*\[([\s\S]*?)\]/);
   let tags: string[] = [];
   if (tagsMatch) {
     tags = tagsMatch[1]
@@ -87,19 +82,23 @@ export function parseNoteFormat(content: string): ParsedNote {
 }
 
 export function stringifyNote(parsed: ParsedNote): string {
-  const yaml = [
+  const updatedDate = new Date().toISOString().split('T')[0];
+  
+  // Reconstruct the exact format requested: YAML-ish but with user's specific markers
+  const metadataLines = [
     '---',
-    `title: "${parsed.title || 'Untitled Note'}"`,
-    `category: "${parsed.category}"`,
-    `tags: [${parsed.tags.map(t => `"${t}"`).join(', ')}]`,
-    `created: ${parsed.created}`,
-    `updated: ${new Date().toISOString().split('T')[0]}`,
-    `type: "${parsed.type}"`,
+    '',
+    `## title: "${parsed.title || 'Untitled Note'}"\\`,
+    `category: "${parsed.category}"\\`,
+    `tags: [${parsed.tags.map(t => `"${t}"`).join(', ')}]\\`,
+    `created: ${parsed.created}\\`,
+    `updated: ${updatedDate}\\`,
+    `type: "${parsed.type}"\\`,
     `status: "${parsed.status}"`,
     '---',
     '',
-    parsed.displayContent.startsWith('## Context') ? parsed.displayContent : `## Context\n\n${parsed.displayContent}`
-  ].join('\n');
+    parsed.displayContent.includes('## Context') ? parsed.displayContent : `## Context\n\n${parsed.displayContent}`
+  ];
   
-  return yaml;
+  return metadataLines.join('\n');
 }
