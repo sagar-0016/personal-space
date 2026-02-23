@@ -9,19 +9,16 @@ import { Button } from '@/components/ui/button';
 import { 
   Plus, 
   Pin, 
-  UserPlus, 
-  Palette, 
-  Image as ImageIcon, 
   Archive, 
-  MoreVertical, 
   Bold,
+  Italic,
   Heading2,
   List,
-  Code2
+  Code2,
+  Quote
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useToast } from '@/hooks/use-toast';
 
 interface CreateNoteProps {
   onSave: (note: { title: string; content: string; isPinned: boolean; isArchived?: boolean }) => void;
@@ -33,7 +30,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   const [content, setContent] = useState('');
   const [isPinned, setIsPinned] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -57,8 +54,49 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     }
   };
 
-  const insertMarkdown = (prefix: string) => {
-    setContent(prev => prev + prefix);
+  const smartMarkdown = (prefix: string, suffix: string = '') => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+
+    // Check if we are currently "inside" this formatting block to toggle it off
+    const isInside = suffix && 
+                     text.substring(start - prefix.length, start) === prefix && 
+                     text.substring(end, end + suffix.length) === suffix;
+
+    if (isInside) {
+      // Toggle OFF: Move cursor past the suffix
+      const newPos = end + suffix.length;
+      textarea.setSelectionRange(newPos, newPos);
+      textarea.focus();
+      return;
+    }
+
+    if (start !== end) {
+      // Wrap selection
+      const selection = text.substring(start, end);
+      const newText = text.substring(0, start) + prefix + selection + suffix + text.substring(end);
+      setContent(newText);
+      
+      // Set selection after update
+      setTimeout(() => {
+        textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+        textarea.focus();
+      }, 0);
+    } else {
+      // Toggle ON: Insert markers and put cursor in middle
+      const newText = text.substring(0, start) + prefix + suffix + text.substring(end);
+      setContent(newText);
+      
+      const newPos = start + prefix.length;
+      setTimeout(() => {
+        textarea.setSelectionRange(newPos, newPos);
+        textarea.focus();
+      }, 0);
+    }
   };
 
   return (
@@ -94,6 +132,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
 
             <div className="px-6 py-2">
               <Textarea
+                ref={textareaRef}
                 placeholder="Take a note in Markdown..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
@@ -109,12 +148,49 @@ export function CreateNote({ onSave }: CreateNoteProps) {
             <div className="flex items-center justify-between px-4 py-3 border-t border-border/10">
               <div className="flex items-center space-x-0.5">
                 <TooltipProvider>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => insertMarkdown('**')}><Bold className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => insertMarkdown('## ')}><Heading2 className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => insertMarkdown('- ')}><List className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => insertMarkdown('```\n\n```')}><Code2 className="h-4 w-4" /></Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => smartMarkdown('**', '**')}><Bold className="h-4 w-4" /></Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Bold</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => smartMarkdown('_', '_')}><Italic className="h-4 w-4" /></Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Italic</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => smartMarkdown('## ')}><Heading2 className="h-4 w-4" /></Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Heading</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => smartMarkdown('- ')}><List className="h-4 w-4" /></Button>
+                    </TooltipTrigger>
+                    <TooltipContent>List</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => smartMarkdown('```\n', '\n```')}><Code2 className="h-4 w-4" /></Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Code Block</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => smartMarkdown('> ')}><Quote className="h-4 w-4" /></Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Quote</TooltipContent>
+                  </Tooltip>
                   <div className="w-px h-4 bg-border mx-2" />
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => handleSave({ isArchived: true })}><Archive className="h-4 w-4" /></Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60" onClick={() => handleSave({ isArchived: true })}><Archive className="h-4 w-4" /></Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Archive</TooltipContent>
+                  </Tooltip>
                 </TooltipProvider>
               </div>
               <Button variant="ghost" onClick={() => (handleSave(), setIsExpanded(false))} className="font-bold text-sm px-6 hover:bg-accent/20">Close</Button>

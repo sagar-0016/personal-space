@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,10 +13,7 @@ import {
   Eye, 
   Edit2, 
   X, 
-  Terminal, 
-  Layout, 
   Tag, 
-  Plus, 
   X as CloseIcon, 
   Bold, 
   Italic, 
@@ -26,7 +23,6 @@ import {
   Quote
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { parseNoteFormat } from '@/lib/note-parser';
 
@@ -43,7 +39,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
   const [labels, setLabels] = useState<string[]>([]);
   const [newLabel, setNewLabel] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('preview');
-  const [highContrastCode, setHighContrastCode] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (note) {
@@ -70,20 +66,51 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     onClose();
   };
 
-  const insertMarkdown = (prefix: string, suffix: string = '') => {
-    const textarea = document.querySelector('textarea');
+  const smartMarkdown = (prefix: string, suffix: string = '') => {
+    const textarea = textareaRef.current;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = textarea.value;
-    const before = text.substring(0, start);
-    const selection = text.substring(start, end);
-    const after = text.substring(end);
 
-    const newContent = before + prefix + (selection || 'text') + suffix + after;
-    setContent(newContent);
-    setActiveTab('edit');
+    // Check if we are currently "inside" this formatting block to toggle it off
+    const isInside = suffix && 
+                     text.substring(start - prefix.length, start) === prefix && 
+                     text.substring(end, end + suffix.length) === suffix;
+
+    if (isInside) {
+      // Toggle OFF: Move cursor past the suffix
+      const newPos = end + suffix.length;
+      textarea.setSelectionRange(newPos, newPos);
+      textarea.focus();
+      return;
+    }
+
+    if (start !== end) {
+      // Wrap selection
+      const selection = text.substring(start, end);
+      const newText = text.substring(0, start) + prefix + selection + suffix + text.substring(end);
+      setContent(newText);
+      
+      // Set selection after update
+      setTimeout(() => {
+        textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+        textarea.focus();
+      }, 0);
+    } else {
+      // Toggle ON: Insert markers and put cursor in middle
+      const newText = text.substring(0, start) + prefix + suffix + text.substring(end);
+      setContent(newText);
+      
+      const newPos = start + prefix.length;
+      setTimeout(() => {
+        textarea.setSelectionRange(newPos, newPos);
+        textarea.focus();
+      }, 0);
+    }
+    
+    if (activeTab !== 'edit') setActiveTab('edit');
   };
 
   return (
@@ -108,12 +135,42 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
             
             <div className="flex items-center space-x-1">
               <TooltipProvider>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('**', '**')}><Bold className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('_', '_')}><Italic className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('## ')}><Heading1 className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('- ')}><List className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('```\n', '\n```')}><Code2 className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('> ')}><Quote className="h-4 w-4" /></Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('**', '**')}><Bold className="h-4 w-4" /></Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Bold</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('_', '_')}><Italic className="h-4 w-4" /></Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Italic</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('## ')}><Heading1 className="h-4 w-4" /></Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Heading</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('- ')}><List className="h-4 w-4" /></Button>
+                  </TooltipTrigger>
+                  <TooltipContent>List</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('```\n', '\n```')}><Code2 className="h-4 w-4" /></Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Code Block</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('> ')}><Quote className="h-4 w-4" /></Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Quote</TooltipContent>
+                </Tooltip>
               </TooltipProvider>
             </div>
           </div>
@@ -157,6 +214,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           <div className="px-6 min-h-[400px]">
             {activeTab === 'edit' ? (
               <Textarea
+                ref={textareaRef}
                 placeholder="Write your note in Markdown..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
@@ -169,7 +227,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
               />
             ) : (
               <div className="py-2">
-                <MarkdownRenderer content={content} highContrastCode={highContrastCode} />
+                <MarkdownRenderer content={content} />
               </div>
             )}
           </div>
