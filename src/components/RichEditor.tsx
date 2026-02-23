@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, memo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper, NodeViewContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -50,11 +50,11 @@ import {
 const lowlight = createLowlight(common);
 
 /**
- * Custom NodeView for Code Blocks to match the Home Screen Preview exactly.
+ * NodeView for Code Blocks to match the Dashboard visually.
  */
 const CodeBlockComponent = ({ node, updateAttributes }: any) => {
   const [copied, setCopied] = useState(false);
-  const language = node.attrs.language || 'source code';
+  const language = node.attrs.language || 'text';
 
   const handleCopy = () => {
     navigator.clipboard.writeText(node.textContent);
@@ -66,22 +66,10 @@ const CodeBlockComponent = ({ node, updateAttributes }: any) => {
     <NodeViewWrapper className="not-prose my-6 overflow-hidden rounded-xl border border-white/5 bg-[#0d0d0d] shadow-2xl group relative">
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/5">
         <span className="text-[9px] uppercase font-black tracking-[0.2em] text-white/30">
-          {language === 'source code' ? 'SOURCE CODE' : language.toUpperCase()}
+          SOURCE CODE
         </span>
-        <div className="flex items-center space-x-1">
-          <select 
-            className="text-[9px] uppercase font-bold bg-transparent text-white/20 outline-none cursor-pointer hover:text-white/40 transition-colors mr-2"
-            value={language}
-            onChange={e => updateAttributes({ language: e.target.value })}
-          >
-            <option value="javascript">JS</option>
-            <option value="typescript">TS</option>
-            <option value="html">HTML</option>
-            <option value="css">CSS</option>
-            <option value="python">PY</option>
-            <option value="markdown">MD</option>
-            <option value="source code">AUTO</option>
-          </select>
+        <div className="flex items-center space-x-2">
+          <span className="text-[9px] uppercase font-bold text-white/20">{language}</span>
           <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-white/10" onClick={handleCopy}>
             {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3 text-white/20" />}
           </Button>
@@ -132,8 +120,6 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
         html: true,
         tightLists: true,
         bulletListMarker: '-',
-        linkify: true,
-        breaks: true,
       }),
     ],
     content,
@@ -147,9 +133,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
           "prose prose-sm sm:prose-base dark:prose-invert max-w-none focus:outline-none min-h-[200px] py-4",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground/90",
           "prose-p:leading-relaxed prose-p:text-foreground/80",
-          "prose-blockquote:border-l-4 prose-blockquote:border-primary/40 prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic",
-          // Inline Code Style
-          "prose-code:bg-[#202124] prose-code:text-[#e8eaed] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:text-[0.9em] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none dark:prose-code:bg-[#1a1b1e] dark:prose-code:text-[#9aa0a6]",
+          "prose-code:bg-[#202124] prose-code:text-[#e8eaed] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:text-[0.9em] prose-code:before:content-none prose-code:after:content-none",
           className
         ),
       },
@@ -182,12 +166,11 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
             variant="ghost"
             size="icon"
             className={cn(
-              "h-8 w-8 rounded-md transition-all duration-200",
-              active ? "bg-primary/15 text-primary shadow-inner" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              "h-8 w-8 rounded-md transition-all",
+              active ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-secondary"
             )}
             onClick={(e) => {
               e.preventDefault();
-              e.stopPropagation();
               onClick();
             }}
           >
@@ -280,10 +263,10 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48 google-shadow border-none rounded-xl p-1 z-[110]">
               <DropdownMenuItem onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
-                <TableIcon className="h-4 w-4 mr-2" /> Comparison Table
+                <TableIcon className="h-4 w-4 mr-2" /> Insert Table
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
-                <Terminal className="h-4 w-4 mr-2" /> Fenced Code Block
+                <Terminal className="h-4 w-4 mr-2" /> Code Block Card
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {
                 const url = window.prompt('Enter image URL:');
@@ -292,7 +275,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
                 <ImageIcon className="h-4 w-4 mr-2" /> Insert Image
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => editor.chain().focus().setHorizontalRule().run()}>
-                <Minus className="h-4 w-4 mr-2" /> Horizontal Rule
+                <Minus className="h-4 w-4 mr-2" /> Divider
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -301,7 +284,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
           <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={Redo} tooltip="Redo" />
         </div>
       )}
-      <EditorContent editor={editor} className="flex-1" />
+      <EditorContent editor={editor} className="flex-1 px-4" />
     </div>
   );
 }

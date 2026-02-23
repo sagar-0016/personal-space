@@ -1,6 +1,5 @@
 /**
- * Utility to parse and stringify structured markdown with custom metadata blocks.
- * Focused on Title and Tags as primary structured data points.
+ * Simplified note parser to remove "filtering" logic while we stabilize visuals.
  */
 
 export interface NoteMetadata {
@@ -19,77 +18,21 @@ export interface ParsedNote extends NoteMetadata {
 }
 
 export function parseNoteFormat(content: string): ParsedNote {
-  // Regex to match the metadata block between --- and ---
-  const blockRegex = /^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/;
-  const match = content.match(blockRegex);
-
-  const defaultMetadata: NoteMetadata = {
+  // For now, return raw content as requested to "remove the filter"
+  return {
     title: null,
     category: 'tech',
     tags: [],
     created: new Date().toISOString().split('T')[0],
     updated: new Date().toISOString().split('T')[0],
     type: 'note',
-    status: 'draft'
-  };
-
-  if (!match) {
-    return { ...defaultMetadata, displayContent: content, isStructured: false };
-  }
-
-  const metadataStr = match[1];
-  const body = match[2];
-
-  // Extract title and tags respecting the hierarchy format
-  const titleMatch = metadataStr.match(/##\s*title:\s*["'](.+?)["']/);
-  const tagsMatch = metadataStr.match(/tags:\s*\[([\s\S]*?)\]/);
-  
-  let tags: string[] = [];
-  if (tagsMatch) {
-    tags = tagsMatch[1]
-      .split(',')
-      .map(tag => tag.trim().replace(/["']/g, '').replace(/\\$/, ''))
-      .filter(tag => tag.length > 0);
-  }
-
-  // Preserve other fields for pinpointing if needed
-  const categoryMatch = metadataStr.match(/category:\s*["'](.+?)["']/);
-  const typeMatch = metadataStr.match(/type:\s*["'](.+?)["']/);
-  const statusMatch = metadataStr.match(/status:\s*["'](.+?)["']/);
-  const createdMatch = metadataStr.match(/created:\s*([\d-]+)/);
-  const updatedMatch = metadataStr.match(/updated:\s*([\d-]+)/);
-
-  return {
-    title: titleMatch ? titleMatch[1] : null,
-    category: categoryMatch ? categoryMatch[1] : 'tech',
-    tags: tags,
-    created: createdMatch ? createdMatch[1] : defaultMetadata.created,
-    updated: updatedMatch ? updatedMatch[1] : defaultMetadata.updated,
-    type: typeMatch ? typeMatch[1] : 'note',
-    status: statusMatch ? statusMatch[1] : 'draft',
-    displayContent: body.trim(),
-    isStructured: true
+    status: 'draft',
+    displayContent: content,
+    isStructured: false
   };
 }
 
 export function stringifyNote(parsed: ParsedNote): string {
-  const updatedDate = new Date().toISOString().split('T')[0];
-  
-  // Reconstruct metadata block with trailing backslashes for exact hierarchy
-  const metadataLines = [
-    '---',
-    '',
-    `## title: "${parsed.title || 'Untitled Note'}"\\`,
-    `category: "${parsed.category}"\\`,
-    `tags: [${parsed.tags.map(t => `"${t}"`).join(', ')}]\\`,
-    `created: ${parsed.created}\\`,
-    `updated: ${updatedDate}\\`,
-    `type: "${parsed.type}"\\`,
-    `status: "${parsed.status}"`,
-    '---',
-    '',
-    parsed.displayContent.startsWith('## Context') ? parsed.displayContent : `## Context\n\n${parsed.displayContent}`
-  ];
-  
-  return metadataLines.join('\n');
+  // Just return the content for now
+  return parsed.displayContent;
 }
