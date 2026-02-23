@@ -137,20 +137,22 @@ export default function Home() {
   };
 
   const allFilteredNotes = (notes || []).filter(n => {
-    const matchesSearch = n.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         n.content.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (n.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         (n.content || '').toLowerCase().includes(searchQuery.toLowerCase());
     
     if (!matchesSearch) return false;
 
-    // Filter logic: "all" view excludes archived and deleted
+    // Filter logic: "all" view strictly excludes archived and deleted
     if (currentView === 'all') return !n.isDeleted && !n.isArchived;
     if (currentView === 'untagged') return !n.isArchived && !n.isDeleted && (!n.labels || n.labels.length === 0);
-    if (currentView === 'archive') return n.isArchived && !n.isDeleted;
-    if (currentView === 'trash') return n.isDeleted;
+    if (currentView === 'archive') return !!n.isArchived && !n.isDeleted;
+    if (currentView === 'trash') return !!n.isDeleted;
+    
     if (currentView.startsWith('label:')) {
       const label = currentView.split(':')[1];
-      return n.labels?.includes(label) && !n.isDeleted;
+      return n.labels?.includes(label) && !n.isDeleted && !n.isArchived;
     }
+    
     return !n.isArchived && !n.isDeleted;
   }).sort((a, b) => b.updatedAt - a.updatedAt);
 
@@ -208,7 +210,6 @@ export default function Home() {
           />
           
           <SidebarInset className="flex-1 overflow-y-auto bg-transparent">
-            {/* Added significant pb-32 to provide breathing room at the bottom */}
             <main className="container mx-auto pt-8 pb-32">
               {(currentView === 'all' || currentView === 'untagged') && <CreateNote onSave={handleCreateNote} />}
 

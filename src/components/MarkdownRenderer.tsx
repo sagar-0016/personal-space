@@ -113,20 +113,19 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
     // We process only the relevant content part
     const targetContent = parsed.isStructured ? parsed.displayContent : content;
     
-    // REDEFINED INDEX LOGIC: 
-    // We split the content by code blocks and other non-renderable areas 
-    // to ensure the toggle logic exactly matches the ReactMarkdown renderer.
+    // Split content by code blocks to ensure we don't accidentally count [ ] inside code
     const segments = targetContent.split(/(```[\s\S]*?```)/g);
     let globalMatchIndex = 0;
     let found = false;
 
-    // GFM-compliant regex for task list markers
+    // Strict GFM checkbox regex: must be at start of line or bullet list
     const checkboxRegex = /^(\s*[-*+]|\s*\d+\.)\s+\[([ xX])\]/gm;
 
     const updatedSegments = segments.map(segment => {
-      // If we already found and toggled the target, or if this is a code block, skip processing
+      // If we already found the target, or if this is a code block, return as is
       if (found || segment.startsWith('```')) return segment;
 
+      // Replace matches within this "renderable" segment
       return segment.replace(checkboxRegex, (match, prefix, char) => {
         if (globalMatchIndex === targetIndex) {
           found = true;
@@ -141,7 +140,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
 
     const newTargetContent = updatedSegments.join('');
 
-    // Reconstruct the full note if it was structured
+    // Reconstruct the full note if it was structured (preserving the YAML)
     if (parsed.isStructured) {
       const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n\n/);
       const prefix = frontmatterMatch ? frontmatterMatch[0] : '';
@@ -177,22 +176,21 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
                 <input
                   type="checkbox"
                   checked={checked}
-                  onChange={() => {}} // Satisfy React's controlled component requirement
+                  onChange={() => {}} // Controlled component dummy handler
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
                     
-                    // Debug notification to verify indexing
+                    // Show exact data for the click
                     toast({
-                      title: "Task Toggled",
-                      description: `Index: ${currentIndex} | State: ${checked ? 'Checked' : 'Unchecked'}`,
+                      title: "Checkbox Clicked",
+                      description: `Visual Index: ${currentIndex} | State: ${checked ? 'Checked' : 'Unchecked'}`,
                     });
 
                     if (onContentChange) {
                       handleToggleCheckbox(currentIndex);
                     }
                   }}
-                  readOnly={!onContentChange}
                   className={cn(
                     "cursor-pointer h-4 w-4 rounded border-primary text-primary focus:ring-primary mr-2 align-middle accent-primary transition-all active:scale-90",
                     !onContentChange && "cursor-default opacity-70"
