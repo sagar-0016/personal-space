@@ -1,19 +1,13 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { cn } from '@/lib/utils';
-
-const codeTheme: any = {
-  'code[class*="language-"]': { color: '#e1e4e8', fontFamily: 'monospace', lineHeight: '1.6' },
-  'pre[class*="language-"]': { color: '#e1e4e8', background: '#0d0d0d', padding: '1rem', borderRadius: '0.5rem' },
-  'comment': { color: '#8b949e', fontStyle: 'italic' },
-  'keyword': { color: '#ff7b72', fontWeight: 'bold' },
-  'string': { color: '#a5d6ff' },
-};
+import { Terminal, Copy, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface MarkdownRendererProps {
   content: string;
@@ -50,21 +44,29 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             
             if (inline) {
               return (
-                <code className="bg-secondary px-1.5 py-0.5 rounded-md font-mono text-[0.9em]" {...props}>
+                <code className="bg-[#202124] text-primary px-1.5 py-0.5 rounded-md font-mono text-[0.9em] font-bold" {...props}>
                   {children}
                 </code>
               );
             }
 
             return (
-              <SyntaxHighlighter
-                language={language || 'text'}
-                style={codeTheme}
-                PreTag="div"
-                className="rounded-lg my-4"
-              >
-                {codeString}
-              </SyntaxHighlighter>
+              <div className="relative my-8 group/code-render">
+                <div className="absolute -top-3 left-4 px-3 py-1 bg-[#1a1b1e] border border-white/10 rounded-md z-10 flex items-center space-x-2 shadow-xl">
+                  <Terminal className="h-3 w-3 text-primary" />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/90">Source Code</span>
+                </div>
+                
+                <div className="relative rounded-xl overflow-hidden border border-white/5 bg-[#0d0d0d] shadow-2xl">
+                  <div className="absolute top-3 right-3 opacity-0 group-hover/code-render:opacity-100 transition-opacity">
+                    <CopyButton text={codeString} />
+                  </div>
+                  
+                  <pre className="p-6 pt-8 font-mono text-sm leading-relaxed overflow-x-auto text-[#e1e4e8]">
+                    <code>{codeString}</code>
+                  </pre>
+                </div>
+              </div>
             );
           }
         }}
@@ -72,5 +74,27 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
         {content}
       </ReactMarkdown>
     </div>
+  );
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleCopy}
+      className="h-7 w-7 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-md border border-white/5"
+    >
+      {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
+    </Button>
   );
 }

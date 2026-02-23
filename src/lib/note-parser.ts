@@ -1,6 +1,7 @@
+
 /**
- * Note parser that extracts title and tags from a YAML-like metadata block.
- * Strictly preserves the rest of the metadata and hierarchy.
+ * Note parser that extracts title and tags from a YAML metadata block.
+ * Strictly preserves the rest of the metadata hierarchy.
  */
 
 export interface NoteMetadata {
@@ -27,10 +28,8 @@ export function parseNoteFormat(content: string): ParsedNote {
     const rawMetadataContent = match[1];
     const displayContent = content.replace(metadataRegex, '').trim();
     
-    // Extract title: "Value" or title: Value
+    // Improved extraction logic to handle various YAML-like formats
     const titleMatch = rawMetadataContent.match(/title:\s*(?:"(.*?)"|(.*))/);
-    
-    // Extract tags: ["v1", "v2"] or [v1, v2]
     const tagsMatch = rawMetadataContent.match(/tags:\s*\[(.*?)\]/);
     
     const title = titleMatch ? (titleMatch[1] || titleMatch[2]?.trim()) : null;

@@ -1,7 +1,8 @@
+
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
@@ -33,14 +34,53 @@ import {
   Redo,
   Table as TableIcon,
   Database,
-  Info
+  Info,
+  Copy,
+  Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { Textarea } from '@/components/ui/textarea';
 
 const lowlight = createLowlight(common);
+
+// High-Fidelity Code Block Component for the Visual Editor
+const CodeBlockComponent = ({ node, updateAttributes, extension }: any) => {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText(node.textContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <NodeViewWrapper className="relative my-6 group/code">
+      <div className="absolute -top-3 left-4 px-3 py-1 bg-[#1a1b1e] border border-white/10 rounded-md z-10 flex items-center space-x-2 shadow-xl">
+        <Terminal className="h-3 w-3 text-primary" />
+        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/90">Source Code</span>
+      </div>
+      
+      <div className="relative rounded-xl overflow-hidden border border-white/5 bg-[#0d0d0d] shadow-2xl">
+        <div className="absolute top-3 right-3 opacity-0 group-hover/code:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCopy}
+            className="h-7 w-7 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-md border border-white/5"
+          >
+            {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
+          </Button>
+        </div>
+        
+        <pre className="p-6 pt-8 font-mono text-sm leading-relaxed overflow-x-auto text-[#e1e4e8]">
+          <code className="outline-none block min-h-[1em]">{node.textContent}</code>
+        </pre>
+      </div>
+    </NodeViewWrapper>
+  );
+};
 
 interface RichEditorProps {
   content: string;
@@ -80,7 +120,11 @@ export function RichEditor({
       TableHeader,
       TableCell,
       Image,
-      CodeBlockLowlight.configure({ lowlight }),
+      CodeBlockLowlight.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(CodeBlockComponent);
+        },
+      }).configure({ lowlight }),
       Link.configure({ openOnClick: false }),
       Markdown.configure({
         html: true,
@@ -232,8 +276,8 @@ export function RichEditor({
           
           <div className="w-px h-4 bg-border mx-1" />
           
-          <Popover modal={false}>
-            <PopoverTrigger asChild>
+          <PopoverPrimitive.Root modal={false}>
+            <PopoverPrimitive.Trigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
@@ -242,10 +286,13 @@ export function RichEditor({
                 <Database className="h-3.5 w-3.5 mr-1.5" />
                 Metadata
               </Button>
-            </PopoverTrigger>
-            <PopoverContent 
-              className="w-[450px] p-4 bg-card shadow-2xl border-primary/20 z-[200] pointer-events-auto" 
+            </PopoverPrimitive.Trigger>
+            
+            {/* NO PORTAL HERE: This keeps the metadata window inside the Dialog focus tree */}
+            <PopoverPrimitive.Content 
               align="end"
+              sideOffset={5}
+              className="w-[450px] p-4 bg-card shadow-2xl border border-primary/20 z-[200] rounded-xl pointer-events-auto outline-none"
               onPointerDown={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -272,18 +319,18 @@ export function RichEditor({
                     onChange={(e) => onMetadataChange?.(e.target.value)}
                     autoFocus
                     placeholder={`title: "My Note"\ntags: ["tag1"]\n...`}
-                    className="min-h-[200px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1 leading-relaxed"
+                    className="min-h-[200px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1 leading-relaxed cursor-text"
                   />
                   <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity pointer-events-none">
                     <code className="text-[9px] bg-background px-1 rounded">YAML</code>
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground italic leading-tight">
-                  Formatting: The parser identifies the title and tags fields from this block.
+                  The parser identifies the title and tags fields from this block.
                 </p>
               </div>
-            </PopoverContent>
-          </Popover>
+            </PopoverPrimitive.Content>
+          </PopoverPrimitive.Root>
 
           <div className="flex-1" />
           <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} tooltip="Undo" />
