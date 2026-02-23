@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -239,6 +240,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                 onChange={setContent} 
                 className="min-h-[500px]"
                 placeholder="## Context\nStart writing your analytical thoughts here..."
+                showToolbar={true}
               />
             ) : (
               <Textarea

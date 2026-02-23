@@ -1,3 +1,4 @@
+
 /**
  * Utility to parse and stringify structured markdown with custom metadata blocks.
  * Designed to strictly adhere to the technical hierarchy requested.
@@ -75,6 +76,7 @@ export function stringifyNote(parsed: ParsedNote): string {
   const updatedDate = new Date().toISOString().split('T')[0];
   
   // Reconstruct the exact format with backslashes for the metadata block
+  // Ensuring the title and tags are properly enclosed and escaped
   const metadataLines = [
     '---',
     '',

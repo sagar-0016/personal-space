@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -98,10 +99,11 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground/90",
           "prose-p:leading-relaxed prose-p:text-foreground/80",
           "prose-blockquote:border-l-4 prose-blockquote:border-primary/40 prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic",
-          // INLINE CODE: Matching Home screen badge style
+          // INLINE CODE: Matching Home screen badge style exactly
           "prose-code:bg-[#202124] prose-code:text-[#e8eaed] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:text-[0.9em] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none dark:prose-code:bg-[#1a1b1e] dark:prose-code:text-[#9aa0a6]",
-          // FENCED CODE BLOCK: High-fidelity "SOURCE CODE" card
-          "prose-pre:bg-[#0d0d0d] prose-pre:border prose-pre:border-white/5 prose-pre:rounded-xl prose-pre:p-0 prose-pre:overflow-hidden prose-pre:shadow-2xl",
+          // FENCED CODE BLOCK: High-fidelity "SOURCE CODE" card mimicking dashboard rendering
+          "prose-pre:bg-[#0d0d0d] prose-pre:border prose-pre:border-white/5 prose-pre:rounded-xl prose-pre:p-0 prose-pre:overflow-hidden prose-pre:shadow-2xl prose-pre:relative prose-pre:mt-6 prose-pre:mb-6",
+          // Injected "SOURCE CODE" header text via CSS pseudo-element
           "prose-pre:before:content-['SOURCE_CODE'] prose-pre:before:block prose-pre:before:px-4 prose-pre:before:py-2 prose-pre:before:border-b prose-pre:before:border-white/5 prose-pre:before:bg-white/5 prose-pre:before:text-[9px] prose-pre:before:font-black prose-pre:before:tracking-[0.2em] prose-pre:before:text-white/20",
           "prose-pre:code:block prose-pre:code:p-4 prose-pre:code:bg-transparent prose-pre:code:text-white/80 prose-pre:code:text-[13px] prose-pre:code:leading-relaxed",
           "prose-img:rounded-xl prose-img:google-shadow",
