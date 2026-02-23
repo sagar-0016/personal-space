@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -16,10 +16,20 @@ import {
   X as CloseIcon, 
   Bold, 
   Italic, 
-  Heading2, 
-  List, 
-  Code2, 
-  Quote
+  Strikethrough,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  CheckSquare,
+  Minus,
+  Quote,
+  Code2,
+  Terminal,
+  Table,
+  Image as ImageIcon,
+  ChevronDownSquare
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
@@ -63,21 +73,24 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     const isInsidePair = (marker: string) => {
       const before = text.substring(0, start);
       const after = text.substring(start);
-      const countBefore = (before.match(new RegExp(marker.replace(/[*_`]/g, '\\$&'), 'g')) || []).length;
+      const countBefore = (before.match(new RegExp(marker.replace(/[*_~`]/g, '\\$&'), 'g')) || []).length;
       const hasAfter = after.includes(marker);
       return countBefore % 2 !== 0 && hasAfter;
     };
 
-    const styles: { [key: string]: boolean } = {
+    setActiveStyles({
       bold: isInsidePair('**'),
       italic: isInsidePair('_'),
-      heading: currentLine.startsWith('## '),
-      list: currentLine.startsWith('- '),
+      strikethrough: isInsidePair('~~'),
       code: isInsidePair('`'),
+      h1: currentLine.startsWith('# '),
+      h2: currentLine.startsWith('## '),
+      h3: currentLine.startsWith('### '),
+      list: currentLine.startsWith('- '),
+      ordered: /^\d+\.\s/.test(currentLine),
+      tasks: currentLine.startsWith('- [ ] ') || currentLine.startsWith('- [x] '),
       quote: currentLine.startsWith('> ')
-    };
-    
-    setActiveStyles(styles);
+    });
   }, []);
 
   useEffect(() => {
@@ -106,22 +119,20 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     onClose();
   };
 
-  const smartMarkdown = (prefix: string, suffix: string = '') => {
+  const smartMarkdown = (prefix: string, suffix: string = '', isLine = false) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
-
     if (activeTab !== 'edit') setActiveTab('edit');
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = textarea.value;
 
-    if (suffix) {
+    if (!isLine) {
       const isInside = text.substring(start - prefix.length, start) === prefix && 
                        text.substring(end, end + suffix.length) === suffix;
 
       if (isInside) {
-        // Toggle off: Jump out of markers
         const newPos = end + suffix.length;
         textarea.setSelectionRange(newPos, newPos);
         textarea.focus();
@@ -129,66 +140,48 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
         return;
       }
 
-      if (start !== end) {
-        const selection = text.substring(start, end);
-        const newText = text.substring(0, start) + prefix + selection + suffix + text.substring(end);
-        setContent(newText);
-        setTimeout(() => {
-          textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-          textarea.focus();
-          checkActiveStyles();
-        }, 0);
-      } else {
-        const newText = text.substring(0, start) + prefix + suffix + text.substring(end);
-        setContent(newText);
-        const newPos = start + prefix.length;
-        setTimeout(() => {
-          textarea.setSelectionRange(newPos, newPos);
-          textarea.focus();
-          checkActiveStyles();
-        }, 0);
-      }
+      const newText = text.substring(0, start) + prefix + text.substring(start, end) + suffix + text.substring(end);
+      setContent(newText);
+      const newPos = start + prefix.length;
+      setTimeout(() => { textarea.setSelectionRange(newPos, newPos + (end - start)); textarea.focus(); checkActiveStyles(); }, 0);
     } else {
-      // Line-based toggle
       const lines = text.split('\n');
       let currentPos = 0;
-      let targetLineIndex = -1;
-
+      let targetIdx = -1;
       for (let i = 0; i < lines.length; i++) {
-        const lineStart = currentPos;
-        const lineEnd = currentPos + lines[i].length;
-        if (start >= lineStart && start <= lineEnd + 1) {
-          targetLineIndex = i;
-          break;
-        }
+        if (start >= currentPos && start <= currentPos + lines[i].length + 1) { targetIdx = i; break; }
         currentPos += lines[i].length + 1;
       }
 
-      if (targetLineIndex !== -1) {
-        const line = lines[targetLineIndex];
+      if (targetIdx !== -1) {
+        const line = lines[targetIdx];
         if (line.startsWith(prefix)) {
-          lines[targetLineIndex] = line.substring(prefix.length);
+          lines[targetIdx] = line.substring(prefix.length);
           const newText = lines.join('\n');
           setContent(newText);
           const newPos = Math.max(0, start - prefix.length);
-          setTimeout(() => {
-            textarea.setSelectionRange(newPos, newPos);
-            textarea.focus();
-            checkActiveStyles();
-          }, 0);
+          setTimeout(() => { textarea.setSelectionRange(newPos, newPos); textarea.focus(); checkActiveStyles(); }, 0);
         } else {
-          lines[targetLineIndex] = prefix + line;
+          lines[targetIdx] = prefix + line;
           const newText = lines.join('\n');
           setContent(newText);
           const newPos = start + prefix.length;
-          setTimeout(() => {
-            textarea.setSelectionRange(newPos, newPos);
-            textarea.focus();
-            checkActiveStyles();
-          }, 0);
+          setTimeout(() => { textarea.setSelectionRange(newPos, newPos); textarea.focus(); checkActiveStyles(); }, 0);
         }
       }
     }
+  };
+
+  const insertTemplate = (template: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    if (activeTab !== 'edit') setActiveTab('edit');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const newText = text.substring(0, start) + "\n" + template + "\n" + text.substring(end);
+    setContent(newText);
+    textarea.focus();
   };
 
   return (
@@ -211,86 +204,22 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
             
             <div className="h-6 w-px bg-border hidden sm:block" />
             
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-0.5 flex-wrap max-w-md">
               <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className={cn("h-8 w-8 transition-colors", activeStyles.bold ? "text-primary bg-primary/10" : "text-muted-foreground")} 
-                      onClick={() => smartMarkdown('**', '**')}
-                    >
-                      <Bold className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Bold (Toggle/Exit)</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className={cn("h-8 w-8 transition-colors", activeStyles.italic ? "text-primary bg-primary/10" : "text-muted-foreground")} 
-                      onClick={() => smartMarkdown('_', '_')}
-                    >
-                      <Italic className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Italic (Toggle/Exit)</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className={cn("h-8 w-8 transition-colors", activeStyles.heading ? "text-primary bg-primary/10" : "text-muted-foreground")} 
-                      onClick={() => smartMarkdown('## ')}
-                    >
-                      <Heading2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Heading (Line Toggle)</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className={cn("h-8 w-8 transition-colors", activeStyles.list ? "text-primary bg-primary/10" : "text-muted-foreground")} 
-                      onClick={() => smartMarkdown('- ')}
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>List (Line Toggle)</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className={cn("h-8 w-8 transition-colors", activeStyles.code ? "text-primary bg-primary/10" : "text-muted-foreground")} 
-                      onClick={() => smartMarkdown('`', '`')}
-                    >
-                      <Code2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Inline Code (Toggle/Exit)</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className={cn("h-8 w-8 transition-colors", activeStyles.quote ? "text-primary bg-primary/10" : "text-muted-foreground")} 
-                      onClick={() => smartMarkdown('> ')}
-                    >
-                      <Quote className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Quote (Line Toggle)</TooltipContent>
-                </Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.h1 && "text-primary bg-primary/10")} onClick={() => smartMarkdown('# ', '', true)}><Heading1 className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>H1</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.h2 && "text-primary bg-primary/10")} onClick={() => smartMarkdown('## ', '', true)}><Heading2 className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>H2</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.h3 && "text-primary bg-primary/10")} onClick={() => smartMarkdown('### ', '', true)}><Heading3 className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>H3</TooltipContent></Tooltip>
+                <div className="w-px h-4 bg-border/40 mx-1" />
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.bold && "text-primary bg-primary/10")} onClick={() => smartMarkdown('**', '**')}><Bold className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Bold</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.italic && "text-primary bg-primary/10")} onClick={() => smartMarkdown('_', '_')}><Italic className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Italic</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.strikethrough && "text-primary bg-primary/10")} onClick={() => smartMarkdown('~~', '~~')}><Strikethrough className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Strikethrough</TooltipContent></Tooltip>
+                <div className="w-px h-4 bg-border/40 mx-1" />
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.list && "text-primary bg-primary/10")} onClick={() => smartMarkdown('- ', '', true)}><List className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Bullets</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.ordered && "text-primary bg-primary/10")} onClick={() => smartMarkdown('1. ', '', true)}><ListOrdered className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Numbered</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.tasks && "text-primary bg-primary/10")} onClick={() => smartMarkdown('- [ ] ', '', true)}><CheckSquare className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Tasks</TooltipContent></Tooltip>
+                <div className="w-px h-4 bg-border/40 mx-1" />
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.code && "text-primary bg-primary/10")} onClick={() => smartMarkdown('`', '`')}><Code2 className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Inline Code</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={() => smartMarkdown('```\n', '\n```')}><Terminal className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Code Block</TooltipContent></Tooltip>
               </TooltipProvider>
             </div>
           </div>
@@ -337,19 +266,11 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                 ref={textareaRef}
                 placeholder="Write your note in Markdown..."
                 value={content}
-                onChange={(e) => {
-                  setContent(e.target.value);
-                  setTimeout(checkActiveStyles, 0);
-                }}
+                onChange={(e) => { setContent(e.target.value); setTimeout(checkActiveStyles, 0); }}
                 onClick={checkActiveStyles}
                 onKeyUp={checkActiveStyles}
                 onSelect={checkActiveStyles}
                 className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none resize-none min-h-[400px] px-0 py-0 text-base font-mono leading-relaxed placeholder:text-muted-foreground/20 bg-transparent"
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = 'auto';
-                  target.style.height = `${target.scrollHeight}px`;
-                }}
               />
             ) : (
               <div className="py-2">
@@ -359,9 +280,20 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           </div>
         </div>
 
-        <div className="p-4 bg-secondary/10 border-t flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose} className="rounded-lg">Discard</Button>
-          <Button onClick={handleSave} className="rounded-lg px-8">Done</Button>
+        <div className="p-4 bg-secondary/10 border-t flex justify-between items-center">
+          <div className="flex items-center space-x-1">
+             <TooltipProvider>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8", activeStyles.quote && "text-primary bg-primary/10")} onClick={() => smartMarkdown('> ', '', true)}><Quote className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Quote</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={() => insertTemplate('---')}><Minus className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Separator</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={() => insertTemplate('| Header | Header |\n| :--- | :--- |\n| Cell | Cell |')}><Table className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Table</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={() => insertTemplate('![Alt Text](url)')}><ImageIcon className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Image</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={() => insertTemplate('<details>\n<summary>Title</summary>\nContent\n</details>')}><ChevronDownSquare className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent>Collapsible</TooltipContent></Tooltip>
+             </TooltipProvider>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose} className="rounded-lg">Discard</Button>
+            <Button onClick={handleSave} className="rounded-lg px-8">Done</Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
