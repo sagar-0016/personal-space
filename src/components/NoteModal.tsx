@@ -129,7 +129,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{highContrastCode ? "Switch to Standard Code" : "Switch to High-Contrast Code"}</p>
+                    <p>{highContrastCode ? "Switch to Standard (Minimalist) Code" : "Switch to High-Contrast (VS Code) Code"}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
