@@ -247,17 +247,23 @@ export function RichEditor({
               className="w-[450px] p-4 bg-card shadow-2xl border-primary/20 z-[200]" 
               align="end"
               onPointerDownOutside={(e) => {
+                // Prevent closure if clicking inside our interactive area
                 if (e.target instanceof HTMLElement && e.target.closest('[data-radix-popover-content]')) {
                   e.preventDefault();
                 }
               }}
               onInteractOutside={(e) => {
+                // Prevent interaction with backdrop from closing if focus is in textarea
                 if (e.target instanceof HTMLElement && e.target.closest('textarea')) {
                   e.preventDefault();
                 }
               }}
             >
-              <div className="space-y-4" onMouseDown={(e) => e.stopPropagation()}>
+              <div 
+                className="space-y-4" 
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
                     <Database className="h-3.5 w-3.5 text-primary" />
@@ -283,7 +289,7 @@ export function RichEditor({
                     placeholder={`title: "My Note"\ntags: ["tag1"]\n...`}
                     className="min-h-[200px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1 leading-relaxed"
                   />
-                  <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity">
+                  <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity pointer-events-none">
                     <code className="text-[9px] bg-background px-1 rounded">YAML</code>
                   </div>
                 </div>
