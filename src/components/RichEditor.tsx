@@ -237,18 +237,31 @@ export function RichEditor({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-3 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/5 hover:bg-primary/10 transition-all border border-primary/20 z-[40]"
+                className="h-8 px-3 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/5 hover:bg-primary/10 transition-all border border-primary/20"
               >
                 <Database className="h-3.5 w-3.5 mr-1.5" />
                 Metadata
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[450px] p-4 bg-card shadow-2xl border-primary/20 z-[100]" align="end">
-              <div className="space-y-4">
+            <PopoverContent 
+              className="w-[450px] p-4 bg-card shadow-2xl border-primary/20 z-[200]" 
+              align="end"
+              onPointerDownOutside={(e) => {
+                if (e.target instanceof HTMLElement && e.target.closest('[data-radix-popover-content]')) {
+                  e.preventDefault();
+                }
+              }}
+              onInteractOutside={(e) => {
+                if (e.target instanceof HTMLElement && e.target.closest('textarea')) {
+                  e.preventDefault();
+                }
+              }}
+            >
+              <div className="space-y-4" onMouseDown={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
                     <Database className="h-3.5 w-3.5 text-primary" />
-                    Note Metadata
+                    Metadata
                   </h4>
                   <TooltipProvider>
                     <Tooltip>
@@ -256,7 +269,7 @@ export function RichEditor({
                         <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                       </TooltipTrigger>
                       <TooltipContent className="max-w-[250px] text-[10px] leading-relaxed">
-                        Enter YAML metadata here. The app extracts "title" and "tags" for organizational hierarchy.
+                        Enter YAML metadata. The app extracts "title" and "tags" for your note's identity.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -265,7 +278,9 @@ export function RichEditor({
                   <Textarea
                     value={metadata || ''}
                     onChange={(e) => onMetadataChange?.(e.target.value)}
-                    placeholder="---&#10;title: &quot;My Title&quot;&#10;tags: [&quot;tag1&quot;]&#10;---"
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    placeholder={`title: "My Note"\ntags: ["tag1"]\n...`}
                     className="min-h-[200px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1 leading-relaxed"
                   />
                   <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity">
@@ -273,7 +288,7 @@ export function RichEditor({
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground italic leading-tight">
-                  Format: Standard frontmatter block. The parser extracts the title and tags fields.
+                  Formatting: The parser identifies the title and tags fields from this block.
                 </p>
               </div>
             </PopoverContent>
