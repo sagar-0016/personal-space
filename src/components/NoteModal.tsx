@@ -23,7 +23,6 @@ import { parseNoteFormat, stringifyNote } from '@/lib/note-parser';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -162,7 +161,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                   <SettingsIcon className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 google-shadow rounded-xl border-none p-2">
+              <DropdownMenuContent align="end" className="w-56 google-shadow rounded-xl border-none p-2 z-[110]">
                 <DropdownMenuLabel className="text-[10px] uppercase tracking-widest opacity-50">Metadata</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <div className="p-2 space-y-4">

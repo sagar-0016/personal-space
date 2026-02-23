@@ -21,7 +21,6 @@ export interface ParsedNote extends NoteMetadata {
 
 export function parseNoteFormat(content: string): ParsedNote {
   // Enhanced regex to match the metadata block between --- and ---
-  // Using flexible multi-line matching
   const blockRegex = /^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/;
   const match = content.match(blockRegex);
 
@@ -42,7 +41,7 @@ export function parseNoteFormat(content: string): ParsedNote {
   const metadataStr = match[1];
   const body = match[2];
 
-  // Extract metadata fields using flexible regex that respects backslashes and title syntax
+  // Extract metadata fields respecting trailing backslashes and title syntax
   const titleMatch = metadataStr.match(/##\s*title:\s*["'](.+?)["']/);
   const categoryMatch = metadataStr.match(/category:\s*["'](.+?)["']/);
   const typeMatch = metadataStr.match(/type:\s*["'](.+?)["']/);
@@ -76,7 +75,6 @@ export function stringifyNote(parsed: ParsedNote): string {
   const updatedDate = new Date().toISOString().split('T')[0];
   
   // Reconstruct the exact format with backslashes for the metadata block
-  // Ensuring the title and tags are properly enclosed and escaped
   const metadataLines = [
     '---',
     '',

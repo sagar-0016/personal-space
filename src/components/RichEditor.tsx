@@ -1,8 +1,8 @@
 
 "use client"
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import React, { useEffect, useState, useCallback, memo } from 'react';
+import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper, NodeViewContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
@@ -36,7 +36,9 @@ import {
   Link as LinkIcon,
   Undo,
   Redo,
-  ChevronDown
+  ChevronDown,
+  Copy,
+  Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -48,6 +50,50 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const lowlight = createLowlight(common);
+
+/**
+ * Custom NodeView for Code Blocks to match the Home Screen Preview exactly.
+ */
+const CodeBlockComponent = ({ node, updateAttributes, extension }: any) => {
+  const [copied, setCopied] = useState(false);
+  const language = node.attrs.language || 'source code';
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(node.textContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <NodeViewWrapper className="not-prose my-6 overflow-hidden rounded-xl border border-white/5 bg-[#0d0d0d] shadow-2xl group relative">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/5">
+        <span className="text-[9px] uppercase font-black tracking-[0.2em] text-white/30">
+          {language}
+        </span>
+        <div className="flex items-center space-x-1">
+          <select 
+            className="text-[9px] uppercase font-bold bg-transparent text-white/20 outline-none cursor-pointer hover:text-white/40 transition-colors mr-2"
+            value={language}
+            onChange={e => updateAttributes({ language: e.target.value })}
+          >
+            <option value="javascript">JS</option>
+            <option value="typescript">TS</option>
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+            <option value="python">PY</option>
+            <option value="markdown">MD</option>
+          </select>
+          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-white/10" onClick={handleCopy}>
+            {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3 text-white/20" />}
+          </Button>
+        </div>
+      </div>
+      <pre className="p-4 font-mono text-[13px] overflow-x-auto text-white/80 leading-relaxed">
+        <NodeViewContent as="code" />
+      </pre>
+    </NodeViewWrapper>
+  );
+};
 
 interface RichEditorProps {
   content: string;
@@ -77,7 +123,11 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
       TableHeader,
       TableCell,
       Image,
-      CodeBlockLowlight.configure({ lowlight }),
+      CodeBlockLowlight.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(CodeBlockComponent);
+        },
+      }).configure({ lowlight }),
       Link.configure({ openOnClick: false }),
       Markdown.configure({
         html: true,
@@ -99,16 +149,8 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground/90",
           "prose-p:leading-relaxed prose-p:text-foreground/80",
           "prose-blockquote:border-l-4 prose-blockquote:border-primary/40 prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic",
-          // INLINE CODE: Matching Home screen badge style exactly
+          // Inline Code: Precise matching of Home screen badge style
           "prose-code:bg-[#202124] prose-code:text-[#e8eaed] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:text-[0.9em] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none dark:prose-code:bg-[#1a1b1e] dark:prose-code:text-[#9aa0a6]",
-          // FENCED CODE BLOCK: High-fidelity "SOURCE CODE" card mimicking dashboard rendering
-          "prose-pre:bg-[#0d0d0d] prose-pre:border prose-pre:border-white/5 prose-pre:rounded-xl prose-pre:p-0 prose-pre:overflow-hidden prose-pre:shadow-2xl prose-pre:relative prose-pre:mt-6 prose-pre:mb-6",
-          // Injected "SOURCE CODE" header text via CSS pseudo-element
-          "prose-pre:before:content-['SOURCE_CODE'] prose-pre:before:block prose-pre:before:px-4 prose-pre:before:py-2 prose-pre:before:border-b prose-pre:before:border-white/5 prose-pre:before:bg-white/5 prose-pre:before:text-[9px] prose-pre:before:font-black prose-pre:before:tracking-[0.2em] prose-pre:before:text-white/20",
-          "prose-pre:code:block prose-pre:code:p-4 prose-pre:code:bg-transparent prose-pre:code:text-white/80 prose-pre:code:text-[13px] prose-pre:code:leading-relaxed",
-          "prose-img:rounded-xl prose-img:google-shadow",
-          "prose-hr:border-muted-foreground/20",
-          "[&_ul_li_input]:mr-2 [&_ul_li_input]:accent-primary",
           className
         ),
       },
@@ -120,21 +162,6 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
       editor.commands.setContent(content, false);
     }
   }, [content, editor]);
-
-  const handleSmartToggle = useCallback((type: string, options?: any) => {
-    if (!editor) return;
-    const isActive = editor.isActive(type, options);
-    if (isActive) {
-      const { from, to } = editor.state.selection;
-      if (from === to) {
-        editor.chain().focus().unsetMark(type).insertContent(' ').run();
-      } else {
-        editor.chain().focus().toggleMark(type, options).run();
-      }
-    } else {
-      editor.chain().focus().toggleMark(type, options).run();
-    }
-  }, [editor]);
 
   if (!mounted || !editor) return null;
 
@@ -196,25 +223,25 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
             />
             <div className="w-px h-4 bg-border/40 mx-1" />
             <ToolbarButton 
-              onClick={() => handleSmartToggle('bold')} 
+              onClick={() => editor.chain().focus().toggleBold().run()} 
               active={editor.isActive('bold')}
               icon={Bold}
               tooltip="Bold"
             />
             <ToolbarButton 
-              onClick={() => handleSmartToggle('italic')} 
+              onClick={() => editor.chain().focus().toggleItalic().run()} 
               active={editor.isActive('italic')}
               icon={Italic}
               tooltip="Italic"
             />
             <ToolbarButton 
-              onClick={() => handleSmartToggle('strike')} 
+              onClick={() => editor.chain().focus().toggleStrike().run()} 
               active={editor.isActive('strike')}
               icon={Strikethrough}
               tooltip="Strikethrough"
             />
             <ToolbarButton 
-              onClick={() => handleSmartToggle('code')} 
+              onClick={() => editor.chain().focus().toggleCode().run()} 
               active={editor.isActive('code')}
               icon={Code2}
               tooltip="Inline Code"
@@ -251,7 +278,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
                   Advanced <ChevronDown className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48 google-shadow border-none rounded-xl">
+              <DropdownMenuContent align="start" className="w-48 google-shadow border-none rounded-xl p-1 z-[110]">
                 <DropdownMenuItem onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
                   <TableIcon className="h-4 w-4 mr-2" /> Comparison Table
                 </DropdownMenuItem>

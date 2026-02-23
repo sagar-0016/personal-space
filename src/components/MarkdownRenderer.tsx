@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, memo } from 'react';
@@ -6,9 +7,8 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { cn } from '@/lib/utils';
-import { Check, Copy, Info, Clock, Tag as TagIcon, Layers, FileText } from 'lucide-react';
+import { Check, Copy, Info, Clock, Layers, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTheme } from 'next-themes';
 import { parseNoteFormat } from '@/lib/note-parser';
 import { Badge } from '@/components/ui/badge';
 
