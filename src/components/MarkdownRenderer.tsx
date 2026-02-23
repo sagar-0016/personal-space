@@ -111,11 +111,19 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
   const handleToggleCheckbox = (index: number) => {
     if (!onContentChange) return;
 
-    // We target any checkbox pattern [ ] or [x] in the entire content string.
-    const checkboxRegex = /\[([ xX])\]/g;
+    // To prevent indexing issues, we must account for checkboxes that might be in code blocks
+    // which ReactMarkdown handles correctly, but a simple regex might miss.
+    // However, the most reliable way to sync with the ReactMarkdown render order
+    // is to find the N-th match of the checkbox pattern in the renderable content.
     
+    const checkboxRegex = /\[([ xX])\]/g;
     let currentMatchIndex = 0;
-    const newContent = content.replace(checkboxRegex, (match, char) => {
+    
+    // We only want to replace in the content that is actually rendered
+    // If it's structured, we replace in the displayContent part and rejoin
+    const targetContent = parsed.isStructured ? parsed.displayContent : content;
+
+    const newTargetContent = targetContent.replace(checkboxRegex, (match, char) => {
       if (currentMatchIndex === index) {
         currentMatchIndex++;
         const isChecked = char.toLowerCase() === 'x';
@@ -125,7 +133,14 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
       return match;
     });
 
-    onContentChange(newContent);
+    if (parsed.isStructured) {
+      // Reconstruct the full content with frontmatter
+      const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n\n/);
+      const prefix = frontmatterMatch ? frontmatterMatch[0] : '';
+      onContentChange(prefix + newTargetContent);
+    } else {
+      onContentChange(newTargetContent);
+    }
   };
 
   // Reset counter before starting ReactMarkdown rendering
