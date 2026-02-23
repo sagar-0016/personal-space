@@ -128,7 +128,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{highContrastCode ? "Switch to Modern Light Code" : "Switch to Deep Focus (VS Code) Code"}</p>
+                    <p>{highContrastCode ? "Switch to Professional Clear Code" : "Switch to Deep Focus (VS Code) Code"}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -147,16 +147,15 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto pt-6 space-y-4">
           <Input
             placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="border-none shadow-none focus-visible:ring-0 text-3xl font-bold px-0 h-auto placeholder:text-muted-foreground/20"
-            disabled={isSynced}
+            className="border-none shadow-none focus-visible:ring-0 text-3xl font-bold px-6 h-auto placeholder:text-muted-foreground/20"
           />
 
-          <div className="flex flex-wrap items-center gap-2 pb-2">
+          <div className="flex flex-wrap items-center gap-2 pb-2 px-6">
             <Tag className="h-4 w-4 text-muted-foreground" />
             {labels.map(label => (
               <Badge key={label} variant="secondary" className="bg-primary/10 text-primary border-none hover:bg-primary/20 transition-colors">
@@ -172,7 +171,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddLabel()}
-                className="h-7 w-24 text-xs bg-secondary border-none focus-visible:ring-1"
+                className="h-7 w-24 text-xs bg-secondary border-none focus-visible:ring-1 px-2"
               />
               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleAddLabel}>
                 <Plus className="h-3 w-3" />
@@ -180,23 +179,30 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
             </div>
           </div>
           
-          {activeTab === 'edit' ? (
-            <Textarea
-              placeholder="Start writing your thoughts in Markdown..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="border-none shadow-none focus-visible:ring-0 resize-none min-h-[400px] px-0 py-0 text-base font-mono leading-relaxed placeholder:text-muted-foreground/30 focus-visible:ring-offset-0"
-              autoFocus
-            />
-          ) : (
-            <div className="min-h-[400px] py-2">
-              {content ? (
-                <MarkdownRenderer content={content} highContrastCode={highContrastCode} />
-              ) : (
-                <p className="text-muted-foreground/50 italic">Nothing to preview yet.</p>
-              )}
-            </div>
-          )}
+          <div className="px-6 pb-6">
+            {activeTab === 'edit' ? (
+              <Textarea
+                placeholder="Start writing your thoughts in Markdown..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="border-none shadow-none focus-visible:ring-0 resize-none min-h-[400px] px-0 py-0 text-base font-mono leading-relaxed placeholder:text-muted-foreground/30 focus-visible:ring-offset-0"
+                autoFocus
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = 'auto';
+                  target.style.height = `${target.scrollHeight}px`;
+                }}
+              />
+            ) : (
+              <div className="min-h-[400px] py-2">
+                {content ? (
+                  <MarkdownRenderer content={content} highContrastCode={highContrastCode} />
+                ) : (
+                  <p className="text-muted-foreground/50 italic">Nothing to preview yet.</p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="p-4 bg-secondary/10 border-t flex justify-end">
