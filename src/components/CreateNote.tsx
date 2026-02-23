@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -69,7 +68,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                 placeholder="Title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all"
+                className="border-none shadow-none focus-visible:ring-0 text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all"
                 autoFocus
               />
               <div className="flex items-center space-x-1">
@@ -80,7 +79,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                   className="h-8 px-2 text-[10px] font-bold uppercase tracking-tighter opacity-60 hover:opacity-100 transition-all"
                 >
                   {editMode === 'visual' ? <FileText className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
-                  {editMode === 'visual' ? 'Raw Markdown' : 'Visual Editor'}
+                  {editMode === 'visual' ? 'Code' : 'Preview'}
                 </Button>
                 <Button 
                   variant="ghost" 
@@ -106,7 +105,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                 <Textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Edit raw Markdown..."
+                  placeholder="Edit Code..."
                   className="min-h-[120px] border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm resize-none"
                 />
               )}

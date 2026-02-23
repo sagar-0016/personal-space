@@ -83,7 +83,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
               <Layers className="h-4 w-4 text-primary" />
             </div>
             <span className="text-sm font-bold">
-              {editMode === 'visual' ? 'Visual context' : 'Markdown source'}
+              {editMode === 'visual' ? 'Preview' : 'Code'}
             </span>
             <Button 
               variant="secondary" 
@@ -92,7 +92,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
               className="h-7 px-3 text-xs"
             >
               {editMode === 'visual' ? <FileText className="h-3 w-3 mr-1.5" /> : <Eye className="h-3 w-3 mr-1.5" />}
-              {editMode === 'visual' ? 'View Source' : 'View Visual'}
+              {editMode === 'visual' ? 'Code' : 'Preview'}
             </Button>
           </div>
           
@@ -171,7 +171,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                   setTitle(p.title || title);
                   setLabels(p.tags.length > 0 ? p.tags : labels);
                 }}
-                placeholder="Edit Markdown Source..."
+                placeholder="Edit Code..."
                 className="min-h-[600px] border-none shadow-none focus-visible:ring-0 px-6 bg-transparent font-mono text-sm leading-relaxed resize-none"
               />
             )}
