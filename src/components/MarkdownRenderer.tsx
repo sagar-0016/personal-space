@@ -108,7 +108,6 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
       "prose prose-sm sm:prose-base dark:prose-invert max-w-none",
       "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground/90",
       "prose-h1:text-3xl prose-h1:mb-6 prose-h2:text-2xl prose-h2:mb-4 prose-h3:text-xl",
-      "prose-p:leading-relaxed prose-p:text-foreground/80 mb-4",
       "prose-a:text-primary prose-a:font-medium hover:prose-a:underline",
       "prose-blockquote:border-l-4 prose-blockquote:border-primary/40 prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic prose-blockquote:text-foreground/70",
       "prose-table:border prose-table:rounded-lg prose-table:overflow-hidden prose-th:bg-muted/50 prose-th:p-3 prose-td:p-3",
@@ -122,6 +121,9 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
+          // Fix: render paragraph as div to avoid hydration errors when block-level components are nested inside
+          p: ({ children }) => <div className="mb-4 leading-relaxed text-foreground/80">{children}</div>,
+          
           // Custom pre to avoid nested pre tags or invalid hierarchy
           pre: ({ children }) => <div className="not-prose">{children}</div>,
           
