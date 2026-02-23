@@ -70,47 +70,81 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
+    if (activeTab !== 'edit') setActiveTab('edit');
+
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = textarea.value;
 
-    // Check if we are currently "inside" this formatting block to toggle it off
-    const isInside = suffix && 
-                     text.substring(start - prefix.length, start) === prefix && 
-                     text.substring(end, end + suffix.length) === suffix;
+    if (suffix) {
+      // Pair-based formatting (Bold, Italic, Inline Code)
+      const isInside = text.substring(start - prefix.length, start) === prefix && 
+                       text.substring(end, end + suffix.length) === suffix;
 
-    if (isInside) {
-      // Toggle OFF: Move cursor past the suffix
-      const newPos = end + suffix.length;
-      textarea.setSelectionRange(newPos, newPos);
-      textarea.focus();
-      return;
-    }
-
-    if (start !== end) {
-      // Wrap selection
-      const selection = text.substring(start, end);
-      const newText = text.substring(0, start) + prefix + selection + suffix + text.substring(end);
-      setContent(newText);
-      
-      // Set selection after update
-      setTimeout(() => {
-        textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-        textarea.focus();
-      }, 0);
-    } else {
-      // Toggle ON: Insert markers and put cursor in middle
-      const newText = text.substring(0, start) + prefix + suffix + text.substring(end);
-      setContent(newText);
-      
-      const newPos = start + prefix.length;
-      setTimeout(() => {
+      if (isInside) {
+        // Toggle OFF: Exit formatting
+        const newPos = end + suffix.length;
         textarea.setSelectionRange(newPos, newPos);
         textarea.focus();
-      }, 0);
+        return;
+      }
+
+      if (start !== end) {
+        const selection = text.substring(start, end);
+        const newText = text.substring(0, start) + prefix + selection + suffix + text.substring(end);
+        setContent(newText);
+        setTimeout(() => {
+          textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+          textarea.focus();
+        }, 0);
+      } else {
+        const newText = text.substring(0, start) + prefix + suffix + text.substring(end);
+        setContent(newText);
+        const newPos = start + prefix.length;
+        setTimeout(() => {
+          textarea.setSelectionRange(newPos, newPos);
+          textarea.focus();
+        }, 0);
+      }
+    } else {
+      // Line-based formatting
+      const lines = text.split('\n');
+      let currentPos = 0;
+      let targetLineIndex = -1;
+
+      for (let i = 0; i < lines.length; i++) {
+        const lineStart = currentPos;
+        const lineEnd = currentPos + lines[i].length;
+        if (start >= lineStart && start <= lineEnd + 1) {
+          targetLineIndex = i;
+          break;
+        }
+        currentPos += lines[i].length + 1;
+      }
+
+      if (targetLineIndex !== -1) {
+        const line = lines[targetLineIndex];
+        if (line.startsWith(prefix)) {
+          lines[targetLineIndex] = line.substring(prefix.length);
+          const newText = lines.join('\n');
+          setContent(newText);
+          const newPos = Math.max(0, start - prefix.length);
+          setTimeout(() => {
+            textarea.setSelectionRange(newPos, newPos);
+            textarea.focus();
+          }, 0);
+        } else {
+          lines[targetLineIndex] = prefix + line;
+          const newText = lines.join('\n');
+          setContent(newText);
+          const newPos = start + prefix.length;
+          setTimeout(() => {
+            textarea.setSelectionRange(newPos, newPos);
+            textarea.focus();
+          }, 0);
+        }
+      }
     }
-    
-    if (activeTab !== 'edit') setActiveTab('edit');
   };
 
   return (
@@ -139,37 +173,37 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('**', '**')}><Bold className="h-4 w-4" /></Button>
                   </TooltipTrigger>
-                  <TooltipContent>Bold</TooltipContent>
+                  <TooltipContent>Bold (Toggle)</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('_', '_')}><Italic className="h-4 w-4" /></Button>
                   </TooltipTrigger>
-                  <TooltipContent>Italic</TooltipContent>
+                  <TooltipContent>Italic (Toggle)</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('## ')}><Heading1 className="h-4 w-4" /></Button>
                   </TooltipTrigger>
-                  <TooltipContent>Heading</TooltipContent>
+                  <TooltipContent>Heading (Toggle Line)</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('- ')}><List className="h-4 w-4" /></Button>
                   </TooltipTrigger>
-                  <TooltipContent>List</TooltipContent>
+                  <TooltipContent>List (Toggle Line)</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('```\n', '\n```')}><Code2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('`', '`')}><Code2 className="h-4 w-4" /></Button>
                   </TooltipTrigger>
-                  <TooltipContent>Code Block</TooltipContent>
+                  <TooltipContent>Inline Code (Toggle)</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => smartMarkdown('> ')}><Quote className="h-4 w-4" /></Button>
                   </TooltipTrigger>
-                  <TooltipContent>Quote</TooltipContent>
+                  <TooltipContent>Quote (Toggle Line)</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
