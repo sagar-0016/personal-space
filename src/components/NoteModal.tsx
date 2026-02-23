@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Note } from '@/lib/types';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, Edit2, X, Terminal, Code2, Tag, Plus, X as CloseIcon, Sparkles } from 'lucide-react';
+import { Eye, Edit2, X, Terminal, Code2, Tag, Plus, X as CloseIcon, Sparkles, Layout } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -124,11 +124,11 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                       )}
                       onClick={() => setHighContrastCode(!highContrastCode)}
                     >
-                      {highContrastCode ? <Terminal className="h-4 w-4" /> : <Code2 className="h-4 w-4" />}
+                      {highContrastCode ? <Terminal className="h-4 w-4" /> : <Layout className="h-4 w-4" />}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{highContrastCode ? "Switch to Standard (Grey) Code" : "Switch to High-Contrast (VS Code) Code"}</p>
+                    <p>{highContrastCode ? "Switch to Modern Light Code" : "Switch to Deep Focus (VS Code) Code"}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
