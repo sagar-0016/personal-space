@@ -3,6 +3,7 @@ export type Note = {
   id: string;
   title: string;
   content: string;
+  metadata?: string;
   userId: string;
   color?: string;
   createdAt: number;
@@ -23,7 +24,7 @@ export type UserProfile = {
 export type Theme = {
   id: string;
   name: string;
-  primary: string; // HSL e.g. "199 68% 77%"
+  primary: string; // HSL e.g. "199 89% 48%"
   background: string;
   accent: string;
 };

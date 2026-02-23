@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -17,7 +18,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { parseNoteFormat, stringifyNote } from '@/lib/note-parser';
+import { extractMetadataInfo } from '@/lib/note-parser';
 
 interface NoteModalProps {
   note: Note | null;
@@ -29,43 +30,28 @@ interface NoteModalProps {
 export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [rawMetadata, setRawMetadata] = useState('');
+  const [metadata, setMetadata] = useState('');
   const [labels, setLabels] = useState<string[]>([]);
-  const [newLabel, setNewLabel] = useState('');
   const [editMode, setEditMode] = useState<'visual' | 'markdown'>('visual');
 
   useEffect(() => {
     if (note) {
-      const parsed = parseNoteFormat(note.content);
       setTitle(note.title);
-      setContent(parsed.displayContent);
-      setRawMetadata(parsed.rawMetadata || '');
+      setContent(note.content);
+      setMetadata(note.metadata || '');
       setLabels(note.labels || []);
     }
   }, [note, isOpen]);
 
   const handleSave = () => {
     if (note) {
-      const tempNote = stringifyNote({
-        displayContent: content,
-        rawMetadata: rawMetadata,
-        title: title,
-        tags: labels,
-        category: 'tech',
-        created: '',
-        updated: '',
-        type: 'note',
-        status: 'draft',
-        isStructured: true
-      });
-      
-      const reParsed = parseNoteFormat(tempNote);
-
+      const info = extractMetadataInfo(metadata);
       onSave({
         ...note,
-        title: reParsed.title || title || 'Untitled Note',
-        content: tempNote,
-        labels: reParsed.tags.length > 0 ? reParsed.tags : labels,
+        title: info.title || title || 'Untitled Note',
+        content: content,
+        metadata: metadata,
+        labels: info.tags.length > 0 ? info.tags : labels,
         updatedAt: Date.now()
       });
     }
@@ -122,20 +108,6 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                   </button>
                 </Badge>
               ))}
-              <Input 
-                placeholder="+ Add label" 
-                value={newLabel}
-                onChange={(e) => setNewLabel(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && newLabel.trim()) {
-                    if (!labels.includes(newLabel.trim())) {
-                      setLabels([...labels, newLabel.trim()]);
-                    }
-                    setNewLabel('');
-                  }
-                }}
-                className="h-6 w-28 text-xs bg-secondary/50 border-none focus-visible:ring-1 px-2 rounded-md"
-              />
             </div>
           </div>
           
@@ -144,34 +116,17 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
               <RichEditor 
                 content={content} 
                 onChange={setContent}
-                metadata={rawMetadata}
-                onMetadataChange={setRawMetadata}
+                metadata={metadata}
+                onMetadataChange={setMetadata}
                 className="min-h-[500px]"
                 placeholder="Start writing your context..."
                 showToolbar={true}
               />
             ) : (
               <Textarea
-                value={stringifyNote({
-                  displayContent: content,
-                  rawMetadata: rawMetadata,
-                  title,
-                  tags: labels,
-                  category: 'tech',
-                  created: '',
-                  updated: '',
-                  type: 'note',
-                  status: 'draft',
-                  isStructured: true
-                })}
-                onChange={(e) => {
-                  const p = parseNoteFormat(e.target.value);
-                  setContent(p.displayContent);
-                  setRawMetadata(p.rawMetadata || '');
-                  setTitle(p.title || title);
-                  setLabels(p.tags.length > 0 ? p.tags : labels);
-                }}
-                placeholder="Edit Code..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Edit Markdown..."
                 className="min-h-[600px] border-none shadow-none focus-visible:ring-0 px-6 bg-transparent font-mono text-sm leading-relaxed resize-none"
               />
             )}

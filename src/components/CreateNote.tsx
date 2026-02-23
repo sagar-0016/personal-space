@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -8,15 +9,17 @@ import { Plus, Pin, FileText, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
+import { generateDefaultMetadata } from '@/lib/note-parser';
 
 interface CreateNoteProps {
-  onSave: (note: { title: string; content: string; isPinned: boolean; isArchived?: boolean }) => void;
+  onSave: (note: { title: string; content: string; metadata: string; isPinned: boolean; isArchived?: boolean }) => void;
 }
 
 export function CreateNote({ onSave }: CreateNoteProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [metadata, setMetadata] = useState('');
   const [isPinned, setIsPinned] = useState(false);
   const [editMode, setEditMode] = useState<'visual' | 'markdown'>('visual');
   
@@ -33,13 +36,15 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [title, content, isPinned]);
+  }, [title, content, isPinned, metadata]);
 
   const handleSave = () => {
     if (title.trim() || content.trim()) {
-      onSave({ title, content, isPinned });
+      const finalMetadata = metadata || generateDefaultMetadata(title || 'Untitled');
+      onSave({ title, content, metadata: finalMetadata, isPinned });
       setTitle('');
       setContent('');
+      setMetadata('');
       setIsPinned(false);
       setIsExpanded(false);
       setEditMode('visual');
@@ -97,6 +102,8 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                 <RichEditor 
                   content={content} 
                   onChange={setContent}
+                  metadata={metadata}
+                  onMetadataChange={setMetadata}
                   placeholder="Start writing structured content..."
                   className="min-h-[120px]"
                   showToolbar={true}
@@ -105,7 +112,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                 <Textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Edit Code..."
+                  placeholder="Edit Markdown..."
                   className="min-h-[120px] border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm resize-none"
                 />
               )}
