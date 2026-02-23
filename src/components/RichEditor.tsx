@@ -237,38 +237,43 @@ export function RichEditor({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/5 hover:bg-primary/10 transition-all"
+                className="h-8 px-3 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/5 hover:bg-primary/10 transition-all border border-primary/20"
               >
-                <Database className="h-3.5 w-3.5 mr-1" />
-                Analytical Metadata
+                <Database className="h-3.5 w-3.5 mr-1.5" />
+                Metadata
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[400px] p-4 bg-card shadow-2xl border-primary/20" align="end">
-              <div className="space-y-3">
+            <PopoverContent className="w-[450px] p-4 bg-card shadow-2xl border-primary/20" align="end">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                    <Database className="h-3 w-3 text-primary" />
+                    <Database className="h-3.5 w-3.5 text-primary" />
                     Metadata Block
                   </h4>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                       </TooltipTrigger>
-                      <TooltipContent className="max-w-[200px] text-[10px]">
-                        Enter raw metadata here. The app will process title and tags automatically.
+                      <TooltipContent className="max-w-[250px] text-[10px] leading-relaxed">
+                        Enter raw metadata here. The app processes "title" and "tags" for organizational hierarchy.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <Textarea
-                  value={metadata || ''}
-                  onChange={(e) => onMetadataChange?.(e.target.value)}
-                  placeholder="---&#10;title: &quot;My Title&quot;&#10;tags: [&quot;tag1&quot;]&#10;---"
-                  className="min-h-[150px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1"
-                />
-                <p className="text-[9px] text-muted-foreground italic">
-                  Format: YAML-like block with title and tags fields.
+                <div className="relative group">
+                  <Textarea
+                    value={metadata || ''}
+                    onChange={(e) => onMetadataChange?.(e.target.value)}
+                    placeholder="---&#10;title: &quot;My Title&quot;&#10;tags: [&quot;tag1&quot;]&#10;---"
+                    className="min-h-[200px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1 leading-relaxed"
+                  />
+                  <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity">
+                    <code className="text-[9px] bg-background px-1 rounded">YAML</code>
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground italic leading-tight">
+                  Format: Standard frontmatter block with title and tags fields.
                 </p>
               </div>
             </PopoverContent>
