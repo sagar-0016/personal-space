@@ -1,7 +1,7 @@
 
 /**
  * Utility to parse and stringify structured markdown with custom metadata blocks.
- * Designed to strictly adhere to the technical hierarchy requested.
+ * Simplified to focus on Title and Tags as primary structured data points.
  */
 
 export interface NoteMetadata {
@@ -43,13 +43,8 @@ export function parseNoteFormat(content: string): ParsedNote {
 
   // Extract metadata fields respecting trailing backslashes and title syntax
   const titleMatch = metadataStr.match(/##\s*title:\s*["'](.+?)["']/);
-  const categoryMatch = metadataStr.match(/category:\s*["'](.+?)["']/);
-  const typeMatch = metadataStr.match(/type:\s*["'](.+?)["']/);
-  const statusMatch = metadataStr.match(/status:\s*["'](.+?)["']/);
-  const createdMatch = metadataStr.match(/created:\s*([\d-]+)/);
-  const updatedMatch = metadataStr.match(/updated:\s*([\d-]+)/);
-  
   const tagsMatch = metadataStr.match(/tags:\s*\[([\s\S]*?)\]/);
+  
   let tags: string[] = [];
   if (tagsMatch) {
     tags = tagsMatch[1]
@@ -57,6 +52,13 @@ export function parseNoteFormat(content: string): ParsedNote {
       .map(tag => tag.trim().replace(/["']/g, '').replace(/\\$/, ''))
       .filter(tag => tag.length > 0);
   }
+
+  // Preserve other fields forping pinpointing but default to current logic
+  const categoryMatch = metadataStr.match(/category:\s*["'](.+?)["']/);
+  const typeMatch = metadataStr.match(/type:\s*["'](.+?)["']/);
+  const statusMatch = metadataStr.match(/status:\s*["'](.+?)["']/);
+  const createdMatch = metadataStr.match(/created:\s*([\d-]+)/);
+  const updatedMatch = metadataStr.match(/updated:\s*([\d-]+)/);
 
   return {
     title: titleMatch ? titleMatch[1] : null,
