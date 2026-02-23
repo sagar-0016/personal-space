@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -47,11 +47,16 @@ interface RichEditorProps {
 }
 
 export function RichEditor({ content, onChange, placeholder = "Start typing...", className, showToolbar = true }: RichEditorProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         codeBlock: false,
-        dropcursor: { color: 'hsl(var(--primary))', width: 2 },
       }),
       Placeholder.configure({ placeholder }),
       TaskList,
@@ -65,7 +70,6 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
       Markdown.configure({
         html: true,
         tightLists: true,
-        tightListClass: 'tight',
         bulletListMarker: '-',
         linkify: true,
         breaks: true,
@@ -74,6 +78,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
     content,
     onUpdate: ({ editor }) => {
       // Get the markdown string from the extension storage
+      // In tiptap-markdown 0.8.x, this is the standard way to retrieve the serialized content
       const markdown = (editor.storage.markdown as any).getMarkdown();
       onChange(markdown);
     },
@@ -102,7 +107,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
     }
   }, [content, editor]);
 
-  if (!editor) return null;
+  if (!mounted || !editor) return null;
 
   const ToolbarButton = ({ 
     onClick, 
@@ -234,12 +239,6 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
               }} 
               icon={ImageIcon}
               tooltip="Insert Image"
-            />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleCodeBlock().run()} 
-              active={editor.isActive('codeBlock')}
-              icon={Terminal}
-              tooltip="Code Block"
             />
 
             <div className="flex-1" />

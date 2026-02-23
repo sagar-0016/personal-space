@@ -97,7 +97,17 @@ interface MarkdownRendererProps {
 
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isDarkMode = resolvedTheme === 'dark';
+
+  if (!mounted) {
+    return <div className={cn("opacity-0", className)}>{content}</div>;
+  }
 
   return (
     <div className={cn(
