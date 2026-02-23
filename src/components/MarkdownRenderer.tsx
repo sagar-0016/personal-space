@@ -9,11 +9,11 @@ import { cn } from '@/lib/utils';
 import { Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { parseNoteFormat } from '@/lib/note-parser';
+import { useTheme } from 'next-themes';
 
-// Custom "Modern Light" theme inspired by the user's screenshot
-const modernLightTheme: any = {
+// Base styles for the Modern theme
+const baseModernStyles: any = {
   'code[class*="language-"]': {
-    color: '#24292e',
     fontFamily: 'var(--font-code)',
     direction: 'ltr',
     textAlign: 'left',
@@ -25,7 +25,6 @@ const modernLightTheme: any = {
     hyphens: 'none',
   },
   'pre[class*="language-"]': {
-    color: '#24292e',
     fontFamily: 'var(--font-code)',
     direction: 'ltr',
     textAlign: 'left',
@@ -39,36 +38,49 @@ const modernLightTheme: any = {
     overflow: 'auto',
     background: 'transparent',
   },
-  'comment': { color: '#d23669', fontStyle: 'italic' },
-  'prolog': { color: '#d23669' },
-  'doctype': { color: '#d23669' },
-  'cdata': { color: '#d23669' },
-  'punctuation': { color: '#24292e' },
   'namespace': { opacity: '.7' },
+  'bold': { fontWeight: 'bold' },
+  'italic': { fontStyle: 'italic' },
+};
+
+// Modern Light Theme (Inspired by the reference image)
+const modernLightTheme: any = {
+  ...baseModernStyles,
+  'code[class*="language-"]': { ...baseModernStyles['code[class*="language-"]'], color: '#24292e' },
+  'pre[class*="language-"]': { ...baseModernStyles['pre[class*="language-"]'], color: '#24292e' },
+  'comment': { color: '#d23669', fontStyle: 'italic' },
+  'punctuation': { color: '#24292e' },
   'property': { color: '#005cc5' },
   'tag': { color: '#005cc5' },
   'boolean': { color: '#d23669' },
   'number': { color: '#005cc5' },
-  'constant': { color: '#005cc5' },
-  'symbol': { color: '#005cc5' },
   'selector': { color: '#22863a' },
   'attr-name': { color: '#22863a' },
   'string': { color: '#22863a' },
-  'char': { color: '#22863a' },
-  'builtin': { color: '#005cc5' },
-  'inserted': { color: '#22863a' },
-  'operator': { color: '#d73a49' },
-  'entity': { color: '#d73a49', cursor: 'help' },
-  'url': { color: '#d73a49' },
-  'variable': { color: '#e36209' },
-  'atrule': { color: '#d73a49' },
-  'attr-value': { color: '#22863a' },
   'keyword': { color: '#005cc5', fontWeight: 'bold' },
   'function': { color: '#6f42c1' },
-  'regex': { color: '#e36209' },
-  'important': { color: '#d73a49', fontWeight: 'bold' },
-  'bold': { fontWeight: 'bold' },
-  'italic': { fontStyle: 'italic' },
+  'operator': { color: '#d73a49' },
+  'variable': { color: '#e36209' },
+};
+
+// Modern Dark Theme (Adapted for dark mode)
+const modernDarkTheme: any = {
+  ...baseModernStyles,
+  'code[class*="language-"]': { ...baseModernStyles['code[class*="language-"]'], color: '#e1e4e8' },
+  'pre[class*="language-"]': { ...baseModernStyles['pre[class*="language-"]'], color: '#e1e4e8' },
+  'comment': { color: '#f97583', fontStyle: 'italic' },
+  'punctuation': { color: '#e1e4e8' },
+  'property': { color: '#79b8ff' },
+  'tag': { color: '#79b8ff' },
+  'boolean': { color: '#f97583' },
+  'number': { color: '#79b8ff' },
+  'selector': { color: '#85e89d' },
+  'attr-name': { color: '#85e89d' },
+  'string': { color: '#85e89d' },
+  'keyword': { color: '#79b8ff', fontWeight: 'bold' },
+  'function': { color: '#b392f0' },
+  'operator': { color: '#f97583' },
+  'variable': { color: '#ffab70' },
 };
 
 interface MarkdownRendererProps {
@@ -79,6 +91,7 @@ interface MarkdownRendererProps {
 
 export function MarkdownRenderer({ content, className, highContrastCode = false }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
   
   useEffect(() => {
     setMounted(true);
@@ -86,6 +99,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
 
   const parsed = parseNoteFormat(content);
   const contentToRender = parsed.isStructured ? parsed.displayContent : content;
+  const isDarkMode = resolvedTheme === 'dark';
 
   return (
     <div className={cn(
@@ -102,6 +116,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
         components={{
+          // Render as div to avoid nested p tag hydration issues
           p: ({ children }) => <div className="mb-4 last:mb-0 leading-relaxed text-foreground/80">{children}</div>,
           code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
@@ -117,7 +132,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
             
             if (inline) {
               return (
-                <code className="bg-primary/20 text-primary-foreground px-1.5 py-0.5 rounded font-mono text-[0.9em] font-medium" {...props}>
+                <code className="bg-primary/20 text-primary-foreground dark:text-primary-foreground px-1.5 py-0.5 rounded font-mono text-[0.9em] font-medium" {...props}>
                   {children}
                 </code>
               );
@@ -130,6 +145,11 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                 </pre>
               );
             }
+
+            // Determine active theme for syntax highlighter
+            const activeSyntaxTheme = highContrastCode 
+              ? vscDarkPlus 
+              : (isDarkMode ? modernDarkTheme : modernLightTheme);
 
             return (
               <div className={cn(
@@ -170,7 +190,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                 {/* Code Highlighter */}
                 <SyntaxHighlighter
                   language={language}
-                  style={highContrastCode ? vscDarkPlus : modernLightTheme}
+                  style={activeSyntaxTheme}
                   PreTag="div"
                   className="!m-0 !p-5 !bg-transparent font-mono text-[13px] leading-relaxed"
                   customStyle={{
