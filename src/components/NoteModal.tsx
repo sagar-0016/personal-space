@@ -129,7 +129,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{highContrastCode ? "Switch to Professional Clear Code" : "Switch to Deep Focus (VS Code) Code"}</p>
+                    <p>{highContrastCode ? "Professional Clear Theme" : "Deep Focus Theme"}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

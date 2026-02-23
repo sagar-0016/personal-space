@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -103,36 +103,33 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
   const contentToRender = parsed.isStructured ? parsed.displayContent : content;
   const isDarkMode = resolvedTheme === 'dark';
 
-  // Helper to toggle checkbox at a specific index
+  // We use a ref to track the checkbox index during rendering
+  const checkboxCounterRef = useRef(0);
+
   const handleToggleCheckbox = (index: number) => {
     if (!onContentChange) return;
 
-    // We toggle relative to the rendered content
-    const targetBody = parsed.isStructured ? parsed.displayContent : content;
+    // Matches GFM checkbox pattern: start of line, optional indentation, list marker, then [ ]
+    const checkboxRegex = /^(\s*[-*+]\s+|(?:\d+\.)\s+)\[([ xX])\]/gm;
     
     let count = 0;
-    const updatedBody = targetBody.replace(/\[([ xX])\]/g, (match, char) => {
+    const newContent = content.replace(checkboxRegex, (match, prefix, char) => {
       if (count === index) {
         count++;
-        // Toggle: space -> x, x -> space
-        return (char === ' ' || char === '') ? '[x]' : '[ ]';
+        // Toggle: if it's currently checked (x or X), make it unchecked (space)
+        const isChecked = char.toLowerCase() === 'x';
+        const newChar = isChecked ? ' ' : 'x';
+        return `${prefix}[${newChar}]`;
       }
       count++;
       return match;
     });
 
-    if (parsed.isStructured) {
-      // Reconstruct with original frontmatter
-      const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n\n/);
-      const prefix = frontmatterMatch ? frontmatterMatch[0] : '';
-      onContentChange(prefix + updatedBody);
-    } else {
-      onContentChange(updatedBody);
-    }
+    onContentChange(newContent);
   };
 
-  // Internal state to track checkbox indices during render pass
-  let checkboxCounter = 0;
+  // Reset the counter at the start of every render pass
+  checkboxCounterRef.current = 0;
 
   return (
     <div className={cn(
@@ -151,23 +148,26 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
         components={{
           // Use div instead of p to avoid hydration nesting errors with block elements
           p: ({ children }) => <div className="mb-4 last:mb-0 leading-relaxed text-foreground/80">{children}</div>,
-          input: ({ type, checked }) => {
+          input: ({ type, checked, ...props }) => {
             if (type === 'checkbox') {
-              const currentIndex = checkboxCounter++;
+              const currentIndex = checkboxCounterRef.current++;
               return (
                 <input
                   type="checkbox"
                   checked={checked}
-                  onChange={(e) => {
-                    // Prevent card or modal from reacting to the input change
-                    e.stopPropagation();
-                    handleToggleCheckbox(currentIndex);
-                  }}
+                  // Using onClick + preventDefault for controlled state management
                   onClick={(e) => {
-                    // Prevent bubbling up to card/modal listeners
                     e.stopPropagation();
+                    if (onContentChange) {
+                      e.preventDefault();
+                      handleToggleCheckbox(currentIndex);
+                    }
                   }}
-                  className="cursor-pointer h-4 w-4 rounded border-primary text-primary focus:ring-primary mr-2 align-middle accent-primary transition-transform active:scale-90"
+                  readOnly={!onContentChange}
+                  className={cn(
+                    "cursor-pointer h-4 w-4 rounded border-primary text-primary focus:ring-primary mr-2 align-middle accent-primary transition-all active:scale-90",
+                    !onContentChange && "cursor-default opacity-70"
+                  )}
                 />
               );
             }

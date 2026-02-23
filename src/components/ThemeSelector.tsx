@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -73,6 +74,27 @@ const BUILTIN_THEMES: Theme[] = [
     primary: '0 72% 51%',
     background: '0 30% 98%',
     accent: '0 72% 95%'
+  },
+  {
+    id: 'builtin-forest',
+    name: 'Deep Forest',
+    primary: '160 84% 39%',
+    background: '160 30% 98%',
+    accent: '160 84% 95%'
+  },
+  {
+    id: 'builtin-midnight',
+    name: 'Midnight Ink',
+    primary: '221 83% 53%',
+    background: '221 20% 98%',
+    accent: '221 83% 95%'
+  },
+  {
+    id: 'builtin-crimson',
+    name: 'Crimson Peak',
+    primary: '346 84% 50%',
+    background: '346 20% 98%',
+    accent: '346 84% 95%'
   }
 ];
 
