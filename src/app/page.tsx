@@ -158,7 +158,8 @@ export default function Home() {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex flex-col w-full bg-background font-body transition-colors duration-700 relative overflow-hidden">
+      <div className="h-screen flex flex-col w-full bg-background font-body transition-colors duration-700 relative overflow-hidden">
+        {/* Background blobs */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
           <div className="absolute -top-[15%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary/15 blur-[140px] animate-pulse" />
           <div className="absolute top-[30%] -right-[15%] w-[45%] h-[45%] rounded-full bg-primary/10 blur-[120px] transition-all duration-1000" />
