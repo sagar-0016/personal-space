@@ -34,7 +34,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Analyze cursor context to highlight active tools
   const checkActiveStyles = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -53,12 +52,21 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       currentPos += line.length + 1;
     }
 
+    const isInsidePair = (marker: string) => {
+      const before = text.substring(0, start);
+      const after = text.substring(start);
+      // Simple heuristic: even number of markers before and after usually means outside, odd means inside
+      const countBefore = (before.match(new RegExp(marker.replace(/[*_`]/g, '\\$&'), 'g')) || []).length;
+      const hasAfter = after.includes(marker);
+      return countBefore % 2 !== 0 && hasAfter;
+    };
+
     const styles: { [key: string]: boolean } = {
-      bold: text.substring(start - 2, start) === '**' || (text.substring(start - 2, start + 2).includes('**') && text.lastIndexOf('**', start) !== -1),
-      italic: text.substring(start - 1, start) === '_' || (text.substring(start - 1, start + 1).includes('_') && text.lastIndexOf('_', start) !== -1),
+      bold: isInsidePair('**'),
+      italic: isInsidePair('_'),
       heading: currentLine.startsWith('## '),
       list: currentLine.startsWith('- '),
-      code: text.substring(start - 1, start) === '`' || (text.substring(start - 1, start + 1).includes('`')),
+      code: isInsidePair('`'),
       quote: currentLine.startsWith('> ')
     };
     
@@ -85,6 +93,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       setContent('');
       setIsPinned(false);
       setIsExpanded(false);
+      setActiveStyles({});
     }
   };
 
@@ -97,12 +106,10 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     const text = textarea.value;
 
     if (suffix) {
-      // Pair-based formatting (bold, italic, code)
       const isInside = text.substring(start - prefix.length, start) === prefix && 
                        text.substring(end, end + suffix.length) === suffix;
 
       if (isInside) {
-        // TOGGLE OFF: Jump out of markers
         const newPos = end + suffix.length;
         textarea.setSelectionRange(newPos, newPos);
         textarea.focus();
@@ -130,7 +137,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
         }, 0);
       }
     } else {
-      // Line-based formatting (heading, list, quote)
       const lines = text.split('\n');
       let currentPos = 0;
       let targetLineIndex = -1;
@@ -210,7 +216,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                 value={content}
                 onChange={(e) => {
                   setContent(e.target.value);
-                  checkActiveStyles();
+                  setTimeout(checkActiveStyles, 0);
                 }}
                 onClick={checkActiveStyles}
                 onKeyUp={checkActiveStyles}
@@ -232,7 +238,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className={cn("h-8 w-8", activeStyles.bold ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
+                        className={cn("h-8 w-8 transition-colors", activeStyles.bold ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
                         onClick={() => smartMarkdown('**', '**')}
                       >
                         <Bold className="h-4 w-4" />
@@ -245,7 +251,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className={cn("h-8 w-8", activeStyles.italic ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
+                        className={cn("h-8 w-8 transition-colors", activeStyles.italic ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
                         onClick={() => smartMarkdown('_', '_')}
                       >
                         <Italic className="h-4 w-4" />
@@ -258,7 +264,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className={cn("h-8 w-8", activeStyles.heading ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
+                        className={cn("h-8 w-8 transition-colors", activeStyles.heading ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
                         onClick={() => smartMarkdown('## ')}
                       >
                         <Heading2 className="h-4 w-4" />
@@ -271,7 +277,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className={cn("h-8 w-8", activeStyles.list ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
+                        className={cn("h-8 w-8 transition-colors", activeStyles.list ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
                         onClick={() => smartMarkdown('- ')}
                       >
                         <List className="h-4 w-4" />
@@ -284,7 +290,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className={cn("h-8 w-8", activeStyles.code ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
+                        className={cn("h-8 w-8 transition-colors", activeStyles.code ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
                         onClick={() => smartMarkdown('`', '`')}
                       >
                         <Code2 className="h-4 w-4" />
@@ -297,7 +303,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className={cn("h-8 w-8", activeStyles.quote ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
+                        className={cn("h-8 w-8 transition-colors", activeStyles.quote ? "text-primary bg-primary/10" : "text-muted-foreground/60")} 
                         onClick={() => smartMarkdown('> ')}
                       >
                         <Quote className="h-4 w-4" />
