@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -92,7 +91,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleSave()}>
-      <DialogContent className="sm:max-w-[800px] w-[95vw] max-h-[90vh] flex flex-col p-0 google-shadow border-none rounded-xl overflow-hidden">
+      <DialogContent className="sm:max-w-[800px] w-[95vw] max-h-[90vh] flex flex-col p-0 google-shadow border-none rounded-xl overflow-hidden z-[100]">
         <DialogTitle className="sr-only">Note Editor - {title || 'New Note'}</DialogTitle>
         
         <div className="flex items-center justify-between p-4 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
@@ -129,7 +128,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{highContrastCode ? "Switch to Standard (Minimalist) Code" : "Switch to High-Contrast (VS Code) Code"}</p>
+                    <p>{highContrastCode ? "Switch to Standard (Grey) Code" : "Switch to High-Contrast (VS Code) Code"}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

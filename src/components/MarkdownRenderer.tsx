@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -76,11 +75,18 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
             }
 
             return (
-              <div className="my-6 overflow-hidden rounded-lg border border-border/50 shadow-md group relative">
-                {/* Minimal Header */}
+              <div className={cn(
+                "my-6 overflow-hidden rounded-lg border shadow-md group relative transition-colors",
+                highContrastCode 
+                  ? "border-zinc-800 bg-zinc-950" 
+                  : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30"
+              )}>
+                {/* Header */}
                 <div className={cn(
                   "flex items-center justify-between px-4 py-2 border-b",
-                  highContrastCode ? "bg-zinc-900 border-zinc-800" : "bg-muted/30 border-border/30"
+                  highContrastCode 
+                    ? "bg-zinc-900 border-zinc-800" 
+                    : "bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-800"
                 )}>
                   {language ? (
                     <span className={cn(
@@ -96,7 +102,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                     size="icon"
                     className={cn(
                       "h-6 w-6 rounded-md transition-all",
-                      highContrastCode ? "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      highContrastCode ? "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800" : "text-muted-foreground hover:text-foreground hover:bg-zinc-200 dark:hover:bg-zinc-700"
                     )}
                     onClick={handleCopy}
                   >

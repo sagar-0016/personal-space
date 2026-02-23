@@ -45,6 +45,34 @@ const BUILTIN_THEMES: Theme[] = [
     primary: '38 92% 50%',
     background: '38 30% 98%',
     accent: '38 92% 95%'
+  },
+  {
+    id: 'builtin-rose',
+    name: 'Rose Quartz',
+    primary: '330 81% 60%',
+    background: '330 30% 98%',
+    accent: '330 81% 95%'
+  },
+  {
+    id: 'builtin-slate',
+    name: 'Midnight Slate',
+    primary: '222 47% 31%',
+    background: '222 20% 98%',
+    accent: '222 47% 95%'
+  },
+  {
+    id: 'builtin-ocean',
+    name: 'Oceanic Teal',
+    primary: '174 75% 39%',
+    background: '174 30% 98%',
+    accent: '174 75% 95%'
+  },
+  {
+    id: 'builtin-lava',
+    name: 'Lava Red',
+    primary: '0 72% 51%',
+    background: '0 30% 98%',
+    accent: '0 72% 95%'
   }
 ];
 
@@ -80,14 +108,14 @@ export function ThemeSelector() {
           <Palette className="h-5 w-5 text-primary" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64 p-2 rounded-xl border-none google-shadow">
+      <DropdownMenuContent align="end" className="w-64 p-2 rounded-xl border-none google-shadow z-[100]">
         <DropdownMenuLabel className="flex items-center gap-2 text-muted-foreground font-medium">
           <Lightbulb className="h-4 w-4 text-primary" />
           Choose Workspace Theme
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        <div className="grid grid-cols-1 gap-1">
+        <div className="grid grid-cols-1 gap-1 max-h-[300px] overflow-y-auto pr-1">
           {allThemes.map((theme) => {
             const isActive = profile?.preferredThemeId === theme.id;
             return (
