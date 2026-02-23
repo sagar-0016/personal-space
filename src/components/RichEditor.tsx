@@ -244,11 +244,10 @@ export function RichEditor({
               </Button>
             </PopoverTrigger>
             <PopoverContent 
-              className="w-[450px] p-4 bg-card shadow-2xl border-primary/20 z-[200]" 
+              className="w-[450px] p-4 bg-card shadow-2xl border-primary/20 z-[200] pointer-events-auto" 
               align="end"
               onPointerDown={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
-              onInteractOutside={(e) => e.preventDefault()}
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
