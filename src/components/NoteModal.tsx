@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -122,6 +121,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                        text.substring(end, end + suffix.length) === suffix;
 
       if (isInside) {
+        // Toggle off: Jump out of markers
         const newPos = end + suffix.length;
         textarea.setSelectionRange(newPos, newPos);
         textarea.focus();
@@ -149,6 +149,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
         }, 0);
       }
     } else {
+      // Line-based toggle
       const lines = text.split('\n');
       let currentPos = 0;
       let targetLineIndex = -1;

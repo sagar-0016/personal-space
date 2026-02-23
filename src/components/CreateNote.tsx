@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -55,7 +54,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     const isInsidePair = (marker: string) => {
       const before = text.substring(0, start);
       const after = text.substring(start);
-      // Simple heuristic: even number of markers before and after usually means outside, odd means inside
       const countBefore = (before.match(new RegExp(marker.replace(/[*_`]/g, '\\$&'), 'g')) || []).length;
       const hasAfter = after.includes(marker);
       return countBefore % 2 !== 0 && hasAfter;
@@ -110,6 +108,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                        text.substring(end, end + suffix.length) === suffix;
 
       if (isInside) {
+        // Toggle off: Jump cursor out of markers
         const newPos = end + suffix.length;
         textarea.setSelectionRange(newPos, newPos);
         textarea.focus();

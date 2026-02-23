@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -58,7 +57,7 @@ function CodeBlock({ language, codeString, highContrast, isDarkMode }: CodeBlock
   const activeSyntaxTheme = highContrast ? vscDarkPlus : (isDarkMode ? modernDarkTheme : modernLightTheme);
 
   return (
-    <div className="my-6 overflow-hidden rounded-xl border border-border/50 bg-muted/30 shadow-sm group relative">
+    <div className="my-6 overflow-hidden rounded-xl border border-border/50 bg-muted/30 google-shadow group relative">
       <div className="flex items-center justify-between px-4 py-2 border-b border-border/50 bg-muted/50">
         <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">
           {language || 'code'}
@@ -104,7 +103,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
       "prose-a:text-primary prose-a:font-medium hover:prose-a:underline",
       "prose-blockquote:border-l-4 prose-blockquote:border-primary/40 prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic prose-blockquote:text-foreground/70",
       "prose-table:border prose-table:rounded-lg prose-table:overflow-hidden prose-th:bg-muted/50 prose-th:p-3 prose-td:p-3",
-      "prose-img:rounded-xl prose-img:shadow-xl",
+      "prose-img:rounded-xl prose-img:google-shadow",
       "prose-hr:border-muted-foreground/20 my-8",
       className
     )}>
@@ -112,7 +111,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          // Use div instead of p to avoid hydration errors with nested block elements
+          // Render as div to avoid hydration issues with nested blocks like code inside paragraphs
           p: ({ children }) => <div className="mb-4 leading-relaxed text-foreground/80">{children}</div>,
           pre: ({ children }) => <div className="not-prose">{children}</div>,
           input: ({ type, checked }) => {
@@ -122,6 +121,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                   type="checkbox"
                   checked={checked}
                   readOnly
+                  onChange={() => {}}
                   className="h-4 w-4 rounded border-primary text-primary accent-primary mr-2 align-middle cursor-default pointer-events-none"
                 />
               );

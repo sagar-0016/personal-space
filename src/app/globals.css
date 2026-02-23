@@ -45,42 +45,41 @@
   }
 
   .dark {
-    /* Softer grey dark mode background */
-    --background: 240 10% 10%;
+    --background: 240 10% 6%;
     --foreground: 0 0% 98%;
     
-    --card: 240 10% 12%;
+    --card: 240 10% 8%;
     --card-foreground: 0 0% 98%;
     
-    --popover: 240 10% 12%;
+    --popover: 240 10% 8%;
     --popover-foreground: 0 0% 98%;
     
     --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 240 3.7% 15.9%;
+    --secondary: 240 3.7% 12%;
     --secondary-foreground: 0 0% 98%;
     
-    --muted: 240 3.7% 18%;
+    --muted: 240 3.7% 15%;
     --muted-foreground: 240 5% 64.9%;
     
-    --accent: 199 89% 15%;
+    --accent: 199 89% 12%;
     --accent-foreground: 0 0% 98%;
     
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 240 3.7% 18%;
-    --input: 240 3.7% 18%;
+    --border: 240 3.7% 15%;
+    --input: 240 3.7% 15%;
     --ring: 199 89% 48%;
 
-    --sidebar-background: 240 10% 10%;
+    --sidebar-background: 240 10% 6%;
     --sidebar-foreground: 240 5% 84.9%;
     --sidebar-primary: 199 89% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 240 3.7% 12%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 18%;
+    --sidebar-border: 240 3.7% 15%;
     --sidebar-ring: 199 89% 48%;
   }
 }
@@ -117,18 +116,31 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Shaded Professional Shadows */
 .google-shadow {
-  box-shadow: 0 1px 2px 0 rgba(0,0,0,.1), 0 1px 3px 1px rgba(0,0,0,.05);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 }
 
 .dark .google-shadow {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+}
+
+.google-shadow-hover {
+  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease;
 }
 
 .google-shadow-hover:hover {
-  box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 4px 8px 3px rgba(0,0,0,.1);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
 .dark .google-shadow-hover:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6);
+}
+
+.google-shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dark .google-shadow-sm {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
 }
