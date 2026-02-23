@@ -34,6 +34,63 @@ const modernDarkTheme: any = {
   'operator': { color: '#ff7b72' },
 };
 
+interface CodeBlockProps {
+  language: string;
+  codeString: string;
+  highContrast: boolean;
+  isDarkMode: boolean;
+}
+
+/**
+ * Separate component for code blocks to handle state correctly 
+ * and avoid hydration mismatches.
+ */
+function CodeBlock({ language, codeString, highContrast, isDarkMode }: CodeBlockProps) {
+  const [mounted, setMounted] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(codeString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const activeSyntaxTheme = highContrast ? vscDarkPlus : (isDarkMode ? modernDarkTheme : modernLightTheme);
+
+  return (
+    <div className="my-6 overflow-hidden rounded-xl border border-border/50 bg-muted/30 shadow-sm group relative">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border/50 bg-muted/50">
+        <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">
+          {language || 'code'}
+        </span>
+        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md" onClick={handleCopy}>
+          {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
+        </Button>
+      </div>
+      <div className="p-5 font-mono text-[13px] overflow-x-auto">
+        {mounted ? (
+          <SyntaxHighlighter
+            language={language}
+            style={activeSyntaxTheme}
+            PreTag="div"
+            className="!m-0 !p-0 !bg-transparent"
+            customStyle={{ margin: 0, padding: 0, backgroundColor: 'transparent' }}
+          >
+            {codeString}
+          </SyntaxHighlighter>
+        ) : (
+          <code className="whitespace-pre">{codeString}</code>
+        )}
+      </div>
+    </div>
+  );
+}
+
 interface MarkdownRendererProps {
   content: string;
   className?: string;
@@ -41,15 +98,10 @@ interface MarkdownRendererProps {
 }
 
 export function MarkdownRenderer({ content, className, highContrastCode = false }: MarkdownRendererProps) {
-  const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const isDarkMode = resolvedTheme === 'dark';
 
   const parsed = parseNoteFormat(content);
-  const isDarkMode = resolvedTheme === 'dark';
 
   return (
     <div className={cn(
@@ -70,7 +122,9 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          // Task List Checkboxes (Static Read-only View)
+          // Custom pre to avoid nested pre tags or invalid hierarchy
+          pre: ({ children }) => <div className="not-prose">{children}</div>,
+          
           input: ({ type, checked }) => {
             if (type === 'checkbox') {
               return (
@@ -78,26 +132,18 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                   type="checkbox"
                   checked={checked}
                   readOnly
-                  onChange={() => {}} // Dummy to avoid React warning
+                  onChange={() => {}} 
                   className="h-4 w-4 rounded border-primary text-primary accent-primary mr-2 align-middle cursor-default pointer-events-none"
                 />
               );
             }
             return null;
           },
-          // Custom Code Block with Copy
+          
           code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
             const codeString = String(children).replace(/\n$/, '');
-            const [copied, setCopied] = useState(false);
-
-            const handleCopy = (e: React.MouseEvent) => {
-              e.stopPropagation();
-              navigator.clipboard.writeText(codeString);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            };
             
             if (inline) {
               return (
@@ -107,28 +153,13 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
               );
             }
 
-            if (!mounted) return <pre className="bg-muted p-4 rounded-lg"><code>{children}</code></pre>;
-
-            const activeSyntaxTheme = highContrastCode ? vscDarkPlus : (isDarkMode ? modernDarkTheme : modernLightTheme);
-
             return (
-              <div className="my-6 overflow-hidden rounded-xl border border-border/50 bg-muted/30 shadow-sm group relative">
-                <div className="flex items-center justify-between px-4 py-2 border-b border-border/50 bg-muted/50">
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">{language || 'code'}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md" onClick={handleCopy}>
-                    {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
-                  </Button>
-                </div>
-                <SyntaxHighlighter
-                  language={language}
-                  style={activeSyntaxTheme}
-                  PreTag="div"
-                  className="!m-0 !p-5 !bg-transparent font-mono text-[13px]"
-                  customStyle={{ margin: 0, padding: '1.25rem', backgroundColor: 'transparent' }}
-                >
-                  {codeString}
-                </SyntaxHighlighter>
-              </div>
+              <CodeBlock 
+                language={language} 
+                codeString={codeString} 
+                highContrast={highContrastCode} 
+                isDarkMode={isDarkMode} 
+              />
             );
           }
         }}
