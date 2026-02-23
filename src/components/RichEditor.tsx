@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useEffect, useState, useCallback, memo } from 'react';
@@ -33,7 +32,6 @@ import {
   Terminal, 
   Table as TableIcon, 
   Image as ImageIcon,
-  Link as LinkIcon,
   Undo,
   Redo,
   ChevronDown,
@@ -149,7 +147,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground/90",
           "prose-p:leading-relaxed prose-p:text-foreground/80",
           "prose-blockquote:border-l-4 prose-blockquote:border-primary/40 prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic",
-          // Inline Code: Precise matching of Home screen badge style
+          // Inline Code Style
           "prose-code:bg-[#202124] prose-code:text-[#e8eaed] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:text-[0.9em] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none dark:prose-code:bg-[#1a1b1e] dark:prose-code:text-[#9aa0a6]",
           className
         ),
@@ -176,134 +174,134 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
     icon: any; 
     tooltip: string 
   }) => (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "h-8 w-8 rounded-md transition-all duration-200",
-            active ? "bg-primary/15 text-primary shadow-inner" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-          )}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClick();
-          }}
-        >
-          <Icon className="h-4 w-4" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="text-xs">{tooltip}</TooltipContent>
-    </Tooltip>
+    <TooltipProvider delayDuration={400}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "h-8 w-8 rounded-md transition-all duration-200",
+              active ? "bg-primary/15 text-primary shadow-inner" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            )}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClick();
+            }}
+          >
+            <Icon className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">{tooltip}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 
   return (
     <div className="flex flex-col w-full h-full">
       {showToolbar && (
-        <TooltipProvider delayDuration={400}>
-          <div className="flex flex-wrap items-center gap-0.5 p-1 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-20 mb-2">
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} 
-              active={editor.isActive('heading', { level: 1 })}
-              icon={Heading1}
-              tooltip="Heading 1"
-            />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} 
-              active={editor.isActive('heading', { level: 2 })}
-              icon={Heading2}
-              tooltip="Heading 2"
-            />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} 
-              active={editor.isActive('heading', { level: 3 })}
-              icon={Heading3}
-              tooltip="Heading 3"
-            />
-            <div className="w-px h-4 bg-border/40 mx-1" />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleBold().run()} 
-              active={editor.isActive('bold')}
-              icon={Bold}
-              tooltip="Bold"
-            />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleItalic().run()} 
-              active={editor.isActive('italic')}
-              icon={Italic}
-              tooltip="Italic"
-            />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleStrike().run()} 
-              active={editor.isActive('strike')}
-              icon={Strikethrough}
-              tooltip="Strikethrough"
-            />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleCode().run()} 
-              active={editor.isActive('code')}
-              icon={Code2}
-              tooltip="Inline Code"
-            />
-            <div className="w-px h-4 bg-border/40 mx-1" />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleBulletList().run()} 
-              active={editor.isActive('bulletList')}
-              icon={List}
-              tooltip="Bullet List"
-            />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleOrderedList().run()} 
-              active={editor.isActive('orderedList')}
-              icon={ListOrdered}
-              tooltip="Numbered List"
-            />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleTaskList().run()} 
-              active={editor.isActive('taskList')}
-              icon={CheckSquare}
-              tooltip="Task List"
-            />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().toggleBlockquote().run()} 
-              active={editor.isActive('blockquote')}
-              icon={Quote}
-              tooltip="Blockquote"
-            />
-            <div className="w-px h-4 bg-border/40 mx-1" />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 gap-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary">
-                  Advanced <ChevronDown className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48 google-shadow border-none rounded-xl p-1 z-[110]">
-                <DropdownMenuItem onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
-                  <TableIcon className="h-4 w-4 mr-2" /> Comparison Table
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
-                  <Terminal className="h-4 w-4 mr-2" /> Fenced Code Block
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {
-                  const url = window.prompt('Enter image URL:');
-                  if (url) editor.chain().focus().setImage({ src: url }).run();
-                }}>
-                  <ImageIcon className="h-4 w-4 mr-2" /> Insert Image
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => editor.chain().focus().setHorizontalRule().run()}>
-                  <Minus className="h-4 w-4 mr-2" /> Horizontal Rule
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => editor.chain().focus().insertContent('<details><summary>Title</summary>Content</details>').run()}>
-                  <ChevronDown className="h-4 w-4 mr-2" /> Collapsible Section
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <div className="flex-1" />
-            <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} tooltip="Undo" />
-            <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={Redo} tooltip="Redo" />
-          </div>
-        </TooltipProvider>
+        <div className="flex flex-wrap items-center gap-0.5 p-1 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-20 mb-2">
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} 
+            active={editor.isActive('heading', { level: 1 })}
+            icon={Heading1}
+            tooltip="Heading 1"
+          />
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} 
+            active={editor.isActive('heading', { level: 2 })}
+            icon={Heading2}
+            tooltip="Heading 2"
+          />
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} 
+            active={editor.isActive('heading', { level: 3 })}
+            icon={Heading3}
+            tooltip="Heading 3"
+          />
+          <div className="w-px h-4 bg-border/40 mx-1" />
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleBold().run()} 
+            active={editor.isActive('bold')}
+            icon={Bold}
+            tooltip="Bold"
+          />
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleItalic().run()} 
+            active={editor.isActive('italic')}
+            icon={Italic}
+            tooltip="Italic"
+          />
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleStrike().run()} 
+            active={editor.isActive('strike')}
+            icon={Strikethrough}
+            tooltip="Strikethrough"
+          />
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleCode().run()} 
+            active={editor.isActive('code')}
+            icon={Code2}
+            tooltip="Inline Code"
+          />
+          <div className="w-px h-4 bg-border/40 mx-1" />
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleBulletList().run()} 
+            active={editor.isActive('bulletList')}
+            icon={List}
+            tooltip="Bullet List"
+          />
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleOrderedList().run()} 
+            active={editor.isActive('orderedList')}
+            icon={ListOrdered}
+            tooltip="Numbered List"
+          />
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleTaskList().run()} 
+            active={editor.isActive('taskList')}
+            icon={CheckSquare}
+            tooltip="Task List"
+          />
+          <ToolbarButton 
+            onClick={() => editor.chain().focus().toggleBlockquote().run()} 
+            active={editor.isActive('blockquote')}
+            icon={Quote}
+            tooltip="Blockquote"
+          />
+          <div className="w-px h-4 bg-border/40 mx-1" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 gap-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary">
+                Advanced <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48 google-shadow border-none rounded-xl p-1 z-[110]">
+              <DropdownMenuItem onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
+                <TableIcon className="h-4 w-4 mr-2" /> Comparison Table
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
+                <Terminal className="h-4 w-4 mr-2" /> Fenced Code Block
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                const url = window.prompt('Enter image URL:');
+                if (url) editor.chain().focus().setImage({ src: url }).run();
+              }}>
+                <ImageIcon className="h-4 w-4 mr-2" /> Insert Image
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => editor.chain().focus().setHorizontalRule().run()}>
+                <Minus className="h-4 w-4 mr-2" /> Horizontal Rule
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => editor.chain().focus().insertContent('<details><summary>Title</summary>Content</details>').run()}>
+                <ChevronDown className="h-4 w-4 mr-2" /> Collapsible Section
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <div className="flex-1" />
+          <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} tooltip="Undo" />
+          <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={Redo} tooltip="Redo" />
+        </div>
       )}
       <EditorContent editor={editor} className="flex-1" />
     </div>
