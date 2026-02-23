@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -8,6 +9,7 @@ import { CreateNote } from '@/components/CreateNote';
 import { NoteCard } from '@/components/NoteCard';
 import { NoteModal } from '@/components/NoteModal';
 import { AppSidebar } from '@/components/AppSidebar';
+import { SettingsDialog } from '@/components/SettingsDialog';
 import { SearchCode, Loader2, Pin, Trash2, Archive, Layers, Tag as TagIcon } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
@@ -24,8 +26,12 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [currentView, setCurrentView] = useState('all'); 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // Settings
+  const [hideEmptyLabels, setHideEmptyLabels] = useState(false);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -75,6 +81,17 @@ export default function Home() {
       title: finalTitle,
       labels: finalLabels,
       updatedAt: Date.now()
+    });
+  };
+
+  const handleDeleteLabel = (labelToDelete: string) => {
+    if (!db || !user || !notes) return;
+    notes.forEach(note => {
+      if (note.labels?.includes(labelToDelete)) {
+        const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
+        const updatedLabels = note.labels.filter(l => l !== labelToDelete);
+        updateDocumentNonBlocking(noteRef, { labels: updatedLabels, updatedAt: Date.now() });
+      }
     });
   };
 
@@ -139,7 +156,13 @@ export default function Home() {
   const pinnedNotes = allFilteredNotes.filter(n => n.isPinned);
   const otherNotes = allFilteredNotes.filter(n => !n.isPinned);
 
+  // Labels calculation
   const allLabels = Array.from(new Set((notes || []).flatMap(n => n.labels || []))).sort();
+  const labelActiveCounts = allLabels.reduce((acc, label) => {
+    const count = (notes || []).filter(n => !n.isDeleted && !n.isArchived && n.labels?.includes(label)).length;
+    acc[label] = count;
+    return acc;
+  }, {} as Record<string, number>);
 
   if (isUserLoading || !user) {
     return (
@@ -170,6 +193,7 @@ export default function Home() {
           onSearch={setSearchQuery} 
           viewMode={viewMode}
           onViewModeToggle={() => setViewMode(prev => prev === 'grid' ? 'list' : 'grid')}
+          onOpenSettings={() => setIsSettingsOpen(true)}
         />
         
         <div className="flex flex-1 overflow-hidden">
@@ -177,6 +201,9 @@ export default function Home() {
             currentView={currentView} 
             onViewChange={setCurrentView} 
             labels={allLabels}
+            labelCounts={labelActiveCounts}
+            onDeleteLabel={handleDeleteLabel}
+            hideEmptyLabels={hideEmptyLabels}
           />
           
           <SidebarInset className="flex-1 overflow-y-auto bg-transparent">
@@ -271,6 +298,13 @@ export default function Home() {
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)} 
           onSave={handleUpdateNote}
+        />
+
+        <SettingsDialog 
+          isOpen={isSettingsOpen} 
+          onClose={() => setIsSettingsOpen(false)}
+          hideEmptyLabels={hideEmptyLabels}
+          onToggleHideEmptyLabels={() => setHideEmptyLabels(!hideEmptyLabels)}
         />
       </div>
     </SidebarProvider>

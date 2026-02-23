@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -16,20 +17,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSidebar } from '@/components/ui/sidebar';
-import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface NavbarProps {
   onSearch: (val: string) => void;
   viewMode: 'grid' | 'list';
   onViewModeToggle: () => void;
+  onOpenSettings: () => void;
 }
 
-export function Navbar({ onSearch, viewMode, onViewModeToggle }: NavbarProps) {
+export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }: NavbarProps) {
   const { user } = useUser();
   const auth = useAuth();
   const { toggleSidebar } = useSidebar();
-  const { toast } = useToast();
 
   const handleSignOut = () => {
     signOut(auth);
@@ -89,7 +89,7 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle }: NavbarProps) {
                 variant="ghost" 
                 size="icon" 
                 className="rounded-full"
-                onClick={() => toast({ title: "Settings", description: "Settings panel will be implemented in a future update." })}
+                onClick={onOpenSettings}
               >
                 <Settings className="h-5 w-5" />
               </Button>

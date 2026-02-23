@@ -8,7 +8,8 @@ import {
   Archive, 
   Trash2,
   Layers,
-  TagIcon
+  TagIcon,
+  X
 } from 'lucide-react';
 import {
   Sidebar,
@@ -21,15 +22,31 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface AppSidebarProps {
   currentView: string;
   onViewChange: (view: string) => void;
   labels: string[];
+  labelCounts: Record<string, number>;
+  onDeleteLabel: (label: string) => void;
+  hideEmptyLabels: boolean;
 }
 
-export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProps) {
+export function AppSidebar({ 
+  currentView, 
+  onViewChange, 
+  labels, 
+  labelCounts, 
+  onDeleteLabel,
+  hideEmptyLabels 
+}: AppSidebarProps) {
+  
+  const displayedLabels = hideEmptyLabels 
+    ? labels.filter(label => labelCounts[label] > 0)
+    : labels;
+
   return (
     <Sidebar collapsible="icon" className="border-r-0 pt-16 bg-transparent">
       <SidebarContent className="bg-transparent">
@@ -70,22 +87,42 @@ export function AppSidebar({ currentView, onViewChange, labels }: AppSidebarProp
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            {labels.map((label) => (
-              <SidebarMenuItem key={label}>
-                <SidebarMenuButton 
-                  tooltip={label} 
-                  isActive={currentView === `label:${label}`}
-                  onClick={() => onViewChange(`label:${label}`)}
-                  className={cn(
-                    "rounded-r-full mr-2 transition-all duration-300",
-                    currentView === `label:${label}` && "bg-primary/15 text-primary font-bold shadow-sm"
+            {displayedLabels.map((label) => {
+              const isActive = currentView === `label:${label}`;
+              const isEmpty = labelCounts[label] === 0;
+              
+              return (
+                <SidebarMenuItem key={label} className="group/item relative">
+                  <SidebarMenuButton 
+                    tooltip={label} 
+                    isActive={isActive}
+                    onClick={() => onViewChange(`label:${label}`)}
+                    className={cn(
+                      "rounded-r-full mr-2 transition-all duration-300",
+                      isActive && "bg-primary/15 text-primary font-bold shadow-sm"
+                    )}
+                  >
+                    <Tag className={cn("h-4 w-4", isActive && "text-primary")} />
+                    <span>{label}</span>
+                  </SidebarMenuButton>
+                  
+                  {isEmpty && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteLabel(label);
+                        if (isActive) onViewChange('all');
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                   )}
-                >
-                  <Tag className={cn("h-4 w-4", currentView === `label:${label}` && "text-primary")} />
-                  <span>{label}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+                </SidebarMenuItem>
+              );
+            })}
           </SidebarMenu>
         </SidebarGroup>
 
