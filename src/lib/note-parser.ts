@@ -1,5 +1,5 @@
 /**
- * Simplified note parser to remove "filtering" logic while we stabilize visuals.
+ * Simplified note parser that returns raw content to remove filtering logic.
  */
 
 export interface NoteMetadata {
@@ -18,7 +18,7 @@ export interface ParsedNote extends NoteMetadata {
 }
 
 export function parseNoteFormat(content: string): ParsedNote {
-  // For now, return raw content as requested to "remove the filter"
+  // Return raw content without any extraction or filtering
   return {
     title: null,
     category: 'tech',
@@ -33,6 +33,6 @@ export function parseNoteFormat(content: string): ParsedNote {
 }
 
 export function stringifyNote(parsed: ParsedNote): string {
-  // Just return the content for now
+  // Return content exactly as it is
   return parsed.displayContent;
 }
