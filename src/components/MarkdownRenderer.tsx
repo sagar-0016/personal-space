@@ -103,32 +103,31 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
   const contentToRender = parsed.isStructured ? parsed.displayContent : content;
   const isDarkMode = resolvedTheme === 'dark';
 
-  // We use a ref to track the checkbox index during rendering
+  // Track rendering pass to associate checkboxes with their indices in the source
   const checkboxCounterRef = useRef(0);
 
   const handleToggleCheckbox = (index: number) => {
     if (!onContentChange) return;
 
-    // Matches GFM checkbox pattern: start of line, optional indentation, list marker, then [ ]
-    const checkboxRegex = /^(\s*[-*+]\s+|(?:\d+\.)\s+)\[([ xX])\]/gm;
+    // We target any checkbox pattern [ ] or [x] in the entire content string.
+    // The markdown parser processes these in the same sequential order as they appear in text.
+    const checkboxRegex = /\[([ xX])\]/g;
     
-    let count = 0;
-    const newContent = content.replace(checkboxRegex, (match, prefix, char) => {
-      if (count === index) {
-        count++;
-        // Toggle: if it's currently checked (x or X), make it unchecked (space)
+    let currentMatchIndex = 0;
+    const newContent = content.replace(checkboxRegex, (match, char) => {
+      if (currentMatchIndex === index) {
+        currentMatchIndex++;
         const isChecked = char.toLowerCase() === 'x';
-        const newChar = isChecked ? ' ' : 'x';
-        return `${prefix}[${newChar}]`;
+        return isChecked ? '[ ]' : '[x]';
       }
-      count++;
+      currentMatchIndex++;
       return match;
     });
 
     onContentChange(newContent);
   };
 
-  // Reset the counter at the start of every render pass
+  // Reset counter before starting ReactMarkdown rendering
   checkboxCounterRef.current = 0;
 
   return (
@@ -146,7 +145,6 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
         components={{
-          // Use div instead of p to avoid hydration nesting errors with block elements
           p: ({ children }) => <div className="mb-4 last:mb-0 leading-relaxed text-foreground/80">{children}</div>,
           input: ({ type, checked, ...props }) => {
             if (type === 'checkbox') {
@@ -155,12 +153,10 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
                 <input
                   type="checkbox"
                   checked={checked}
-                  // Satisfy React controlled component requirements
                   onChange={() => {}} 
-                  // Using onClick + preventDefault for controlled state management
                   onClick={(e) => {
-                    e.stopPropagation();
                     if (onContentChange) {
+                      e.stopPropagation();
                       e.preventDefault();
                       handleToggleCheckbox(currentIndex);
                     }

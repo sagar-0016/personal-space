@@ -142,7 +142,8 @@ export default function Home() {
     
     if (!matchesSearch) return false;
 
-    if (currentView === 'all') return !n.isDeleted;
+    // Filter logic: "all" view excludes archived and deleted
+    if (currentView === 'all') return !n.isDeleted && !n.isArchived;
     if (currentView === 'untagged') return !n.isArchived && !n.isDeleted && (!n.labels || n.labels.length === 0);
     if (currentView === 'archive') return n.isArchived && !n.isDeleted;
     if (currentView === 'trash') return n.isDeleted;
