@@ -11,6 +11,7 @@ import { Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { parseNoteFormat } from '@/lib/note-parser';
 import { useTheme } from 'next-themes';
+import { useToast } from '@/hooks/use-toast';
 
 // Base styles for the Modern theme
 const baseModernStyles: any = {
@@ -94,6 +95,7 @@ interface MarkdownRendererProps {
 export function MarkdownRenderer({ content, className, highContrastCode = false, onContentChange }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
+  const { toast } = useToast();
   
   useEffect(() => {
     setMounted(true);
@@ -110,7 +112,6 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
     if (!onContentChange) return;
 
     // We target any checkbox pattern [ ] or [x] in the entire content string.
-    // The markdown parser processes these in the same sequential order as they appear in text.
     const checkboxRegex = /\[([ xX])\]/g;
     
     let currentMatchIndex = 0;
@@ -155,9 +156,16 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
                   checked={checked}
                   onChange={() => {}} 
                   onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    
+                    // User-requested debug notification
+                    toast({
+                      title: "Checkbox Interacted",
+                      description: `Index: ${currentIndex} | Current State: ${checked ? 'Checked' : 'Unchecked'}`,
+                    });
+
                     if (onContentChange) {
-                      e.stopPropagation();
-                      e.preventDefault();
                       handleToggleCheckbox(currentIndex);
                     }
                   }}
