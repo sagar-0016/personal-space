@@ -155,6 +155,8 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
                 <input
                   type="checkbox"
                   checked={checked}
+                  // Satisfy React controlled component requirements
+                  onChange={() => {}} 
                   // Using onClick + preventDefault for controlled state management
                   onClick={(e) => {
                     e.stopPropagation();
@@ -225,7 +227,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
                     )}>
                       {language}
                     </span>
-                  ) : null}
+                  ) : <div />}
                   
                   <Button
                     variant="ghost"
