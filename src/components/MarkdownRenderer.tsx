@@ -13,7 +13,7 @@ import { parseNoteFormat } from '@/lib/note-parser';
 import { Badge } from '@/components/ui/badge';
 
 const modernDarkTheme: any = {
-  'code[class*="language-"]': { color: '#e1e4e8', fontFamily: 'var(--font-code)', lineHeight: '1.6' },
+  'code[class*="language-"]': { color: '#e1e4e8', fontFamily: 'monospace', lineHeight: '1.6' },
   'pre[class*="language-"]': { color: '#e1e4e8', background: 'transparent' },
   'comment': { color: '#8b949e', fontStyle: 'italic' },
   'keyword': { color: '#ff7b72', fontWeight: 'bold' },
@@ -129,6 +129,7 @@ export function MarkdownRenderer({ content, className, hideMetadata = false }: M
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
+          div: ({ children, className }) => <div className={cn("mb-4 leading-relaxed text-foreground/85", className)}>{children}</div>,
           p: ({ children }) => <div className="mb-4 leading-relaxed text-foreground/85">{children}</div>,
           pre: ({ children }) => <div className="not-prose">{children}</div>,
           blockquote: ({ children }) => <blockquote className="border-l-4 border-primary/40 bg-primary/5 py-2 px-6 rounded-r-lg italic my-6 text-foreground/70">{children}</blockquote>,
@@ -152,7 +153,7 @@ export function MarkdownRenderer({ content, className, hideMetadata = false }: M
             
             if (inline) {
               return (
-                <code className="bg-muted text-foreground px-1.5 py-0.5 rounded border border-border/50 font-mono text-[0.85em] font-medium" {...props}>
+                <code className="bg-[#202124] text-[#e8eaed] px-1.5 py-0.5 rounded-md font-mono text-[0.9em] font-medium dark:bg-[#1a1b1e] dark:text-[#9aa0a6]" {...props}>
                   {children}
                 </code>
               );
