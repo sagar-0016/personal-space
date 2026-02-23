@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { 
   Plus, 
   Pin, 
-  Archive, 
   Bold,
   Italic,
   Heading2,
@@ -54,6 +53,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     const isInsidePair = (marker: string) => {
       const before = text.substring(0, start);
       const after = text.substring(start);
+      // Count markers before to see if we're "inside"
       const countBefore = (before.match(new RegExp(marker.replace(/[*_`]/g, '\\$&'), 'g')) || []).length;
       const hasAfter = after.includes(marker);
       return countBefore % 2 !== 0 && hasAfter;
@@ -114,6 +114,20 @@ export function CreateNote({ onSave }: CreateNoteProps) {
         textarea.focus();
         setTimeout(checkActiveStyles, 0);
         return;
+      }
+
+      // If already inside markers but not exactly at the edge, jump to end
+      const countBefore = (text.substring(0, start).match(new RegExp(prefix.replace(/[*_`]/g, '\\$&'), 'g')) || []).length;
+      const hasAfter = text.substring(start).includes(suffix);
+      if (countBefore % 2 !== 0 && hasAfter) {
+        const nextMarkerIndex = text.indexOf(suffix, start);
+        if (nextMarkerIndex !== -1) {
+          const newPos = nextMarkerIndex + suffix.length;
+          textarea.setSelectionRange(newPos, newPos);
+          textarea.focus();
+          setTimeout(checkActiveStyles, 0);
+          return;
+        }
       }
 
       if (start !== end) {
@@ -309,20 +323,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Quote (Line Toggle)</TooltipContent>
-                  </Tooltip>
-                  <div className="w-px h-4 bg-border mx-2" />
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-muted-foreground/60" 
-                        onClick={() => handleSave({ isArchived: true })}
-                      >
-                        <Archive className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Archive</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>

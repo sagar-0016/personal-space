@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -39,7 +39,7 @@ interface CodeBlockProps {
   isDarkMode: boolean;
 }
 
-function CodeBlock({ language, codeString, highContrast, isDarkMode }: CodeBlockProps) {
+const CodeBlock = memo(({ language, codeString, highContrast, isDarkMode }: CodeBlockProps) => {
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -54,6 +54,14 @@ function CodeBlock({ language, codeString, highContrast, isDarkMode }: CodeBlock
     setTimeout(() => setCopied(false), 2000);
   };
 
+  if (!mounted) {
+    return (
+      <div className="my-6 overflow-hidden rounded-xl border border-border/50 bg-muted/30 shadow-sm">
+        <div className="p-5 font-mono text-[13px] whitespace-pre">{codeString}</div>
+      </div>
+    );
+  }
+
   const activeSyntaxTheme = highContrast ? vscDarkPlus : (isDarkMode ? modernDarkTheme : modernLightTheme);
 
   return (
@@ -67,23 +75,21 @@ function CodeBlock({ language, codeString, highContrast, isDarkMode }: CodeBlock
         </Button>
       </div>
       <div className="p-5 font-mono text-[13px] overflow-x-auto">
-        {mounted ? (
-          <SyntaxHighlighter
-            language={language}
-            style={activeSyntaxTheme}
-            PreTag="div"
-            className="!m-0 !p-0 !bg-transparent"
-            customStyle={{ margin: 0, padding: 0, backgroundColor: 'transparent' }}
-          >
-            {codeString}
-          </SyntaxHighlighter>
-        ) : (
-          <div className="whitespace-pre font-mono">{codeString}</div>
-        )}
+        <SyntaxHighlighter
+          language={language}
+          style={activeSyntaxTheme}
+          PreTag="div"
+          className="!m-0 !p-0 !bg-transparent"
+          customStyle={{ margin: 0, padding: 0, backgroundColor: 'transparent' }}
+        >
+          {codeString}
+        </SyntaxHighlighter>
       </div>
     </div>
   );
-}
+});
+
+CodeBlock.displayName = 'CodeBlock';
 
 interface MarkdownRendererProps {
   content: string;
@@ -111,7 +117,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          // Render as div to avoid hydration issues with nested blocks like code inside paragraphs
+          // Use div for paragraphs to prevent hydration mismatch with nested complex blocks
           p: ({ children }) => <div className="mb-4 leading-relaxed text-foreground/80">{children}</div>,
           pre: ({ children }) => <div className="not-prose">{children}</div>,
           input: ({ type, checked }) => {
@@ -121,7 +127,6 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                   type="checkbox"
                   checked={checked}
                   readOnly
-                  onChange={() => {}}
                   className="h-4 w-4 rounded border-primary text-primary accent-primary mr-2 align-middle cursor-default pointer-events-none"
                 />
               );
