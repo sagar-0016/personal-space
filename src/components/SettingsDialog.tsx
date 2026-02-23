@@ -43,13 +43,13 @@ export function SettingsDialog({
 
         <div className="py-6 space-y-6">
           <div className="flex items-center justify-between space-x-4 bg-secondary/30 p-4 rounded-xl border border-border/50">
-            <div className="flex gap-3">
-              <div className="p-2 bg-background rounded-lg shadow-sm">
-                <Filter className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 shrink-0 bg-background rounded-lg shadow-sm flex items-center justify-center border border-border/20">
+                <Filter className="h-5 w-5 text-muted-foreground" />
               </div>
               <div className="space-y-0.5">
-                <Label htmlFor="hide-empty" className="text-sm font-bold">Hide empty labels</Label>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <Label htmlFor="hide-empty" className="text-sm font-bold cursor-pointer">Hide empty labels</Label>
+                <p className="text-xs text-muted-foreground leading-relaxed pr-2">
                   Only show labels in the sidebar that have at least one active note.
                 </p>
               </div>
