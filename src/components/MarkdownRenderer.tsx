@@ -45,7 +45,7 @@ const baseModernStyles: any = {
   'italic': { fontStyle: 'italic' },
 };
 
-// Modern Light Theme
+// Modern Light Theme (High Fidelity Professional Clear)
 const modernLightTheme: any = {
   ...baseModernStyles,
   'code[class*="language-"]': { ...baseModernStyles['code[class*="language-"]'], color: '#24292e' },
@@ -65,7 +65,7 @@ const modernLightTheme: any = {
   'variable': { color: '#e36209' },
 };
 
-// Modern Dark Theme
+// Modern Dark Theme (Deep Focus)
 const modernDarkTheme: any = {
   ...baseModernStyles,
   'code[class*="language-"]': { ...baseModernStyles['code[class*="language-"]'], color: '#e1e4e8' },
@@ -102,30 +102,46 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
   }, []);
 
   const parsed = parseNoteFormat(content);
-  const contentToRender = parsed.isStructured ? parsed.displayContent : content;
   const isDarkMode = resolvedTheme === 'dark';
 
+  // Use a ref to track the index during rendering to match with the input components
   const checkboxCounterRef = useRef(0);
 
-  const handleToggleCheckbox = (index: number) => {
+  const handleToggleCheckbox = (targetIndex: number) => {
     if (!onContentChange) return;
 
-    // Use a more specific regex that matches GFM task list markers at start of line
-    const checkboxRegex = /^(\s*[-*+]|\s*\d+\.)\s+\[([ xX])\]/gm;
-    let currentMatchIndex = 0;
-    
+    // We process only the relevant content part
     const targetContent = parsed.isStructured ? parsed.displayContent : content;
+    
+    // REDEFINED INDEX LOGIC: 
+    // We split the content by code blocks and other non-renderable areas 
+    // to ensure the toggle logic exactly matches the ReactMarkdown renderer.
+    const segments = targetContent.split(/(```[\s\S]*?```)/g);
+    let globalMatchIndex = 0;
+    let found = false;
 
-    const newTargetContent = targetContent.replace(checkboxRegex, (match, prefix, char) => {
-      if (currentMatchIndex === index) {
-        currentMatchIndex++;
-        const isChecked = char.toLowerCase() === 'x';
-        return `${prefix} [${isChecked ? ' ' : 'x'}]`;
-      }
-      currentMatchIndex++;
-      return match;
+    // GFM-compliant regex for task list markers
+    const checkboxRegex = /^(\s*[-*+]|\s*\d+\.)\s+\[([ xX])\]/gm;
+
+    const updatedSegments = segments.map(segment => {
+      // If we already found and toggled the target, or if this is a code block, skip processing
+      if (found || segment.startsWith('```')) return segment;
+
+      return segment.replace(checkboxRegex, (match, prefix, char) => {
+        if (globalMatchIndex === targetIndex) {
+          found = true;
+          globalMatchIndex++;
+          const isChecked = char.toLowerCase() === 'x';
+          return `${prefix} [${isChecked ? ' ' : 'x'}]`;
+        }
+        globalMatchIndex++;
+        return match;
+      });
     });
 
+    const newTargetContent = updatedSegments.join('');
+
+    // Reconstruct the full note if it was structured
     if (parsed.isStructured) {
       const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n\n/);
       const prefix = frontmatterMatch ? frontmatterMatch[0] : '';
@@ -135,6 +151,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
     }
   };
 
+  // Reset counter on every render pass
   checkboxCounterRef.current = 0;
 
   return (
@@ -160,14 +177,15 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
                 <input
                   type="checkbox"
                   checked={checked}
-                  onChange={() => {}} 
+                  onChange={() => {}} // Satisfy React's controlled component requirement
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
                     
+                    // Debug notification to verify indexing
                     toast({
-                      title: "Checkbox Interacted",
-                      description: `Index: ${currentIndex} | Current State: ${checked ? 'Checked' : 'Unchecked'}`,
+                      title: "Task Toggled",
+                      description: `Index: ${currentIndex} | State: ${checked ? 'Checked' : 'Unchecked'}`,
                     });
 
                     if (onContentChange) {
@@ -276,7 +294,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
           }
         }}
       >
-        {contentToRender}
+        {parsed.isStructured ? parsed.displayContent : content}
       </ReactMarkdown>
     </div>
   );
