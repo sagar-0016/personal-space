@@ -31,22 +31,36 @@ import {
   Terminal, 
   Undo,
   Redo,
-  Table as TableIcon
+  Table as TableIcon,
+  Database,
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
 
 const lowlight = createLowlight(common);
 
 interface RichEditorProps {
   content: string;
   onChange: (markdown: string) => void;
+  metadata?: string;
+  onMetadataChange?: (metadata: string) => void;
   placeholder?: string;
   className?: string;
   showToolbar?: boolean;
 }
 
-export function RichEditor({ content, onChange, placeholder = "Start typing...", className, showToolbar = true }: RichEditorProps) {
+export function RichEditor({ 
+  content, 
+  onChange, 
+  metadata, 
+  onMetadataChange, 
+  placeholder = "Start typing...", 
+  className, 
+  showToolbar = true 
+}: RichEditorProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -215,6 +229,51 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
             tooltip="Insert Table"
             active={editor.isActive('table')}
           />
+          
+          <div className="w-px h-4 bg-border mx-1" />
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/5 hover:bg-primary/10 transition-all"
+              >
+                <Database className="h-3.5 w-3.5 mr-1" />
+                Analytical Metadata
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[400px] p-4 bg-card shadow-2xl border-primary/20" align="end">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                    <Database className="h-3 w-3 text-primary" />
+                    Metadata Block
+                  </h4>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[200px] text-[10px]">
+                        Enter raw metadata here. The app will process title and tags automatically.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Textarea
+                  value={metadata || ''}
+                  onChange={(e) => onMetadataChange?.(e.target.value)}
+                  placeholder="---&#10;title: &quot;My Title&quot;&#10;tags: [&quot;tag1&quot;]&#10;---"
+                  className="min-h-[150px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1"
+                />
+                <p className="text-[9px] text-muted-foreground italic">
+                  Format: YAML-like block with title and tags fields.
+                </p>
+              </div>
+            </PopoverContent>
+          </Popover>
+
           <div className="flex-1" />
           <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} tooltip="Undo" />
           <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={Redo} tooltip="Redo" />
