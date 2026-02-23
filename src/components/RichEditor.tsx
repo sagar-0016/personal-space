@@ -125,7 +125,6 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
     if (isActive) {
       const { from, to } = editor.state.selection;
       if (from === to) {
-        // Intelligent "Jump Out" behavior: remove mark and insert a space to exit styling
         editor.chain().focus().unsetMark(type).insertContent(' ').run();
       } else {
         editor.chain().focus().toggleMark(type, options).run();
