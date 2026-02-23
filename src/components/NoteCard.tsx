@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -73,8 +74,15 @@ export function NoteCard({
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="text-sm text-foreground/70 pointer-events-none">
-          <MarkdownRenderer content={note.content} className="prose-sm line-clamp-[15]" />
+        <div className="text-sm text-foreground/70">
+          <MarkdownRenderer 
+            content={note.content} 
+            className="prose-sm line-clamp-[15]" 
+            onContentChange={(newContent) => {
+              if (isTrash) return;
+              onEdit({ ...note, content: newContent });
+            }}
+          />
         </div>
       </div>
 

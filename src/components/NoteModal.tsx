@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -196,7 +197,11 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
             ) : (
               <div className="min-h-[400px] py-2">
                 {content ? (
-                  <MarkdownRenderer content={content} highContrastCode={highContrastCode} />
+                  <MarkdownRenderer 
+                    content={content} 
+                    highContrastCode={highContrastCode} 
+                    onContentChange={(newContent) => setContent(newContent)}
+                  />
                 ) : (
                   <p className="text-muted-foreground/50 italic">Nothing to preview yet.</p>
                 )}

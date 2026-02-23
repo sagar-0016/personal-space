@@ -1,6 +1,7 @@
+
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -43,7 +44,7 @@ const baseModernStyles: any = {
   'italic': { fontStyle: 'italic' },
 };
 
-// Modern Light Theme (Inspired by the reference image)
+// Modern Light Theme
 const modernLightTheme: any = {
   ...baseModernStyles,
   'code[class*="language-"]': { ...baseModernStyles['code[class*="language-"]'], color: '#24292e' },
@@ -63,7 +64,7 @@ const modernLightTheme: any = {
   'variable': { color: '#e36209' },
 };
 
-// Modern Dark Theme (Adapted for dark mode)
+// Modern Dark Theme
 const modernDarkTheme: any = {
   ...baseModernStyles,
   'code[class*="language-"]': { ...baseModernStyles['code[class*="language-"]'], color: '#e1e4e8' },
@@ -87,9 +88,10 @@ interface MarkdownRendererProps {
   content: string;
   className?: string;
   highContrastCode?: boolean;
+  onContentChange?: (newContent: string) => void;
 }
 
-export function MarkdownRenderer({ content, className, highContrastCode = false }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, className, highContrastCode = false, onContentChange }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
   
@@ -100,6 +102,26 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
   const parsed = parseNoteFormat(content);
   const contentToRender = parsed.isStructured ? parsed.displayContent : content;
   const isDarkMode = resolvedTheme === 'dark';
+
+  // Helper to toggle checkbox at a specific index
+  const handleToggleCheckbox = (index: number) => {
+    if (!onContentChange) return;
+
+    let count = 0;
+    const newContent = content.replace(/\[([ xX])\]/g, (match, char) => {
+      if (count === index) {
+        count++;
+        return char === ' ' ? '[x]' : '[ ]';
+      }
+      count++;
+      return match;
+    });
+
+    onContentChange(newContent);
+  };
+
+  // Internal state to track checkbox indices during render
+  let checkboxCounter = 0;
 
   return (
     <div className={cn(
@@ -116,8 +138,21 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
         components={{
-          // Render as div to avoid nested p tag hydration issues
           p: ({ children }) => <div className="mb-4 last:mb-0 leading-relaxed text-foreground/80">{children}</div>,
+          input: ({ type, checked }) => {
+            if (type === 'checkbox') {
+              const currentIndex = checkboxCounter++;
+              return (
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => handleToggleCheckbox(currentIndex)}
+                  className="cursor-pointer h-4 w-4 rounded border-primary text-primary focus:ring-primary mr-2 align-middle accent-primary"
+                />
+              );
+            }
+            return null;
+          },
           code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
@@ -146,7 +181,6 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
               );
             }
 
-            // Determine active theme for syntax highlighter
             const activeSyntaxTheme = highContrastCode 
               ? vscDarkPlus 
               : (isDarkMode ? modernDarkTheme : modernLightTheme);
@@ -158,7 +192,6 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                   ? "border-zinc-800 bg-zinc-950" 
                   : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/40 backdrop-blur-sm"
               )}>
-                {/* Header */}
                 <div className={cn(
                   "flex items-center justify-between px-4 py-2 border-b transition-colors",
                   highContrastCode 
@@ -172,7 +205,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                     )}>
                       {language}
                     </span>
-                  ) : <span />}
+                  ) : null}
                   
                   <Button
                     variant="ghost"
@@ -187,7 +220,6 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                   </Button>
                 </div>
 
-                {/* Code Highlighter */}
                 <SyntaxHighlighter
                   language={language}
                   style={activeSyntaxTheme}
