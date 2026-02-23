@@ -14,7 +14,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { parseNoteFormat } from '@/lib/note-parser';
+import { parseNoteFormat, stringifyNote } from '@/lib/note-parser';
 import { cn } from '@/lib/utils';
 
 export default function Home() {
@@ -47,29 +47,53 @@ export default function Home() {
     if (!db || !user) return;
     
     const parsed = parseNoteFormat(newNoteData.content);
-    const finalTitle = parsed.isStructured && parsed.title ? parsed.title : newNoteData.title;
-    const finalLabels = parsed.isStructured ? parsed.labels : [];
+    
+    // Ensure standard structured format is used if possible
+    const finalContent = parsed.isStructured 
+      ? stringifyNote({ ...parsed, title: parsed.title || newNoteData.title || 'Untitled Note', tags: parsed.tags.length > 0 ? parsed.tags : [] })
+      : stringifyNote({
+          title: newNoteData.title || 'Untitled Note',
+          category: 'general',
+          tags: [],
+          created: new Date().toISOString().split('T')[0],
+          updated: new Date().toISOString().split('T')[0],
+          type: 'note',
+          status: 'draft',
+          displayContent: newNoteData.content,
+          isStructured: true
+        });
 
     const noteRef = collection(db, 'users', user.uid, 'notes');
     const newNote = {
-      title: finalTitle || 'Untitled Note',
-      content: newNoteData.content,
+      title: parsed.isStructured && parsed.title ? parsed.title : (newNoteData.title || 'Untitled Note'),
+      content: finalContent,
       userId: user.uid,
       updatedAt: Date.now(),
       createdAt: Date.now(),
       isPinned: newNoteData.isPinned,
       isArchived: !!newNoteData.isArchived,
       isDeleted: false,
-      labels: finalLabels
+      labels: parsed.isStructured ? parsed.tags : []
     };
     addDocumentNonBlocking(noteRef, newNote);
   };
 
   const handleUpdateNote = (updatedNote: Note) => {
     if (!db || !user) return;
+    
+    const parsed = parseNoteFormat(updatedNote.content);
+    const finalContent = parsed.isStructured 
+      ? stringifyNote({ 
+          ...parsed, 
+          title: updatedNote.title, 
+          tags: updatedNote.labels || [] 
+        })
+      : updatedNote.content;
+
     const noteRef = doc(db, 'users', user.uid, 'notes', updatedNote.id);
     updateDocumentNonBlocking(noteRef, {
       ...updatedNote,
+      content: finalContent,
       updatedAt: Date.now()
     });
   };
@@ -80,7 +104,17 @@ export default function Home() {
       if (note.labels?.includes(labelToDelete)) {
         const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
         const updatedLabels = note.labels?.filter(l => l !== labelToDelete) || [];
-        updateDocumentNonBlocking(noteRef, { labels: updatedLabels, updatedAt: Date.now() });
+        
+        const parsed = parseNoteFormat(note.content);
+        const finalContent = parsed.isStructured 
+          ? stringifyNote({ ...parsed, tags: updatedLabels })
+          : note.content;
+
+        updateDocumentNonBlocking(noteRef, { 
+          labels: updatedLabels, 
+          content: finalContent,
+          updatedAt: Date.now() 
+        });
       }
     });
   };
@@ -132,7 +166,6 @@ export default function Home() {
     
     if (!matchesSearch) return false;
 
-    // Strict filtering: 'all' excludes archived and deleted
     if (currentView === 'all') return !n.isDeleted && !n.isArchived;
     if (currentView === 'untagged') return !n.isArchived && !n.isDeleted && (!n.labels || n.labels.length === 0);
     if (currentView === 'archive') return !!n.isArchived && !n.isDeleted;

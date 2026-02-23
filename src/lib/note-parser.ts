@@ -1,17 +1,30 @@
 /**
- * Utility to parse structured markdown with YAML frontmatter.
+ * Utility to parse and stringify structured markdown with YAML frontmatter.
  * Specifically handles the format:
  * ---
  * title: "..."
+ * category: "..."
  * tags: ["...", "..."]
+ * created: YYYY-MM-DD
+ * updated: YYYY-MM-DD
+ * type: "..."
+ * status: "..."
  * ---
  * ## Context
  * ...
  */
 
-export interface ParsedNote {
+export interface NoteMetadata {
   title: string | null;
-  labels: string[];
+  category: string;
+  tags: string[];
+  created: string;
+  updated: string;
+  type: string;
+  status: string;
+}
+
+export interface ParsedNote extends NoteMetadata {
   displayContent: string;
   isStructured: boolean;
 }
@@ -21,8 +34,18 @@ export function parseNoteFormat(content: string): ParsedNote {
   const frontmatterRegex = /^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/;
   const match = content.match(frontmatterRegex);
 
+  const defaultMetadata: NoteMetadata = {
+    title: null,
+    category: 'tech',
+    tags: [],
+    created: new Date().toISOString().split('T')[0],
+    updated: new Date().toISOString().split('T')[0],
+    type: 'note',
+    status: 'draft'
+  };
+
   if (!match) {
-    return { title: null, labels: [], displayContent: content, isStructured: false };
+    return { ...defaultMetadata, displayContent: content, isStructured: false };
   }
 
   const yaml = match[1];
@@ -30,31 +53,53 @@ export function parseNoteFormat(content: string): ParsedNote {
 
   // Verify the required '## Context' header exists in the body
   if (!body.includes('## Context')) {
-    return { title: null, labels: [], displayContent: content, isStructured: false };
+    return { ...defaultMetadata, displayContent: content, isStructured: false };
   }
 
-  // Extract title: title: "..." or title: '...'
+  // Extract metadata fields from YAML
   const titleMatch = yaml.match(/title:\s*["'](.+?)["']/);
-  const title = titleMatch ? titleMatch[1] : null;
-
-  // Extract tags: tags: ["tag1", "tag2"]
+  const categoryMatch = yaml.match(/category:\s*["'](.+?)["']/);
+  const typeMatch = yaml.match(/type:\s*["'](.+?)["']/);
+  const statusMatch = yaml.match(/status:\s*["'](.+?)["']/);
+  const createdMatch = yaml.match(/created:\s*([\d-]+)/);
+  const updatedMatch = yaml.match(/updated:\s*([\d-]+)/);
+  
   const tagsMatch = yaml.match(/tags:\s*\[([\s\S]*?)\]/);
-  let labels: string[] = [];
+  let tags: string[] = [];
   if (tagsMatch) {
-    labels = tagsMatch[1]
+    tags = tagsMatch[1]
       .split(',')
       .map(tag => tag.trim().replace(/["']/g, ''))
       .filter(tag => tag.length > 0);
   }
 
-  // The main content starts from the '## Context' header
-  const contextIndex = body.indexOf('## Context');
-  const displayContent = contextIndex !== -1 ? body.substring(contextIndex) : body;
-
   return {
-    title,
-    labels,
-    displayContent,
+    title: titleMatch ? titleMatch[1] : null,
+    category: categoryMatch ? categoryMatch[1] : 'tech',
+    tags: tags,
+    created: createdMatch ? createdMatch[1] : defaultMetadata.created,
+    updated: updatedMatch ? updatedMatch[1] : defaultMetadata.updated,
+    type: typeMatch ? typeMatch[1] : 'note',
+    status: statusMatch ? statusMatch[1] : 'draft',
+    displayContent: body.trim(),
     isStructured: true
   };
+}
+
+export function stringifyNote(parsed: ParsedNote): string {
+  const yaml = [
+    '---',
+    `title: "${parsed.title || 'Untitled Note'}"`,
+    `category: "${parsed.category}"`,
+    `tags: [${parsed.tags.map(t => `"${t}"`).join(', ')}]`,
+    `created: ${parsed.created}`,
+    `updated: ${new Date().toISOString().split('T')[0]}`,
+    `type: "${parsed.type}"`,
+    `status: "${parsed.status}"`,
+    '---',
+    '',
+    parsed.displayContent.startsWith('## Context') ? parsed.displayContent : `## Context\n\n${parsed.displayContent}`
+  ].join('\n');
+  
+  return yaml;
 }

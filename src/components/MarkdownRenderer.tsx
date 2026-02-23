@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, memo } from 'react';
@@ -6,11 +5,12 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { cn } from '@/lib/utils';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, Info, Clock, Tag as TagIcon, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
+import { parseNoteFormat } from '@/lib/note-parser';
+import { Badge } from '@/components/ui/badge';
 
 const modernLightTheme: any = {
   'code[class*="language-"]': { color: '#24292e', fontFamily: 'var(--font-code)', lineHeight: '1.6' },
@@ -93,9 +93,10 @@ CodeBlock.displayName = 'CodeBlock';
 interface MarkdownRendererProps {
   content: string;
   className?: string;
+  hideMetadata?: boolean;
 }
 
-export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, className, hideMetadata = false }: MarkdownRendererProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -109,22 +110,47 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
     return <div className={cn("opacity-0", className)}>{content}</div>;
   }
 
+  const parsed = parseNoteFormat(content);
+  const displayContent = parsed.isStructured ? parsed.displayContent : content;
+
   return (
     <div className={cn(
       "prose prose-sm sm:prose-base dark:prose-invert max-w-none",
-      "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground/90",
-      "prose-a:text-primary prose-a:font-medium hover:prose-a:underline",
-      "prose-blockquote:border-l-4 prose-blockquote:border-primary/40 prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic prose-blockquote:text-foreground/70",
-      "prose-table:border prose-table:rounded-lg prose-table:overflow-hidden prose-th:bg-muted/50 prose-th:p-3 prose-td:p-3",
-      "prose-img:rounded-xl prose-img:shadow-md",
-      "prose-hr:border-muted-foreground/20 my-8",
       className
     )}>
+      {parsed.isStructured && !hideMetadata && (
+        <div className="not-prose mb-8 p-4 rounded-xl bg-primary/5 border border-primary/10 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
+              <Info className="h-3 w-3" /> Status
+            </span>
+            <Badge variant="outline" className="text-[10px] bg-background capitalize">{parsed.status}</Badge>
+          </div>
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
+              <Layers className="h-3 w-3" /> Category
+            </span>
+            <p className="font-semibold text-foreground/80">{parsed.category}</p>
+          </div>
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
+              <Clock className="h-3 w-3" /> Updated
+            </span>
+            <p className="font-semibold text-foreground/80">{parsed.updated}</p>
+          </div>
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
+              <TagIcon className="h-3 w-3" /> Type
+            </span>
+            <p className="font-semibold text-foreground/80">{parsed.type}</p>
+          </div>
+        </div>
+      )}
+
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          // Render paragraphs as div to avoid hydration errors when complex blocks (like code) are nested
           p: ({ children }) => <div className="mb-4 leading-relaxed text-foreground/80">{children}</div>,
           pre: ({ children }) => <div className="not-prose">{children}</div>,
           input: ({ type, checked }) => {
@@ -163,7 +189,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           }
         }}
       >
-        {content}
+        {displayContent}
       </ReactMarkdown>
     </div>
   );
