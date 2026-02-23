@@ -6,14 +6,14 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import vscDarkPlus from 'react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { cn } from '@/lib/utils';
 import { Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { parseNoteFormat } from '@/lib/note-parser';
 import { useTheme } from 'next-themes';
 
-// High Fidelity Professional Themes
+// High Fidelity Professional Themes for Code
 const modernLightTheme: any = {
   'code[class*="language-"]': { color: '#24292e', fontFamily: 'var(--font-code)', lineHeight: '1.6' },
   'pre[class*="language-"]': { color: '#24292e', background: 'transparent' },
@@ -70,7 +70,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          // Task List Checkboxes
+          // Task List Checkboxes (Static Read-only View)
           input: ({ type, checked }) => {
             if (type === 'checkbox') {
               return (
@@ -78,7 +78,8 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
                   type="checkbox"
                   checked={checked}
                   readOnly
-                  className="h-4 w-4 rounded border-primary text-primary accent-primary mr-2 align-middle cursor-default"
+                  onChange={() => {}} // Dummy to avoid React warning
+                  className="h-4 w-4 rounded border-primary text-primary accent-primary mr-2 align-middle cursor-default pointer-events-none"
                 />
               );
             }
@@ -91,7 +92,8 @@ export function MarkdownRenderer({ content, className, highContrastCode = false 
             const codeString = String(children).replace(/\n$/, '');
             const [copied, setCopied] = useState(false);
 
-            const handleCopy = () => {
+            const handleCopy = (e: React.MouseEvent) => {
+              e.stopPropagation();
               navigator.clipboard.writeText(codeString);
               setCopied(true);
               setTimeout(() => setCopied(false), 2000);
