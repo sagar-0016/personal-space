@@ -25,6 +25,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { parseNoteFormat } from '@/lib/note-parser';
+import { cn } from '@/lib/utils';
 
 interface NoteModalProps {
   note: Note | null;
@@ -108,16 +109,16 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     const text = textarea.value;
 
     if (suffix) {
-      // Pair-based formatting
+      // Pair-based formatting (bold, italic, code)
       const isInside = text.substring(start - prefix.length, start) === prefix && 
                        text.substring(end, end + suffix.length) === suffix;
 
       if (isInside) {
-        // EXIT: Jump out of markers
+        // TOGGLE OFF: Jump out of markers
         const newPos = end + suffix.length;
         textarea.setSelectionRange(newPos, newPos);
         textarea.focus();
-        checkActiveStyles();
+        setTimeout(checkActiveStyles, 0);
         return;
       }
 
@@ -141,7 +142,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
         }, 0);
       }
     } else {
-      // Line-based formatting
+      // Line-based formatting (heading, list, quote)
       const lines = text.split('\n');
       let currentPos = 0;
       let targetLineIndex = -1;

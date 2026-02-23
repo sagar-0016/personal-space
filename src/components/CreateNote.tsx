@@ -97,16 +97,16 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     const text = textarea.value;
 
     if (suffix) {
-      // Pair-based formatting
+      // Pair-based formatting (bold, italic, code)
       const isInside = text.substring(start - prefix.length, start) === prefix && 
                        text.substring(end, end + suffix.length) === suffix;
 
       if (isInside) {
-        // EXIT: Move cursor after the closing markers
+        // TOGGLE OFF: Jump out of markers
         const newPos = end + suffix.length;
         textarea.setSelectionRange(newPos, newPos);
         textarea.focus();
-        checkActiveStyles();
+        setTimeout(checkActiveStyles, 0);
         return;
       }
 
@@ -130,7 +130,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
         }, 0);
       }
     } else {
-      // Line-based formatting
+      // Line-based formatting (heading, list, quote)
       const lines = text.split('\n');
       let currentPos = 0;
       let targetLineIndex = -1;
