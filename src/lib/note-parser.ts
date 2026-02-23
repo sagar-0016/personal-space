@@ -20,6 +20,7 @@ export interface ParsedNote extends NoteMetadata {
 
 export function parseNoteFormat(content: string): ParsedNote {
   // Enhanced regex to match the metadata block between --- and ---
+  // Using flexible multi-line matching
   const blockRegex = /^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/;
   const match = content.match(blockRegex);
 
