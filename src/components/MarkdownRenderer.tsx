@@ -12,16 +12,6 @@ import { useTheme } from 'next-themes';
 import { parseNoteFormat } from '@/lib/note-parser';
 import { Badge } from '@/components/ui/badge';
 
-const modernLightTheme: any = {
-  'code[class*="language-"]': { color: '#24292e', fontFamily: 'var(--font-code)', lineHeight: '1.6' },
-  'pre[class*="language-"]': { color: '#24292e', background: 'transparent' },
-  'comment': { color: '#6a737d', fontStyle: 'italic' },
-  'keyword': { color: '#d73a49', fontWeight: 'bold' },
-  'string': { color: '#032f62' },
-  'function': { color: '#6f42c1' },
-  'operator': { color: '#d73a49' },
-};
-
 const modernDarkTheme: any = {
   'code[class*="language-"]': { color: '#e1e4e8', fontFamily: 'var(--font-code)', lineHeight: '1.6' },
   'pre[class*="language-"]': { color: '#e1e4e8', background: 'transparent' },
@@ -32,7 +22,7 @@ const modernDarkTheme: any = {
   'operator': { color: '#ff7b72' },
 };
 
-const CodeBlock = memo(({ language, codeString, isDarkMode }: { language: string; codeString: string; isDarkMode: boolean }) => {
+const CodeBlock = memo(({ language, codeString }: { language: string; codeString: string }) => {
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -49,28 +39,26 @@ const CodeBlock = memo(({ language, codeString, isDarkMode }: { language: string
 
   if (!mounted) {
     return (
-      <div className="my-6 overflow-hidden rounded-xl border border-border/50 bg-muted/30 shadow-sm">
-        <div className="p-5 font-mono text-[13px] whitespace-pre">{codeString}</div>
+      <div className="my-6 overflow-hidden rounded-xl border border-white/5 bg-[#0d0d0d] shadow-sm">
+        <div className="p-5 font-mono text-[13px] whitespace-pre text-white/40">{codeString}</div>
       </div>
     );
   }
 
-  const activeSyntaxTheme = isDarkMode ? modernDarkTheme : modernLightTheme;
-
   return (
-    <div className="my-6 overflow-hidden rounded-xl border border-border/50 bg-muted/30 shadow-sm group relative">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border/50 bg-muted/50">
-        <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">
+    <div className="my-6 overflow-hidden rounded-xl border border-white/5 bg-[#0d0d0d] shadow-2xl group relative google-shadow">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/5">
+        <span className="text-[9px] uppercase font-black tracking-[0.2em] text-white/30">
           {language || 'source code'}
         </span>
-        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md" onClick={handleCopy}>
-          {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
+        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-white/10" onClick={handleCopy}>
+          {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3 text-white/20" />}
         </Button>
       </div>
-      <div className="p-5 font-mono text-[13px] overflow-x-auto">
+      <div className="p-5 font-mono text-[13px] overflow-x-auto text-white/90">
         <SyntaxHighlighter
           language={language}
-          style={activeSyntaxTheme}
+          style={modernDarkTheme}
           PreTag="div"
           className="!m-0 !p-0 !bg-transparent"
         >
@@ -90,14 +78,11 @@ interface MarkdownRendererProps {
 }
 
 export function MarkdownRenderer({ content, className, hideMetadata = false }: MarkdownRendererProps) {
-  const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const isDarkMode = resolvedTheme === 'dark';
 
   if (!mounted) {
     return <div className={cn("opacity-0", className)}>{content}</div>;
@@ -144,10 +129,9 @@ export function MarkdownRenderer({ content, className, hideMetadata = false }: M
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          // Use div for paragraphs to avoid hydration nesting issues
           p: ({ children }) => <div className="mb-4 leading-relaxed text-foreground/85">{children}</div>,
           pre: ({ children }) => <div className="not-prose">{children}</div>,
-          blockquote: ({ children }) => <blockquote className="border-l-4 border-primary/40 bg-primary/5 py-2 px-6 rounded-r-lg italic my-6">{children}</blockquote>,
+          blockquote: ({ children }) => <blockquote className="border-l-4 border-primary/40 bg-primary/5 py-2 px-6 rounded-r-lg italic my-6 text-foreground/70">{children}</blockquote>,
           input: ({ type, checked }) => {
             if (type === 'checkbox') {
               return (
@@ -168,7 +152,7 @@ export function MarkdownRenderer({ content, className, hideMetadata = false }: M
             
             if (inline) {
               return (
-                <code className="bg-primary/15 text-primary px-1.5 py-0.5 rounded font-mono text-[0.85em] font-medium" {...props}>
+                <code className="bg-muted text-foreground px-1.5 py-0.5 rounded border border-border/50 font-mono text-[0.85em] font-medium" {...props}>
                   {children}
                 </code>
               );
@@ -178,7 +162,6 @@ export function MarkdownRenderer({ content, className, hideMetadata = false }: M
               <CodeBlock 
                 language={language} 
                 codeString={codeString} 
-                isDarkMode={isDarkMode} 
               />
             );
           }

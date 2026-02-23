@@ -1,17 +1,5 @@
 /**
  * Utility to parse and stringify structured markdown with custom metadata blocks.
- * Specifically handles the format:
- * ---
- * ## title: "..."
- * category: "..."
- * tags: ["...", "..."]
- * created: YYYY-MM-DD
- * updated: YYYY-MM-DD
- * type: "..."
- * status: "..."
- * ---
- * ## Context
- * ...
  */
 
 export interface NoteMetadata {
@@ -30,7 +18,7 @@ export interface ParsedNote extends NoteMetadata {
 }
 
 export function parseNoteFormat(content: string): ParsedNote {
-  // Regex to match the metadata block between --- and ---
+  // Enhanced regex to match the metadata block between --- and ---
   const blockRegex = /^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/;
   const match = content.match(blockRegex);
 
@@ -51,7 +39,7 @@ export function parseNoteFormat(content: string): ParsedNote {
   const metadataStr = match[1];
   const body = match[2];
 
-  // Extract metadata fields using flexible regex that handles the user's specific '##' and '\' syntax
+  // Extract metadata fields using flexible regex
   const titleMatch = metadataStr.match(/##\s*title:\s*["'](.+?)["']/);
   const categoryMatch = metadataStr.match(/category:\s*["'](.+?)["']/);
   const typeMatch = metadataStr.match(/type:\s*["'](.+?)["']/);
@@ -64,7 +52,7 @@ export function parseNoteFormat(content: string): ParsedNote {
   if (tagsMatch) {
     tags = tagsMatch[1]
       .split(',')
-      .map(tag => tag.trim().replace(/["']/g, ''))
+      .map(tag => tag.trim().replace(/["']/g, '').replace(/\\$/, ''))
       .filter(tag => tag.length > 0);
   }
 
@@ -84,7 +72,6 @@ export function parseNoteFormat(content: string): ParsedNote {
 export function stringifyNote(parsed: ParsedNote): string {
   const updatedDate = new Date().toISOString().split('T')[0];
   
-  // Reconstruct the exact format requested: YAML-ish but with user's specific markers
   const metadataLines = [
     '---',
     '',
@@ -97,7 +84,7 @@ export function stringifyNote(parsed: ParsedNote): string {
     `status: "${parsed.status}"`,
     '---',
     '',
-    parsed.displayContent.includes('## Context') ? parsed.displayContent : `## Context\n\n${parsed.displayContent}`
+    parsed.displayContent.startsWith('## Context') ? parsed.displayContent : `## Context\n\n${parsed.displayContent}`
   ];
   
   return metadataLines.join('\n');

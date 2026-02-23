@@ -98,12 +98,14 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
           "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground/90",
           "prose-p:leading-relaxed prose-p:text-foreground/80",
           "prose-blockquote:border-l-4 prose-blockquote:border-primary/40 prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic",
-          // INLINE CODE: Identical styling to Home Screen MarkdownRenderer
-          "prose-code:bg-primary/15 prose-code:text-primary prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-[0.85em] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none",
-          "prose-pre:bg-muted/50 prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl prose-pre:p-4",
+          // INLINE CODE
+          "prose-code:bg-muted prose-code:text-foreground prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:border prose-code:border-border/50 prose-code:font-mono prose-code:text-[0.85em] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none",
+          // CODE BLOCK (LIVE PREVIEW STYLE)
+          "prose-pre:bg-[#0d0d0d] prose-pre:border prose-pre:border-white/5 prose-pre:rounded-xl prose-pre:p-0 prose-pre:overflow-hidden prose-pre:shadow-2xl",
+          "prose-pre:before:content-['SOURCE_CODE'] prose-pre:before:block prose-pre:before:px-4 prose-pre:before:py-2 prose-pre:before:border-b prose-pre:before:border-white/5 prose-pre:before:bg-white/5 prose-pre:before:text-[9px] prose-pre:before:font-black prose-pre:before:tracking-[0.2em] prose-pre:before:text-white/20",
+          "prose-pre:code:block prose-pre:code:p-4 prose-pre:code:bg-transparent prose-pre:code:text-white/80 prose-pre:code:text-[13px] prose-pre:code:leading-relaxed",
           "prose-img:rounded-xl prose-img:google-shadow",
           "prose-hr:border-muted-foreground/20",
-          "prose-table:border prose-table:rounded-lg prose-table:overflow-hidden prose-th:bg-muted/50 prose-td:border-border/50",
           "[&_ul_li_input]:mr-2 [&_ul_li_input]:accent-primary",
           className
         ),
@@ -117,14 +119,10 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
     }
   }, [content, editor]);
 
-  // SMART TOGGLE: If user is inside a mark and clicks toggle, jump the cursor out
   const handleSmartToggle = useCallback((type: string, options?: any) => {
     if (!editor) return;
-
     const isActive = editor.isActive(type, options);
-    
     if (isActive) {
-      // If at the end of the mark, jump out
       const { from, to } = editor.state.selection;
       if (from === to) {
         editor.chain().focus().unsetMark(type).insertContent(' ').run();
@@ -194,9 +192,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
               icon={Heading3}
               tooltip="Heading 3"
             />
-            
             <div className="w-px h-4 bg-border/40 mx-1" />
-            
             <ToolbarButton 
               onClick={() => handleSmartToggle('bold')} 
               active={editor.isActive('bold')}
@@ -221,9 +217,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
               icon={Code2}
               tooltip="Inline Code"
             />
-
             <div className="w-px h-4 bg-border/40 mx-1" />
-
             <ToolbarButton 
               onClick={() => editor.chain().focus().toggleBulletList().run()} 
               active={editor.isActive('bulletList')}
@@ -248,9 +242,7 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
               icon={Quote}
               tooltip="Blockquote"
             />
-            
             <div className="w-px h-4 bg-border/40 mx-1" />
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 gap-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary">
@@ -278,19 +270,9 @@ export function RichEditor({ content, onChange, placeholder = "Start typing...",
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
             <div className="flex-1" />
-
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().undo().run()} 
-              icon={Undo}
-              tooltip="Undo"
-            />
-            <ToolbarButton 
-              onClick={() => editor.chain().focus().redo().run()} 
-              icon={Redo}
-              tooltip="Redo"
-            />
+            <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} tooltip="Undo" />
+            <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={Redo} tooltip="Redo" />
           </div>
         </TooltipProvider>
       )}
