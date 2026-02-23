@@ -207,7 +207,8 @@ export default function Home() {
           />
           
           <SidebarInset className="flex-1 overflow-y-auto bg-transparent">
-            <main className="container mx-auto py-8">
+            {/* Added significant pb-32 to provide breathing room at the bottom */}
+            <main className="container mx-auto pt-8 pb-32">
               {(currentView === 'all' || currentView === 'untagged') && <CreateNote onSave={handleCreateNote} />}
 
               {isNotesLoading ? (
