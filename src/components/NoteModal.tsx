@@ -152,7 +152,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
             placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="border-none shadow-none focus-visible:ring-0 text-3xl font-bold px-6 h-auto placeholder:text-muted-foreground/20"
+            className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-3xl font-bold px-6 h-auto placeholder:text-muted-foreground/20 bg-transparent"
           />
 
           <div className="flex flex-wrap items-center gap-2 pb-2 px-6">
@@ -185,7 +185,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                 placeholder="Start writing your thoughts in Markdown..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="border-none shadow-none focus-visible:ring-0 resize-none min-h-[400px] px-0 py-0 text-base font-mono leading-relaxed placeholder:text-muted-foreground/30 focus-visible:ring-offset-0"
+                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none resize-none min-h-[400px] px-0 py-0 text-base font-mono leading-relaxed placeholder:text-muted-foreground/30 focus-visible:ring-offset-0 bg-transparent"
                 autoFocus
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
