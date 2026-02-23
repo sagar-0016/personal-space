@@ -105,36 +105,28 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
   const contentToRender = parsed.isStructured ? parsed.displayContent : content;
   const isDarkMode = resolvedTheme === 'dark';
 
-  // Track rendering pass to associate checkboxes with their indices in the source
   const checkboxCounterRef = useRef(0);
 
   const handleToggleCheckbox = (index: number) => {
     if (!onContentChange) return;
 
-    // To prevent indexing issues, we must account for checkboxes that might be in code blocks
-    // which ReactMarkdown handles correctly, but a simple regex might miss.
-    // However, the most reliable way to sync with the ReactMarkdown render order
-    // is to find the N-th match of the checkbox pattern in the renderable content.
-    
-    const checkboxRegex = /\[([ xX])\]/g;
+    // Use a more specific regex that matches GFM task list markers at start of line
+    const checkboxRegex = /^(\s*[-*+]|\s*\d+\.)\s+\[([ xX])\]/gm;
     let currentMatchIndex = 0;
     
-    // We only want to replace in the content that is actually rendered
-    // If it's structured, we replace in the displayContent part and rejoin
     const targetContent = parsed.isStructured ? parsed.displayContent : content;
 
-    const newTargetContent = targetContent.replace(checkboxRegex, (match, char) => {
+    const newTargetContent = targetContent.replace(checkboxRegex, (match, prefix, char) => {
       if (currentMatchIndex === index) {
         currentMatchIndex++;
         const isChecked = char.toLowerCase() === 'x';
-        return isChecked ? '[ ]' : '[x]';
+        return `${prefix} [${isChecked ? ' ' : 'x'}]`;
       }
       currentMatchIndex++;
       return match;
     });
 
     if (parsed.isStructured) {
-      // Reconstruct the full content with frontmatter
       const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n\n/);
       const prefix = frontmatterMatch ? frontmatterMatch[0] : '';
       onContentChange(prefix + newTargetContent);
@@ -143,7 +135,6 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
     }
   };
 
-  // Reset counter before starting ReactMarkdown rendering
   checkboxCounterRef.current = 0;
 
   return (
@@ -174,7 +165,6 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
                     e.stopPropagation();
                     e.preventDefault();
                     
-                    // User-requested debug notification
                     toast({
                       title: "Checkbox Interacted",
                       description: `Index: ${currentIndex} | Current State: ${checked ? 'Checked' : 'Unchecked'}`,
