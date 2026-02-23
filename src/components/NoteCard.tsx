@@ -24,6 +24,7 @@ import {
 interface NoteCardProps {
   note: Note;
   onEdit: (note: Note) => void;
+  onUpdate: (note: Note) => void;
   onDelete: (id: string) => void;
   onArchive: () => void;
   onTogglePin: () => void;
@@ -34,6 +35,7 @@ interface NoteCardProps {
 export function NoteCard({ 
   note, 
   onEdit, 
+  onUpdate,
   onDelete, 
   onArchive, 
   onTogglePin, 
@@ -80,7 +82,8 @@ export function NoteCard({
             className="prose-sm line-clamp-[15]" 
             onContentChange={(newContent) => {
               if (isTrash) return;
-              onEdit({ ...note, content: newContent });
+              // Pass the updated content back to the parent for saving
+              onUpdate({ ...note, content: newContent });
             }}
           />
         </div>

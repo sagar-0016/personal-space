@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -107,20 +107,31 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
   const handleToggleCheckbox = (index: number) => {
     if (!onContentChange) return;
 
+    // We toggle relative to the rendered content
+    const targetBody = parsed.isStructured ? parsed.displayContent : content;
+    
     let count = 0;
-    const newContent = content.replace(/\[([ xX])\]/g, (match, char) => {
+    const updatedBody = targetBody.replace(/\[([ xX])\]/g, (match, char) => {
       if (count === index) {
         count++;
-        return char === ' ' ? '[x]' : '[ ]';
+        // Toggle: space -> x, x -> space
+        return (char === ' ' || char === '') ? '[x]' : '[ ]';
       }
       count++;
       return match;
     });
 
-    onContentChange(newContent);
+    if (parsed.isStructured) {
+      // Reconstruct with original frontmatter
+      const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n\n/);
+      const prefix = frontmatterMatch ? frontmatterMatch[0] : '';
+      onContentChange(prefix + updatedBody);
+    } else {
+      onContentChange(updatedBody);
+    }
   };
 
-  // Internal state to track checkbox indices during render
+  // Internal state to track checkbox indices during render pass
   let checkboxCounter = 0;
 
   return (
@@ -138,6 +149,7 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
         components={{
+          // Use div instead of p to avoid hydration nesting errors with block elements
           p: ({ children }) => <div className="mb-4 last:mb-0 leading-relaxed text-foreground/80">{children}</div>,
           input: ({ type, checked }) => {
             if (type === 'checkbox') {
@@ -146,8 +158,16 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
                 <input
                   type="checkbox"
                   checked={checked}
-                  onChange={() => handleToggleCheckbox(currentIndex)}
-                  className="cursor-pointer h-4 w-4 rounded border-primary text-primary focus:ring-primary mr-2 align-middle accent-primary"
+                  onChange={(e) => {
+                    // Prevent card or modal from reacting to the input change
+                    e.stopPropagation();
+                    handleToggleCheckbox(currentIndex);
+                  }}
+                  onClick={(e) => {
+                    // Prevent bubbling up to card/modal listeners
+                    e.stopPropagation();
+                  }}
+                  className="cursor-pointer h-4 w-4 rounded border-primary text-primary focus:ring-primary mr-2 align-middle accent-primary transition-transform active:scale-90"
                 />
               );
             }

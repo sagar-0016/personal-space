@@ -233,6 +233,7 @@ export default function Home() {
                             <NoteCard 
                               note={note} 
                               onEdit={handleEditNote} 
+                              onUpdate={handleUpdateNote}
                               onDelete={() => handleTrashNote(note)}
                               onArchive={() => handleArchiveNote(note)}
                               onTogglePin={() => handleTogglePin(note)}
@@ -259,6 +260,7 @@ export default function Home() {
                           <NoteCard 
                             note={note} 
                             onEdit={handleEditNote} 
+                            onUpdate={handleUpdateNote}
                             onDelete={() => handleTrashNote(note)}
                             onArchive={() => handleArchiveNote(note)}
                             onTogglePin={() => handleTogglePin(note)}
