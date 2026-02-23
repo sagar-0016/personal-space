@@ -13,9 +13,7 @@ import {
   X as CloseIcon, 
   FileText,
   Eye,
-  Layers,
-  Settings,
-  Database
+  Layers
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -48,7 +46,6 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
 
   const handleSave = () => {
     if (note) {
-      // Re-parse the metadata block just in case user edited it directly
       const tempNote = stringifyNote({
         displayContent: content,
         rawMetadata: rawMetadata,
@@ -80,13 +77,13 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
       <DialogContent className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl">
         <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
         
-        <div className="flex items-center justify-between p-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex items-center justify-between p-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-[50]">
           <div className="flex items-center space-x-3">
             <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
               <Layers className="h-4 w-4 text-primary" />
             </div>
             <span className="text-sm font-bold">
-              {editMode === 'visual' ? 'Visual Context' : 'Markdown Source'}
+              {editMode === 'visual' ? 'Visual context' : 'Markdown source'}
             </span>
             <Button 
               variant="secondary" 
@@ -106,43 +103,43 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto pt-6 pb-20 space-y-6">
-          <div className="px-10">
+        <div className="flex-1 overflow-y-auto pt-6 pb-20 scroll-smooth">
+          <div className="px-10 space-y-6">
             <Input
               placeholder="Note Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="border-none shadow-none focus-visible:ring-0 text-3xl font-bold px-0 bg-transparent h-auto placeholder:opacity-30"
             />
-          </div>
 
-          <div className="flex flex-wrap items-center gap-2 px-10">
-            <Tag className="h-3.5 w-3.5 text-muted-foreground" />
-            {labels.map(label => (
-              <Badge key={label} variant="secondary" className="flex items-center gap-1.5 rounded-md px-2 py-0.5 bg-primary/5 text-primary border-none">
-                {label}
-                <button onClick={() => setLabels(labels.filter(l => l !== label))} className="hover:text-destructive transition-colors">
-                  <CloseIcon className="h-2.5 w-2.5" />
-                </button>
-              </Badge>
-            ))}
-            <Input 
-              placeholder="+ Add label" 
-              value={newLabel}
-              onChange={(e) => setNewLabel(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && newLabel.trim()) {
-                  if (!labels.includes(newLabel.trim())) {
-                    setLabels([...labels, newLabel.trim()]);
+            <div className="flex flex-wrap items-center gap-2">
+              <Tag className="h-3.5 w-3.5 text-muted-foreground" />
+              {labels.map(label => (
+                <Badge key={label} variant="secondary" className="flex items-center gap-1.5 rounded-md px-2 py-0.5 bg-primary/5 text-primary border-none">
+                  {label}
+                  <button onClick={() => setLabels(labels.filter(l => l !== label))} className="hover:text-destructive transition-colors">
+                    <CloseIcon className="h-2.5 w-2.5" />
+                  </button>
+                </Badge>
+              ))}
+              <Input 
+                placeholder="+ Add label" 
+                value={newLabel}
+                onChange={(e) => setNewLabel(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newLabel.trim()) {
+                    if (!labels.includes(newLabel.trim())) {
+                      setLabels([...labels, newLabel.trim()]);
+                    }
+                    setNewLabel('');
                   }
-                  setNewLabel('');
-                }
-              }}
-              className="h-6 w-28 text-xs bg-secondary/50 border-none focus-visible:ring-1 px-2 rounded-md"
-            />
+                }}
+                className="h-6 w-28 text-xs bg-secondary/50 border-none focus-visible:ring-1 px-2 rounded-md"
+              />
+            </div>
           </div>
           
-          <div className="px-6 min-h-[500px]">
+          <div className="mt-6 px-4">
             {editMode === 'visual' ? (
               <RichEditor 
                 content={content} 
@@ -175,7 +172,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                   setLabels(p.tags.length > 0 ? p.tags : labels);
                 }}
                 placeholder="Edit Markdown Source..."
-                className="min-h-[500px] border-none shadow-none focus-visible:ring-0 px-4 bg-transparent font-mono text-sm leading-relaxed resize-none"
+                className="min-h-[600px] border-none shadow-none focus-visible:ring-0 px-6 bg-transparent font-mono text-sm leading-relaxed resize-none"
               />
             )}
           </div>

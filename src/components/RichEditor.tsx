@@ -145,9 +145,9 @@ export function RichEditor({
   );
 
   return (
-    <div className="flex flex-col w-full h-full">
+    <div className="flex flex-col w-full h-full relative">
       {showToolbar && (
-        <div className="flex flex-wrap items-center gap-1 p-1 border-b bg-background sticky top-0 z-20">
+        <div className="flex flex-wrap items-center gap-1 p-1 border-b bg-background sticky top-0 z-[30]">
           <ToolbarButton 
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} 
             active={editor.isActive('heading', { level: 1 })}
@@ -237,18 +237,18 @@ export function RichEditor({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-3 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/5 hover:bg-primary/10 transition-all border border-primary/20"
+                className="h-8 px-3 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/5 hover:bg-primary/10 transition-all border border-primary/20 z-[40]"
               >
                 <Database className="h-3.5 w-3.5 mr-1.5" />
                 Metadata
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[450px] p-4 bg-card shadow-2xl border-primary/20" align="end">
+            <PopoverContent className="w-[450px] p-4 bg-card shadow-2xl border-primary/20 z-[100]" align="end">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
                     <Database className="h-3.5 w-3.5 text-primary" />
-                    Metadata Block
+                    Note Metadata
                   </h4>
                   <TooltipProvider>
                     <Tooltip>
@@ -256,7 +256,7 @@ export function RichEditor({
                         <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                       </TooltipTrigger>
                       <TooltipContent className="max-w-[250px] text-[10px] leading-relaxed">
-                        Enter raw metadata here. The app processes "title" and "tags" for organizational hierarchy.
+                        Enter YAML metadata here. The app extracts "title" and "tags" for organizational hierarchy.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -273,7 +273,7 @@ export function RichEditor({
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground italic leading-tight">
-                  Format: Standard frontmatter block with title and tags fields.
+                  Format: Standard frontmatter block. The parser extracts the title and tags fields.
                 </p>
               </div>
             </PopoverContent>
@@ -284,7 +284,9 @@ export function RichEditor({
           <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={Redo} tooltip="Redo" />
         </div>
       )}
-      <EditorContent editor={editor} className="flex-1 px-4" />
+      <div className="flex-1 overflow-y-auto px-4">
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }

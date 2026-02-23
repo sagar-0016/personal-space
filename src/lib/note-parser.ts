@@ -1,5 +1,5 @@
 /**
- * Note parser that strictly separates the analytical metadata block from the content.
+ * Note parser that strictly separates the metadata block from the content.
  */
 
 export interface NoteMetadata {
@@ -23,15 +23,16 @@ export function parseNoteFormat(content: string): ParsedNote {
   const match = content.match(metadataRegex);
 
   if (match) {
-    const rawMetadata = match[1];
+    const rawMetadataContent = match[1];
     const displayContent = content.replace(metadataRegex, '').trim();
     
     // Simple extraction for title and tags from the raw metadata string
-    const titleMatch = rawMetadata.match(/title:\s*"(.*?)"/);
-    const tagsMatch = rawMetadata.match(/tags:\s*\[(.*?)\]/);
+    const titleMatch = rawMetadataContent.match(/title:\s*"(.*?)"/);
+    const tagsMatch = rawMetadataContent.match(/tags:\s*\[(.*?)\]/);
     
     const title = titleMatch ? titleMatch[1] : null;
-    const tags = tagsMatch ? tagsMatch[1].split(',').map(t => t.trim().replace(/"/g, '')) : [];
+    const tagsRaw = tagsMatch ? tagsMatch[1] : "";
+    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim().replace(/"/g, '')) : [];
 
     return {
       title,
@@ -41,7 +42,7 @@ export function parseNoteFormat(content: string): ParsedNote {
       updated: new Date().toISOString().split('T')[0],
       type: 'note',
       status: 'draft',
-      rawMetadata: `--- \n${rawMetadata}\n ---`,
+      rawMetadata: `---\n${rawMetadataContent}\n---`,
       displayContent,
       isStructured: true
     };
