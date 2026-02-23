@@ -10,7 +10,7 @@ import { NoteCard } from '@/components/NoteCard';
 import { NoteModal } from '@/components/NoteModal';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SettingsDialog } from '@/components/SettingsDialog';
-import { SearchCode, Loader2, Pin, Trash2, Archive, Layers, Tag as TagIcon } from 'lucide-react';
+import { Loader2, Pin, Trash2, Archive, Layers, Tag as TagIcon } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -70,16 +70,9 @@ export default function Home() {
 
   const handleUpdateNote = (updatedNote: Note) => {
     if (!db || !user) return;
-    
-    const parsed = parseNoteFormat(updatedNote.content);
-    const finalTitle = parsed.isStructured && parsed.title ? parsed.title : updatedNote.title;
-    const finalLabels = parsed.isStructured ? Array.from(new Set([...(updatedNote.labels || []), ...parsed.labels])) : updatedNote.labels;
-
     const noteRef = doc(db, 'users', user.uid, 'notes', updatedNote.id);
     updateDocumentNonBlocking(noteRef, {
       ...updatedNote,
-      title: finalTitle,
-      labels: finalLabels,
       updatedAt: Date.now()
     });
   };
@@ -89,7 +82,7 @@ export default function Home() {
     notes.forEach(note => {
       if (note.labels?.includes(labelToDelete)) {
         const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
-        const updatedLabels = note.labels.filter(l => l !== labelToDelete);
+        const updatedLabels = note.labels?.filter(l => l !== labelToDelete) || [];
         updateDocumentNonBlocking(noteRef, { labels: updatedLabels, updatedAt: Date.now() });
       }
     });
@@ -142,7 +135,7 @@ export default function Home() {
     
     if (!matchesSearch) return false;
 
-    // Filter logic: "all" view strictly excludes archived and deleted
+    // Strict filtering: 'all' excludes archived and deleted
     if (currentView === 'all') return !n.isDeleted && !n.isArchived;
     if (currentView === 'untagged') return !n.isArchived && !n.isDeleted && (!n.labels || n.labels.length === 0);
     if (currentView === 'archive') return !!n.isArchived && !n.isDeleted;
@@ -159,7 +152,6 @@ export default function Home() {
   const pinnedNotes = allFilteredNotes.filter(n => n.isPinned);
   const otherNotes = allFilteredNotes.filter(n => !n.isPinned);
 
-  // Labels calculation
   const allLabels = Array.from(new Set((notes || []).flatMap(n => n.labels || []))).sort();
   const labelActiveCounts = allLabels.reduce((acc, label) => {
     const count = (notes || []).filter(n => !n.isDeleted && !n.isArchived && n.labels?.includes(label)).length;
@@ -169,7 +161,7 @@ export default function Home() {
 
   if (isUserLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -184,14 +176,7 @@ export default function Home() {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="h-screen flex flex-col w-full bg-background font-body transition-colors duration-700 relative overflow-hidden">
-        {/* Background blobs */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-          <div className="absolute -top-[15%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary/15 blur-[140px] animate-pulse" />
-          <div className="absolute top-[30%] -right-[15%] w-[45%] h-[45%] rounded-full bg-primary/10 blur-[120px] transition-all duration-1000" />
-          <div className="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] rounded-full bg-primary/5 blur-[100px]" />
-        </div>
-
+      <div className="h-screen flex flex-col w-full bg-background transition-colors duration-700 relative overflow-hidden">
         <Navbar 
           onSearch={setSearchQuery} 
           viewMode={viewMode}
@@ -222,12 +207,8 @@ export default function Home() {
                   {pinnedNotes.length > 0 && (
                     <div className="space-y-6">
                       <div className="flex items-center space-x-2 px-8 max-w-7xl mx-auto">
-                        <div className="p-1 bg-primary/20 rounded-md">
-                          <Pin className="h-4 w-4 text-primary fill-current" />
-                        </div>
-                        <h2 className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">
-                          Pinned
-                        </h2>
+                        <Pin className="h-4 w-4 text-primary fill-current" />
+                        <h2 className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Pinned</h2>
                       </div>
                       <div className={gridClassName}>
                         {pinnedNotes.map((note) => (
@@ -251,9 +232,7 @@ export default function Home() {
                   <div className="space-y-6">
                     {pinnedNotes.length > 0 && (
                       <div className="flex items-center space-x-2 px-8 max-w-7xl mx-auto">
-                        <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">
-                          Others
-                        </h2>
+                        <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">Notes</h2>
                       </div>
                     )}
                     <div className={gridClassName}>
@@ -276,7 +255,7 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
-                  <div className="p-10 bg-primary/5 rounded-full mb-6 backdrop-blur-md border border-primary/10">
+                  <div className="p-10 bg-primary/5 rounded-full mb-6 border border-primary/10">
                     {currentView === 'trash' ? <Trash2 className="h-16 w-16 text-primary opacity-40" /> : 
                      currentView === 'archive' ? <Archive className="h-16 w-16 text-primary opacity-40" /> :
                      currentView === 'untagged' ? <TagIcon className="h-16 w-16 text-primary opacity-40" /> :
@@ -289,9 +268,7 @@ export default function Home() {
                      currentView.startsWith('label:') ? `No notes with label "${currentView.split(':')[1]}"` :
                      "No notes match your search"}
                   </p>
-                  <p className="text-sm opacity-60 max-w-xs text-center mt-3 leading-relaxed">
-                    {currentView === 'all' ? "Try creating a new note to capture your brilliant thoughts." : "Notes you interact with will show up here."}
-                  </p>
+                  <p className="text-sm opacity-60 mt-3">{currentView === 'all' ? "Try capturing a new thought." : ""}</p>
                 </div>
               )}
             </main>

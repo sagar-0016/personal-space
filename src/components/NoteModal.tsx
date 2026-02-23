@@ -9,7 +9,22 @@ import { Button } from '@/components/ui/button';
 import { Note } from '@/lib/types';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, Edit2, X, Terminal, Code2, Tag, Plus, X as CloseIcon, Sparkles, Layout } from 'lucide-react';
+import { 
+  Eye, 
+  Edit2, 
+  X, 
+  Terminal, 
+  Layout, 
+  Tag, 
+  Plus, 
+  X as CloseIcon, 
+  Bold, 
+  Italic, 
+  Heading1, 
+  List, 
+  Code2, 
+  Quote
+} from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +44,6 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
   const [newLabel, setNewLabel] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('preview');
   const [highContrastCode, setHighContrastCode] = useState(false);
-  const [isSynced, setIsSynced] = useState(false);
 
   useEffect(() => {
     if (note) {
@@ -37,109 +51,70 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
       setContent(note.content);
       setLabels(note.labels || []);
       setActiveTab('preview');
-      setIsSynced(false);
     }
   }, [note, isOpen]);
 
-  // Real-time processing for structured format
-  useEffect(() => {
-    if (activeTab === 'edit' && content) {
-      const parsed = parseNoteFormat(content);
-      if (parsed.isStructured) {
-        if (parsed.title) setTitle(parsed.title);
-        if (parsed.labels.length > 0) {
-          // Merge unique labels
-          const merged = Array.from(new Set([...labels, ...parsed.labels]));
-          setLabels(merged);
-        }
-        setIsSynced(true);
-      } else {
-        setIsSynced(false);
-      }
-    }
-  }, [content, activeTab]);
-
   const handleSave = () => {
     if (note) {
-      // Final parse check before saving
       const parsed = parseNoteFormat(content);
       const finalTitle = parsed.isStructured && parsed.title ? parsed.title : title;
-      const finalLabels = parsed.isStructured && parsed.labels.length > 0 ? Array.from(new Set([...labels, ...parsed.labels])) : labels;
-
-      if (finalTitle !== note.title || content !== note.content || JSON.stringify(finalLabels) !== JSON.stringify(note.labels)) {
-        onSave({
-          ...note,
-          title: finalTitle,
-          content,
-          labels: finalLabels,
-          updatedAt: Date.now()
-        });
-      }
+      
+      onSave({
+        ...note,
+        title: finalTitle,
+        content,
+        labels,
+        updatedAt: Date.now()
+      });
     }
     onClose();
   };
 
-  const handleAddLabel = () => {
-    if (newLabel.trim() && !labels.includes(newLabel.trim())) {
-      setLabels([...labels, newLabel.trim()]);
-      setNewLabel('');
-    }
-  };
+  const insertMarkdown = (prefix: string, suffix: string = '') => {
+    const textarea = document.querySelector('textarea');
+    if (!textarea) return;
 
-  const handleRemoveLabel = (labelToRemove: string) => {
-    setLabels(labels.filter(l => l !== labelToRemove));
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const before = text.substring(0, start);
+    const selection = text.substring(start, end);
+    const after = text.substring(end);
+
+    const newContent = before + prefix + (selection || 'text') + suffix + after;
+    setContent(newContent);
+    setActiveTab('edit');
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleSave()}>
-      <DialogContent className="sm:max-w-[800px] w-[95vw] max-h-[90vh] flex flex-col p-0 google-shadow border-none rounded-xl overflow-hidden z-[100]">
-        <DialogTitle className="sr-only">Note Editor - {title || 'New Note'}</DialogTitle>
+      <DialogContent className="sm:max-w-[850px] w-[95vw] max-h-[90vh] flex flex-col p-0 google-shadow border-none rounded-xl overflow-hidden z-[100]">
+        <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
         
         <div className="flex items-center justify-between p-4 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex items-center space-x-4">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-auto">
               <TabsList className="bg-secondary/50 h-9 p-1">
                 <TabsTrigger value="preview" className="px-3 py-1 text-xs data-[state=active]:bg-background">
-                  <Eye className="h-3 w-3 mr-2" />
-                  Preview
+                  <Eye className="h-3 w-3 mr-2" /> Preview
                 </TabsTrigger>
                 <TabsTrigger value="edit" className="px-3 py-1 text-xs data-[state=active]:bg-background">
-                  <Edit2 className="h-3 w-3 mr-2" />
-                  Edit
+                  <Edit2 className="h-3 w-3 mr-2" /> Edit
                 </TabsTrigger>
               </TabsList>
             </Tabs>
             
             <div className="h-6 w-px bg-border hidden sm:block" />
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
               <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className={cn(
-                        "rounded-full h-8 w-8 transition-colors",
-                        highContrastCode ? "bg-primary/20 text-primary" : "text-muted-foreground"
-                      )}
-                      onClick={() => setHighContrastCode(!highContrastCode)}
-                    >
-                      {highContrastCode ? <Terminal className="h-4 w-4" /> : <Layout className="h-4 w-4" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{highContrastCode ? "Professional Clear Theme" : "Deep Focus Theme"}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('**', '**')}><Bold className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('_', '_')}><Italic className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('## ')}><Heading1 className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('- ')}><List className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('```\n', '\n```')}><Code2 className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => insertMarkdown('> ')}><Quote className="h-4 w-4" /></Button>
               </TooltipProvider>
-
-              {isSynced && (
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
-                  <Sparkles className="h-3 w-3 text-primary animate-pulse" />
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Format Synced</span>
-                </div>
-              )}
             </div>
           </div>
           
@@ -148,46 +123,44 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto pt-6 space-y-4">
-          <Input
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-3xl font-bold px-6 h-auto placeholder:text-muted-foreground/20 bg-transparent"
-          />
+        <div className="flex-1 overflow-y-auto pt-6 pb-20 space-y-4">
+          <div className="px-6">
+            <Input
+              placeholder="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-3xl font-bold px-0 h-auto placeholder:text-muted-foreground/20 bg-transparent"
+            />
+          </div>
 
-          <div className="flex flex-wrap items-center gap-2 pb-2 px-6">
-            <Tag className="h-4 w-4 text-muted-foreground" />
+          <div className="flex flex-wrap items-center gap-2 px-6">
+            <Tag className="h-3.5 w-3.5 text-muted-foreground" />
             {labels.map(label => (
-              <Badge key={label} variant="secondary" className="bg-primary/10 text-primary border-none hover:bg-primary/20 transition-colors">
+              <Badge key={label} variant="secondary" className="bg-primary/10 text-primary border-none text-[10px] py-0 px-2 flex items-center gap-1">
                 {label}
-                <button onClick={() => handleRemoveLabel(label)} className="ml-1 hover:text-destructive">
-                  <CloseIcon className="h-3 w-3" />
+                <button onClick={() => setLabels(labels.filter(l => l !== label))} className="hover:text-destructive transition-colors">
+                  <CloseIcon className="h-2.5 w-2.5" />
                 </button>
               </Badge>
             ))}
-            <div className="flex items-center gap-1 ml-2">
+            <div className="flex items-center gap-1">
               <Input 
-                placeholder="Add label..." 
+                placeholder="New label..." 
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddLabel()}
-                className="h-7 w-24 text-xs bg-secondary border-none focus-visible:ring-1 px-2"
+                onKeyDown={(e) => e.key === 'Enter' && (newLabel.trim() && !labels.includes(newLabel.trim())) && (setLabels([...labels, newLabel.trim()]), setNewLabel(''))}
+                className="h-6 w-20 text-[10px] bg-secondary/50 border-none focus-visible:ring-1 px-1.5"
               />
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleAddLabel}>
-                <Plus className="h-3 w-3" />
-              </Button>
             </div>
           </div>
           
-          <div className="px-6 pb-6">
+          <div className="px-6 min-h-[400px]">
             {activeTab === 'edit' ? (
               <Textarea
-                placeholder="Start writing your thoughts in Markdown..."
+                placeholder="Write your note in Markdown..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none resize-none min-h-[400px] px-0 py-0 text-base font-mono leading-relaxed placeholder:text-muted-foreground/30 focus-visible:ring-offset-0 bg-transparent"
-                autoFocus
+                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none resize-none min-h-[400px] px-0 py-0 text-base font-mono leading-relaxed placeholder:text-muted-foreground/20 bg-transparent"
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
                   target.style.height = 'auto';
@@ -195,25 +168,16 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                 }}
               />
             ) : (
-              <div className="min-h-[400px] py-2">
-                {content ? (
-                  <MarkdownRenderer 
-                    content={content} 
-                    highContrastCode={highContrastCode} 
-                    onContentChange={(newContent) => setContent(newContent)}
-                  />
-                ) : (
-                  <p className="text-muted-foreground/50 italic">Nothing to preview yet.</p>
-                )}
+              <div className="py-2">
+                <MarkdownRenderer content={content} highContrastCode={highContrastCode} />
               </div>
             )}
           </div>
         </div>
 
-        <div className="p-4 bg-secondary/10 border-t flex justify-end">
-          <Button variant="ghost" onClick={handleSave} className="font-medium hover:bg-background px-6">
-            Done
-          </Button>
+        <div className="p-4 bg-secondary/10 border-t flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose} className="rounded-lg">Discard</Button>
+          <Button onClick={handleSave} className="rounded-lg px-8">Done</Button>
         </div>
       </DialogContent>
     </Dialog>

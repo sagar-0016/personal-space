@@ -79,12 +79,7 @@ export function NoteCard({
         <div className="text-sm text-foreground/70">
           <MarkdownRenderer 
             content={note.content} 
-            className="prose-sm line-clamp-[15]" 
-            onContentChange={(newContent) => {
-              if (isTrash) return;
-              // Pass the updated content back to the parent for saving
-              onUpdate({ ...note, content: newContent });
-            }}
+            className="prose-sm line-clamp-[12]" 
           />
         </div>
       </div>
@@ -110,7 +105,7 @@ export function NoteCard({
               title="Restore"
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete(note.id); // Toggle deleted state
+                onDelete(note.id);
               }}
             >
               <RotateCcw className="h-4 w-4" />

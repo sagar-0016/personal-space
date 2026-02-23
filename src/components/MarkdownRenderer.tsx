@@ -1,9 +1,10 @@
 
 "use client"
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import vscDarkPlus from 'react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus';
 import { cn } from '@/lib/utils';
@@ -11,91 +12,37 @@ import { Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { parseNoteFormat } from '@/lib/note-parser';
 import { useTheme } from 'next-themes';
-import { useToast } from '@/hooks/use-toast';
 
-// Base styles for the Modern theme
-const baseModernStyles: any = {
-  'code[class*="language-"]': {
-    fontFamily: 'var(--font-code)',
-    direction: 'ltr',
-    textAlign: 'left',
-    whiteSpace: 'pre',
-    wordSpacing: 'normal',
-    wordBreak: 'normal',
-    lineHeight: '1.6',
-    tabSize: '4',
-    hyphens: 'none',
-  },
-  'pre[class*="language-"]': {
-    fontFamily: 'var(--font-code)',
-    direction: 'ltr',
-    textAlign: 'left',
-    whiteSpace: 'pre',
-    wordSpacing: 'normal',
-    wordBreak: 'normal',
-    lineHeight: '1.6',
-    tabSize: '4',
-    hyphens: 'none',
-    margin: '0',
-    overflow: 'auto',
-    background: 'transparent',
-  },
-  'namespace': { opacity: '.7' },
-  'bold': { fontWeight: 'bold' },
-  'italic': { fontStyle: 'italic' },
-};
-
-// Modern Light Theme (High Fidelity Professional Clear)
+// High Fidelity Professional Themes
 const modernLightTheme: any = {
-  ...baseModernStyles,
-  'code[class*="language-"]': { ...baseModernStyles['code[class*="language-"]'], color: '#24292e' },
-  'pre[class*="language-"]': { ...baseModernStyles['pre[class*="language-"]'], color: '#24292e' },
-  'comment': { color: '#d23669', fontStyle: 'italic' },
-  'punctuation': { color: '#24292e' },
-  'property': { color: '#005cc5' },
-  'tag': { color: '#005cc5' },
-  'boolean': { color: '#d23669' },
-  'number': { color: '#005cc5' },
-  'selector': { color: '#22863a' },
-  'attr-name': { color: '#22863a' },
-  'string': { color: '#22863a' },
-  'keyword': { color: '#005cc5', fontWeight: 'bold' },
+  'code[class*="language-"]': { color: '#24292e', fontFamily: 'var(--font-code)', lineHeight: '1.6' },
+  'pre[class*="language-"]': { color: '#24292e', background: 'transparent' },
+  'comment': { color: '#6a737d', fontStyle: 'italic' },
+  'keyword': { color: '#d73a49', fontWeight: 'bold' },
+  'string': { color: '#032f62' },
   'function': { color: '#6f42c1' },
   'operator': { color: '#d73a49' },
-  'variable': { color: '#e36209' },
 };
 
-// Modern Dark Theme (Deep Focus)
 const modernDarkTheme: any = {
-  ...baseModernStyles,
-  'code[class*="language-"]': { ...baseModernStyles['code[class*="language-"]'], color: '#e1e4e8' },
-  'pre[class*="language-"]': { ...baseModernStyles['pre[class*="language-"]'], color: '#e1e4e8' },
-  'comment': { color: '#f97583', fontStyle: 'italic' },
-  'punctuation': { color: '#e1e4e8' },
-  'property': { color: '#79b8ff' },
-  'tag': { color: '#79b8ff' },
-  'boolean': { color: '#f97583' },
-  'number': { color: '#79b8ff' },
-  'selector': { color: '#85e89d' },
-  'attr-name': { color: '#85e89d' },
-  'string': { color: '#85e89d' },
-  'keyword': { color: '#79b8ff', fontWeight: 'bold' },
-  'function': { color: '#b392f0' },
-  'operator': { color: '#f97583' },
-  'variable': { color: '#ffab70' },
+  'code[class*="language-"]': { color: '#e1e4e8', fontFamily: 'var(--font-code)', lineHeight: '1.6' },
+  'pre[class*="language-"]': { color: '#e1e4e8', background: 'transparent' },
+  'comment': { color: '#8b949e', fontStyle: 'italic' },
+  'keyword': { color: '#ff7b72', fontWeight: 'bold' },
+  'string': { color: '#a5d6ff' },
+  'function': { color: '#d2a8ff' },
+  'operator': { color: '#ff7b72' },
 };
 
 interface MarkdownRendererProps {
   content: string;
   className?: string;
   highContrastCode?: boolean;
-  onContentChange?: (newContent: string) => void;
 }
 
-export function MarkdownRenderer({ content, className, highContrastCode = false, onContentChange }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, className, highContrastCode = false }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
-  const { toast } = useToast();
   
   useEffect(() => {
     setMounted(true);
@@ -104,102 +51,40 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
   const parsed = parseNoteFormat(content);
   const isDarkMode = resolvedTheme === 'dark';
 
-  // Use a ref to track the index during rendering to match with the input components
-  const checkboxCounterRef = useRef(0);
-
-  const handleToggleCheckbox = (targetIndex: number) => {
-    if (!onContentChange) return;
-
-    // We process only the relevant content part
-    const targetContent = parsed.isStructured ? parsed.displayContent : content;
-    
-    // Split content by code blocks to ensure we don't accidentally count [ ] inside code
-    const segments = targetContent.split(/(```[\s\S]*?```)/g);
-    let globalMatchIndex = 0;
-    let found = false;
-
-    // Strict GFM checkbox regex: must be at start of line or bullet list
-    const checkboxRegex = /^(\s*[-*+]|\s*\d+\.)\s+\[([ xX])\]/gm;
-
-    const updatedSegments = segments.map(segment => {
-      // If we already found the target, or if this is a code block, return as is
-      if (found || segment.startsWith('```')) return segment;
-
-      // Replace matches within this "renderable" segment
-      return segment.replace(checkboxRegex, (match, prefix, char) => {
-        if (globalMatchIndex === targetIndex) {
-          found = true;
-          globalMatchIndex++;
-          const isChecked = char.toLowerCase() === 'x';
-          return `${prefix} [${isChecked ? ' ' : 'x'}]`;
-        }
-        globalMatchIndex++;
-        return match;
-      });
-    });
-
-    const newTargetContent = updatedSegments.join('');
-
-    // Reconstruct the full note if it was structured (preserving the YAML)
-    if (parsed.isStructured) {
-      const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n\n/);
-      const prefix = frontmatterMatch ? frontmatterMatch[0] : '';
-      onContentChange(prefix + newTargetContent);
-    } else {
-      onContentChange(newTargetContent);
-    }
-  };
-
-  // Reset counter on every render pass
-  checkboxCounterRef.current = 0;
-
   return (
     <div className={cn(
       "prose prose-sm sm:prose-base dark:prose-invert max-w-none",
       "prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground/90",
-      "prose-p:leading-relaxed prose-p:text-foreground/80",
-      "prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline",
-      "prose-ul:text-foreground/80 prose-ol:text-foreground/80",
-      "prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:italic",
-      "prose-img:rounded-xl prose-img:shadow-lg",
-      "prose-hr:border-muted",
+      "prose-h1:text-3xl prose-h1:mb-6 prose-h2:text-2xl prose-h2:mb-4 prose-h3:text-xl",
+      "prose-p:leading-relaxed prose-p:text-foreground/80 mb-4",
+      "prose-a:text-primary prose-a:font-medium hover:prose-a:underline",
+      "prose-blockquote:border-l-4 prose-blockquote:border-primary/40 prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic prose-blockquote:text-foreground/70",
+      "prose-table:border prose-table:rounded-lg prose-table:overflow-hidden prose-th:bg-muted/50 prose-th:p-3 prose-td:p-3",
+      "prose-img:rounded-xl prose-img:shadow-xl",
+      "prose-hr:border-muted-foreground/20 my-8",
+      "prose-ul:list-disc prose-ol:list-decimal",
+      "prose-li:my-1",
       className
     )}>
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
         components={{
-          p: ({ children }) => <div className="mb-4 last:mb-0 leading-relaxed text-foreground/80">{children}</div>,
-          input: ({ type, checked, ...props }) => {
+          // Task List Checkboxes
+          input: ({ type, checked }) => {
             if (type === 'checkbox') {
-              const currentIndex = checkboxCounterRef.current++;
               return (
                 <input
                   type="checkbox"
                   checked={checked}
-                  onChange={() => {}} // Controlled component dummy handler
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    
-                    // Show exact data for the click
-                    toast({
-                      title: "Checkbox Clicked",
-                      description: `Visual Index: ${currentIndex} | State: ${checked ? 'Checked' : 'Unchecked'}`,
-                    });
-
-                    if (onContentChange) {
-                      handleToggleCheckbox(currentIndex);
-                    }
-                  }}
-                  className={cn(
-                    "cursor-pointer h-4 w-4 rounded border-primary text-primary focus:ring-primary mr-2 align-middle accent-primary transition-all active:scale-90",
-                    !onContentChange && "cursor-default opacity-70"
-                  )}
+                  readOnly
+                  className="h-4 w-4 rounded border-primary text-primary accent-primary mr-2 align-middle cursor-default"
                 />
               );
             }
             return null;
           },
+          // Custom Code Block with Copy
           code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
@@ -214,76 +99,30 @@ export function MarkdownRenderer({ content, className, highContrastCode = false,
             
             if (inline) {
               return (
-                <code className="bg-primary/20 text-primary-foreground dark:text-primary-foreground px-1.5 py-0.5 rounded font-mono text-[0.9em] font-medium" {...props}>
+                <code className="bg-primary/15 text-primary px-1.5 py-0.5 rounded font-mono text-[0.85em] font-medium" {...props}>
                   {children}
                 </code>
               );
             }
 
-            if (!mounted) {
-              return (
-                <pre className="bg-muted p-4 rounded-lg overflow-hidden">
-                  <code className={className}>{children}</code>
-                </pre>
-              );
-            }
+            if (!mounted) return <pre className="bg-muted p-4 rounded-lg"><code>{children}</code></pre>;
 
-            const activeSyntaxTheme = highContrastCode 
-              ? vscDarkPlus 
-              : (isDarkMode ? modernDarkTheme : modernLightTheme);
+            const activeSyntaxTheme = highContrastCode ? vscDarkPlus : (isDarkMode ? modernDarkTheme : modernLightTheme);
 
             return (
-              <div className={cn(
-                "my-6 overflow-hidden rounded-xl border shadow-md group relative transition-all duration-300",
-                highContrastCode 
-                  ? "border-zinc-800 bg-zinc-950" 
-                  : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/40 backdrop-blur-sm"
-              )}>
-                <div className={cn(
-                  "flex items-center justify-between px-4 py-2 border-b transition-colors",
-                  highContrastCode 
-                    ? "bg-zinc-900 border-zinc-800" 
-                    : "bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-800"
-                )}>
-                  {language ? (
-                    <span className={cn(
-                      "text-[10px] uppercase font-bold tracking-widest",
-                      highContrastCode ? "text-zinc-500" : "text-muted-foreground/60"
-                    )}>
-                      {language}
-                    </span>
-                  ) : <div />}
-                  
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "h-6 w-6 rounded-md transition-all",
-                      highContrastCode ? "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800" : "text-muted-foreground hover:text-foreground hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                    )}
-                    onClick={handleCopy}
-                  >
-                    {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              <div className="my-6 overflow-hidden rounded-xl border border-border/50 bg-muted/30 shadow-sm group relative">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-border/50 bg-muted/50">
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">{language || 'code'}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md" onClick={handleCopy}>
+                    {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
                   </Button>
                 </div>
-
                 <SyntaxHighlighter
                   language={language}
                   style={activeSyntaxTheme}
                   PreTag="div"
-                  className="!m-0 !p-5 !bg-transparent font-mono text-[13px] leading-relaxed"
-                  customStyle={{
-                    margin: 0,
-                    padding: '1.25rem',
-                    backgroundColor: 'transparent',
-                  }}
-                  codeTagProps={{
-                    style: {
-                      fontFamily: 'inherit',
-                      backgroundColor: 'transparent',
-                    }
-                  }}
-                  {...props}
+                  className="!m-0 !p-5 !bg-transparent font-mono text-[13px]"
+                  customStyle={{ margin: 0, padding: '1.25rem', backgroundColor: 'transparent' }}
                 >
                   {codeString}
                 </SyntaxHighlighter>
