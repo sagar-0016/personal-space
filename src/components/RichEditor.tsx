@@ -232,7 +232,7 @@ export function RichEditor({
           
           <div className="w-px h-4 bg-border mx-1" />
           
-          <Popover modal={true}>
+          <Popover modal={false}>
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
@@ -248,6 +248,7 @@ export function RichEditor({
               align="end"
               onPointerDown={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
+              onInteractOutside={(e) => e.preventDefault()}
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">

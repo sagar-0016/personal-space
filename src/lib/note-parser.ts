@@ -27,13 +27,13 @@ export function parseNoteFormat(content: string): ParsedNote {
     const rawMetadataContent = match[1];
     const displayContent = content.replace(metadataRegex, '').trim();
     
-    // Extract title: "Value" (with potential leading ## or other prefixes in the string)
-    const titleMatch = rawMetadataContent.match(/title:\s*"(.*?)"/);
+    // Extract title: "Value" or title: Value
+    const titleMatch = rawMetadataContent.match(/title:\s*(?:"(.*?)"|(.*))/);
     
-    // Extract tags: ["v1", "v2"]
+    // Extract tags: ["v1", "v2"] or [v1, v2]
     const tagsMatch = rawMetadataContent.match(/tags:\s*\[(.*?)\]/);
     
-    const title = titleMatch ? titleMatch[1] : null;
+    const title = titleMatch ? (titleMatch[1] || titleMatch[2]?.trim()) : null;
     const tagsRaw = tagsMatch ? tagsMatch[1] : "";
     const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim().replace(/"/g, '')) : [];
 
