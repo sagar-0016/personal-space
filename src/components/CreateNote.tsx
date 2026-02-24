@@ -1,15 +1,14 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Pin, Briefcase } from 'lucide-react';
+import { Plus, Pin, Briefcase, Tag, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
-import { generateDefaultMetadata, extractMetadataInfo } from '@/lib/note-parser';
+import { generateDefaultMetadata, extractMetadataInfo, updateMetadataWithInfo } from '@/lib/note-parser';
 import { EditorToolbar } from './EditorToolbar';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -26,14 +25,24 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 import { Markdown } from 'tiptap-markdown';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 
 const lowlight = createLowlight(common);
 
 interface CreateNoteProps {
   onSave: (note: { title: string; content: string; metadata: string; isPinned: boolean; isArchived?: boolean }) => void;
+  defaultProject?: string | null;
+  projects?: string[];
 }
 
-export function CreateNote({ onSave }: CreateNoteProps) {
+export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNoteProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -41,6 +50,10 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   const [isPinned, setIsPinned] = useState(false);
   const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
   
+  const [selectedProject, setSelectedProject] = useState<string>(defaultProject || '');
+  const [labels, setLabels] = useState<string[]>([]);
+  const [labelInput, setLabelInput] = useState('');
+
   const containerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -57,7 +70,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       Link.configure({ openOnClick: false }),
       Markdown.configure({ html: true, tightLists: true }),
     ],
-    content: content,
+    content: '',
     onUpdate: ({ editor }) => {
       const markdown = (editor.storage.markdown as any).getMarkdown();
       setContent(markdown);
@@ -69,10 +82,14 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     },
   });
 
+  useEffect(() => {
+    if (defaultProject) setSelectedProject(defaultProject);
+  }, [defaultProject]);
+
   const adjustTextareaHeight = useCallback(() => {
     if (textareaRef.current) {
       const target = textareaRef.current;
-      target.style.height = 'inherit';
+      target.style.height = 'auto'; // Reset height briefly to get accurate scrollHeight
       target.style.height = `${target.scrollHeight}px`;
     }
   }, []);
@@ -93,6 +110,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
       if (target.closest('[data-metadata-popover="true"]')) return;
+      if (target.closest('.project-select-dropdown')) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
         if (title.trim() || content.trim()) {
@@ -104,42 +122,50 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [title, content, isPinned, metadata]);
+  }, [title, content, isPinned, metadata, selectedProject, labels]);
 
   const handleSave = () => {
     if (title.trim() || content.trim()) {
-      const finalMetadata = metadata || generateDefaultMetadata(title || 'Untitled');
-      onSave({ title, content, metadata: finalMetadata, isPinned });
+      let finalMetadata = metadata || generateDefaultMetadata(title || 'Untitled');
+      finalMetadata = updateMetadataWithInfo(finalMetadata, {
+        project: selectedProject,
+        labels: labels,
+        title: title || 'Untitled'
+      });
+      onSave({ title: title || 'Untitled', content, metadata: finalMetadata, isPinned });
     }
+    resetForm();
+  };
+
+  const resetForm = () => {
     setTitle('');
     setContent('');
     setMetadata('');
     setIsPinned(false);
     setIsExpanded(false);
     setEditMode('preview');
-  };
-
-  const handleClose = () => {
-    if (title.trim() || content.trim()) {
-      handleSave();
-    } else {
-      setIsExpanded(false);
-      setTitle('');
-      setContent('');
-      setMetadata('');
-      setIsPinned(false);
-      setEditMode('preview');
-    }
+    setLabels([]);
+    setLabelInput('');
   };
 
   const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
     const target = e.target;
-    target.style.height = 'inherit';
+    // Manual synchronous height update to prevent scroll jump
+    target.style.height = 'auto';
     target.style.height = `${target.scrollHeight}px`;
   };
 
-  const currentMetadataInfo = extractMetadataInfo(metadata);
+  const addLabel = () => {
+    if (labelInput.trim() && !labels.includes(labelInput.trim())) {
+      setLabels([...labels, labelInput.trim()]);
+      setLabelInput('');
+    }
+  };
+
+  const removeLabel = (labelToRemove: string) => {
+    setLabels(labels.filter(l => l !== labelToRemove));
+  };
 
   return (
     <div className="w-full max-w-2xl mx-auto mb-12 px-4" ref={containerRef}>
@@ -159,20 +185,24 @@ export function CreateNote({ onSave }: CreateNoteProps) {
         ) : (
           <div className="flex flex-col note-fade-in">
             <div className="flex flex-col px-6 pt-5 pb-2">
-              {currentMetadataInfo.project && (
-                <div className="flex items-center gap-1.5 text-[9px] font-black text-primary/60 uppercase tracking-widest mb-1">
-                  <Briefcase className="h-2.5 w-2.5" />
-                  {currentMetadataInfo.project}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Select value={selectedProject} onValueChange={setSelectedProject}>
+                    <SelectTrigger className="w-[180px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0 project-select-dropdown">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-3 w-3 text-primary" />
+                        <SelectValue placeholder="Select Project" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="project-select-dropdown">
+                      <SelectItem value="">No Project</SelectItem>
+                      {projects.map(p => (
+                        <SelectItem key={p} value={p}>{p}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-              <div className="flex items-center justify-between">
-                <Input
-                  placeholder="Title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all"
-                  autoFocus
-                />
+                
                 <div className="flex items-center space-x-1">
                   <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
                     <Button 
@@ -219,6 +249,33 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                   </Button>
                 </div>
               </div>
+
+              <Input
+                placeholder="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all"
+                autoFocus
+              />
+              
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <div className="flex items-center bg-primary/5 rounded-full px-2 py-0.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
+                  <Tag className="h-3 w-3 text-primary/40 mr-2" />
+                  <input 
+                    placeholder="Add label..." 
+                    className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none w-20 placeholder:text-muted-foreground/30"
+                    value={labelInput}
+                    onChange={(e) => setLabelInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && addLabel()}
+                  />
+                </div>
+                {labels.map(l => (
+                  <Badge key={l} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1">
+                    {l}
+                    <X className="h-2 w-2 cursor-pointer hover:text-destructive" onClick={() => removeLabel(l)} />
+                  </Badge>
+                ))}
+              </div>
             </div>
 
             {editMode !== 'preview' && (
@@ -253,7 +310,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
             </div>
 
             <div className="flex justify-end px-6 pb-3 pt-2 border-t border-border/10 bg-secondary/5">
-              <Button variant="ghost" onClick={handleClose} className="font-bold text-sm px-8 hover:bg-primary/10 hover:text-primary transition-all">Close</Button>
+              <Button variant="ghost" onClick={handleSave} className="font-bold text-sm px-8 hover:bg-primary/10 hover:text-primary transition-all">Close</Button>
             </div>
           </div>
         )}

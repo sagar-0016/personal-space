@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -10,7 +9,7 @@ import { Terminal, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
-// Vibrant Neon Syntax Theme (mirrors high-end code editors)
+// High-Fidelity Neon Syntax Theme
 const neonTheme: any = {
   'code[class*="language-"]': {
     color: '#e0e0e0',
@@ -25,12 +24,12 @@ const neonTheme: any = {
     padding: 0,
     overflow: 'initial',
   },
-  'keyword': { color: '#ff00ff', fontWeight: 'bold' }, // Neon Pink
-  'string': { color: '#39ff14' }, // Neon Green
-  'function': { color: '#00ffff' }, // Neon Cyan
+  'keyword': { color: '#ff00ff', fontWeight: 'bold' },
+  'string': { color: '#39ff14' },
+  'function': { color: '#00ffff' },
   'comment': { color: '#666666', fontStyle: 'italic' },
-  'variable': { color: '#ff9900' }, // Neon Orange
-  'number': { color: '#ffff00' }, // Neon Yellow
+  'variable': { color: '#ff9900' },
+  'number': { color: '#ffff00' },
   'operator': { color: '#ffffff' },
   'punctuation': { color: '#cccccc' },
   'boolean': { color: '#ff00ff' },
@@ -44,19 +43,13 @@ interface MarkdownRendererProps {
   className?: string;
 }
 
-/**
- * Unified Markdown Renderer
- * Consolidated rendering logic for the entire application.
- * Features high-fidelity obsidian styling with vibrant neon syntax highlighting.
- */
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
 
-  // Hooks must be called in the same order. 
-  // useMemo and useEffect are always called at the top level.
+  // RULES OF HOOKS: All hooks must be at the top level
   const processedContent = useMemo(() => {
     const trimmed = (content || '').trim();
-    // Automatic JSON Recognition: If it looks like JSON Frontmatter, treat as JSON code.
+    // Automatic JSON Recognition: If it looks like a JSON block, wrap it in code fences
     if (trimmed.startsWith('{') && trimmed.endsWith('}') && !trimmed.includes('```')) {
       try {
         JSON.parse(trimmed);
@@ -93,7 +86,6 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const lang = match ? match[1] : 'text';
             const codeString = String(children).replace(/\n$/, '');
             
-            // High-Fidelity "Mini-Card" Inline Code
             if (inline) {
               return (
                 <span className="inline-block align-middle mx-1 my-0.5 max-w-full">
@@ -124,7 +116,6 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
               );
             }
 
-            // High-Fidelity Source Code Block
             return (
               <div className="relative my-8 group/code-render">
                 <div className="absolute -top-3 left-4 px-3 py-1 bg-background border border-border/50 rounded-md z-10 flex items-center space-x-2 shadow-lg">

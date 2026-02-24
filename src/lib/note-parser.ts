@@ -1,4 +1,3 @@
-
 /**
  * Simplified metadata parser that extracts project hierarchy and indexing fields 
  * from a YAML metadata block.
@@ -40,8 +39,39 @@ export function extractMetadataInfo(metadata: string | undefined): NoteMetadataI
 }
 
 /**
+ * Updates a YAML metadata string with new values for specific fields.
+ */
+export function updateMetadataWithInfo(currentMetadata: string, updates: Partial<NoteMetadataInfo>): string {
+  let lines = (currentMetadata || "").split('\n');
+  
+  const updateLine = (key: string, value: string | string[]) => {
+    const index = lines.findIndex(l => l.trim().startsWith(`${key}:`));
+    let formattedValue = '';
+    
+    if (Array.isArray(value)) {
+      formattedValue = `[${value.map(v => `"${v}"`).join(', ')}]`;
+    } else {
+      formattedValue = `"${value || ''}"`;
+    }
+
+    if (index !== -1) {
+      lines[index] = `${key}: ${formattedValue}`;
+    } else {
+      lines.push(`${key}: ${formattedValue}`);
+    }
+  };
+
+  if (updates.title !== undefined) updateLine('title', updates.title || '');
+  if (updates.project !== undefined) updateLine('project', updates.project || '');
+  if (updates.labels !== undefined) updateLine('labels', updates.labels || []);
+  if (updates.tags !== undefined) updateLine('tags', updates.tags || []);
+
+  return lines.filter(l => l.trim() !== "").join('\n');
+}
+
+/**
  * Utility to generate a basic metadata block if none exists.
  */
 export function generateDefaultMetadata(title: string): string {
-  return `title: "${title}"\nproject: "Personal Space"\nlabels: []\ntags: []\nstatus: "draft"`;
+  return `title: "${title}"\nproject: ""\nlabels: []\ntags: []\nstatus: "draft"`;
 }

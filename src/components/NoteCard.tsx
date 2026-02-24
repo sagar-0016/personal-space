@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from 'react';
@@ -20,6 +19,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NoteCardProps {
   note: Note;
@@ -30,6 +35,7 @@ interface NoteCardProps {
   onTogglePin: () => void;
   isTrash?: boolean;
   onPermanentDelete?: () => void;
+  projects?: string[];
 }
 
 export function NoteCard({ 
@@ -40,8 +46,14 @@ export function NoteCard({
   onArchive, 
   onTogglePin, 
   isTrash, 
-  onPermanentDelete 
+  onPermanentDelete,
+  projects = []
 }: NoteCardProps) {
+  
+  const handleProjectChange = (projectName: string) => {
+    onUpdate({ ...note, project: projectName || null });
+  };
+
   return (
     <Card 
       onClick={() => !isTrash && onEdit(note)}
@@ -53,12 +65,21 @@ export function NoteCard({
     >
       <div className="flex justify-between items-start mb-3">
         <div className="flex flex-col gap-1 pr-8">
-          {note.project && (
-            <div className="flex items-center gap-1.5 text-[9px] font-black text-primary/60 uppercase tracking-widest">
-              <Briefcase className="h-2.5 w-2.5" />
-              {note.project}
-            </div>
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-1.5 text-[9px] font-black text-primary/60 uppercase tracking-widest cursor-pointer hover:text-primary transition-colors">
+                <Briefcase className="h-2.5 w-2.5" />
+                {note.project || "Uncategorized"}
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="min-w-[150px]">
+              <DropdownMenuItem onClick={() => handleProjectChange("")}>None</DropdownMenuItem>
+              {projects.map(p => (
+                <DropdownMenuItem key={p} onClick={() => handleProjectChange(p)}>{p}</DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {note.title && (
             <h3 className="text-lg font-bold line-clamp-2 text-foreground/90 tracking-tight">
               {note.title}

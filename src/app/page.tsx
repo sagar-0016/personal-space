@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -46,6 +45,8 @@ export default function Home() {
 
   const { data: notes, isLoading: isNotesLoading } = useCollection<Note>(notesQuery);
 
+  const projects = Array.from(new Set((notes || []).map(n => n.project).filter(Boolean))) as string[];
+
   const handleCreateNote = (newNoteData: { title: string; content: string; metadata: string; isPinned: boolean; isArchived?: boolean }) => {
     if (!db || !user) return;
     
@@ -78,8 +79,8 @@ export default function Home() {
     updateDocumentNonBlocking(noteRef, {
       ...updatedNote,
       title: info.title || updatedNote.title,
-      project: info.project || null,
-      labels: info.labels || [],
+      project: updatedNote.project || info.project || null,
+      labels: updatedNote.labels || info.labels || [],
       tags: info.tags || [],
       updatedAt: Date.now()
     });
@@ -173,6 +174,8 @@ export default function Home() {
       : "flex flex-col max-w-3xl"
   );
 
+  const currentProjectContext = currentView.startsWith('project:') ? currentView.split(':')[1] : null;
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="h-screen flex flex-col w-full bg-background transition-colors duration-700 relative overflow-hidden">
@@ -192,7 +195,13 @@ export default function Home() {
           
           <SidebarInset className="flex-1 overflow-y-auto bg-transparent">
             <main className="container mx-auto pt-8 pb-32">
-              {(currentView === 'all' || currentView.startsWith('project:')) && <CreateNote onSave={handleCreateNote} />}
+              {(currentView === 'all' || currentView.startsWith('project:')) && (
+                <CreateNote 
+                  onSave={handleCreateNote} 
+                  defaultProject={currentProjectContext}
+                  projects={projects}
+                />
+              )}
 
               {isNotesLoading ? (
                 <div className="flex justify-center py-20">
@@ -218,6 +227,7 @@ export default function Home() {
                               onTogglePin={() => handleTogglePin(note)}
                               isTrash={currentView === 'trash'}
                               onPermanentDelete={() => handlePermanentDelete(note.id)}
+                              projects={projects}
                             />
                           </div>
                         ))}
@@ -243,6 +253,7 @@ export default function Home() {
                             onTogglePin={() => handleTogglePin(note)}
                             isTrash={currentView === 'trash'}
                             onPermanentDelete={() => handlePermanentDelete(note.id)}
+                            projects={projects}
                           />
                         </div>
                       ))}
@@ -276,6 +287,7 @@ export default function Home() {
           onClose={() => setIsModalOpen(false)} 
           onSave={handleUpdateNote}
           onDelete={handleTrashNote}
+          projects={projects}
         />
 
         <SettingsDialog 

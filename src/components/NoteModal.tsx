@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -13,11 +12,12 @@ import {
   Tag, 
   Layers,
   Trash2,
-  Briefcase
+  Briefcase,
+  Plus
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { extractMetadataInfo } from '@/lib/note-parser';
+import { extractMetadataInfo, updateMetadataWithInfo } from '@/lib/note-parser';
 import { EditorToolbar } from './EditorToolbar';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -35,6 +35,13 @@ import { common, createLowlight } from 'lowlight';
 import { Markdown } from 'tiptap-markdown';
 import { format } from 'date-fns';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const lowlight = createLowlight(common);
 
@@ -44,14 +51,16 @@ interface NoteModalProps {
   onClose: () => void;
   onSave: (note: Note) => void;
   onDelete: (note: Note) => void;
+  projects?: string[];
 }
 
-export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModalProps) {
+export function NoteModal({ note, isOpen, onClose, onSave, onDelete, projects = [] }: NoteModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState('');
   const [project, setProject] = useState<string | null>(null);
   const [labels, setLabels] = useState<string[]>([]);
+  const [labelInput, setLabelInput] = useState('');
   const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -70,7 +79,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       Link.configure({ openOnClick: false }),
       Markdown.configure({ html: true, tightLists: true }),
     ],
-    content: content,
+    content: '',
     onUpdate: ({ editor }) => {
       const markdown = (editor.storage.markdown as any).getMarkdown();
       setContent(markdown);
@@ -84,9 +93,8 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   const adjustTextareaHeight = useCallback(() => {
     if (textareaRef.current) {
-      // Synchronous update without setting to auto first to prevent scroll jumps
       const currentScroll = textareaRef.current.scrollTop;
-      textareaRef.current.style.height = '0px';
+      textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
       textareaRef.current.scrollTop = currentScroll;
     }
@@ -119,17 +127,24 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   const performSave = (isClosing: boolean = false) => {
     if (!note) return;
-    const info = extractMetadataInfo(metadata);
+    
+    // Sync UI fields back to metadata
+    const updatedMetadata = updateMetadataWithInfo(metadata, {
+      title,
+      project: project || '',
+      labels,
+    });
+
     const currentData = {
       ...note,
-      title: info.title || title || 'Untitled Note',
+      title: title || 'Untitled Note',
       content: content,
-      metadata: metadata,
-      project: info.project || project,
-      labels: info.labels.length > 0 ? info.labels : labels,
-      tags: info.tags,
+      metadata: updatedMetadata,
+      project: project,
+      labels: labels,
       updatedAt: Date.now()
     };
+    
     const currentStr = JSON.stringify({ t: currentData.title, c: currentData.content, m: currentData.metadata });
     if (currentStr !== lastSavedRef.current) {
       onSave(currentData);
@@ -142,20 +157,24 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     if (!isOpen || !note) return;
     const timer = setTimeout(() => performSave(false), 3000);
     return () => clearTimeout(timer);
-  }, [title, content, metadata, isOpen, note?.id]);
-
-  useEffect(() => {
-    const info = extractMetadataInfo(metadata);
-    setProject(info.project);
-    setLabels(info.labels);
-  }, [metadata]);
+  }, [title, content, metadata, project, labels, isOpen, note?.id]);
 
   const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
-    // Dynamic height calculation without layout-shaking the scroll position
     const target = e.target;
-    target.style.height = 'inherit';
+    target.style.height = 'auto';
     target.style.height = `${target.scrollHeight}px`;
+  };
+
+  const addLabel = () => {
+    if (labelInput.trim() && !labels.includes(labelInput.trim())) {
+      setLabels([...labels, labelInput.trim()]);
+      setLabelInput('');
+    }
+  };
+
+  const removeLabel = (labelToRemove: string) => {
+    setLabels(labels.filter(l => l !== labelToRemove));
   };
 
   return (
@@ -165,10 +184,12 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         onPointerDownOutside={(e) => {
           const target = e.target as HTMLElement;
           if (target.closest('[data-metadata-popover="true"]')) e.preventDefault();
+          if (target.closest('.project-select-dropdown')) e.preventDefault();
         }}
         onInteractOutside={(e) => {
           const target = e.target as HTMLElement;
           if (target.closest('[data-metadata-popover="true"]')) e.preventDefault();
+          if (target.closest('.project-select-dropdown')) e.preventDefault();
         }}
       >
         <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
@@ -234,13 +255,36 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
         <div className="flex-1 overflow-y-auto pt-6 pb-20 scroll-smooth">
           <div className="px-10 space-y-6">
-            <div className="space-y-1">
-              {project && (
-                <div className="flex items-center gap-2 text-xs font-bold text-primary/60 uppercase tracking-widest mb-2">
-                  <Briefcase className="h-3 w-3" />
-                  {project}
-                </div>
-              )}
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Select value={project || ""} onValueChange={(val) => setProject(val || null)}>
+                  <SelectTrigger className="w-[200px] h-9 text-[11px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0 project-select-dropdown">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="h-3.5 w-3.5 text-primary" />
+                      <SelectValue placeholder="Assign Project" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="project-select-dropdown">
+                    <SelectItem value="null">No Project</SelectItem>
+                    {projects.map(p => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                    <div className="p-2 border-t mt-1">
+                       <input 
+                         placeholder="+ Create New" 
+                         className="w-full text-[10px] font-bold uppercase tracking-widest outline-none bg-transparent px-2"
+                         onKeyDown={(e) => {
+                           if (e.key === 'Enter') {
+                             const val = (e.target as HTMLInputElement).value;
+                             if (val) setProject(val);
+                           }
+                         }}
+                       />
+                    </div>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <Input
                 placeholder="Note Title"
                 value={title}
@@ -250,10 +294,20 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Tag className="h-3.5 w-3.5 text-muted-foreground" />
+              <div className="flex items-center bg-primary/5 rounded-full px-3 py-1 border border-primary/10 group focus-within:border-primary/30 transition-all">
+                <Tag className="h-3.5 w-3.5 text-primary/40 mr-2" />
+                <input 
+                  placeholder="Add label..." 
+                  className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-24 placeholder:text-muted-foreground/30"
+                  value={labelInput}
+                  onChange={(e) => setLabelInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addLabel()}
+                />
+              </div>
               {labels.map(label => (
-                <Badge key={label} variant="secondary" className="flex items-center gap-1.5 rounded-md px-2 py-0.5 bg-primary/5 text-primary border-none">
+                <Badge key={label} variant="secondary" className="flex items-center gap-2 rounded-lg px-3 py-1 bg-primary/10 text-primary border-none">
                   {label}
+                  <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => removeLabel(label)} />
                 </Badge>
               ))}
             </div>

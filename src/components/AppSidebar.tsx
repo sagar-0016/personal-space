@@ -1,7 +1,6 @@
-
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Briefcase, 
   Tag, 
@@ -9,8 +8,8 @@ import {
   Trash2,
   Layers,
   ChevronRight,
-  ChevronDown,
-  LayoutPanelLeft
+  LayoutPanelLeft,
+  Plus
 } from 'lucide-react';
 import {
   Sidebar,
@@ -29,6 +28,16 @@ import {
 import { Note } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface AppSidebarProps {
   currentView: string;
@@ -41,6 +50,8 @@ export function AppSidebar({
   onViewChange, 
   notes
 }: AppSidebarProps) {
+  const [newProjectName, setNewProjectName] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // Extract unique projects and their specific labels
   const projectsMap = notes.reduce((acc, note) => {
@@ -52,6 +63,13 @@ export function AppSidebar({
   }, {} as Record<string, Set<string>>);
 
   const projects = Object.keys(projectsMap).sort();
+
+  const handleCreateProject = () => {
+    if (!newProjectName.trim()) return;
+    onViewChange(`project:${newProjectName.trim()}`);
+    setNewProjectName('');
+    setIsDialogOpen(false);
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r-0 pt-16 bg-transparent">
@@ -76,7 +94,33 @@ export function AppSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 text-[10px] uppercase tracking-widest font-black opacity-60 text-primary">Projects</SidebarGroupLabel>
+          <div className="flex items-center justify-between px-6 mb-2">
+            <SidebarGroupLabel className="p-0 text-[10px] uppercase tracking-widest font-black opacity-60 text-primary">Projects</SidebarGroupLabel>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-5 w-5 rounded-full hover:bg-primary/10">
+                  <Plus className="h-3 w-3 text-primary" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Project</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <Input 
+                    placeholder="Project name..." 
+                    value={newProjectName} 
+                    onChange={(e) => setNewProjectName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
+                    autoFocus
+                  />
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleCreateProject}>Create Project</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
           <SidebarMenu>
             {projects.map((project) => {
               const isActiveProject = currentView.startsWith(`project:${project}`);
@@ -105,7 +149,7 @@ export function AppSidebar({
                     
                     {projectLabels.length > 0 && (
                       <CollapsibleContent>
-                        <SidebarMenuSub className="bg-primary/5 ml-4 rounded-l-lg border-l-2 border-primary/20">
+                        <SidebarMenuSub className="bg-primary/5 ml-4 rounded-l-lg border-l-2 border-primary/20 py-1">
                           {projectLabels.map(label => {
                             const labelView = `project:${project}:label:${label}`;
                             const isLabelActive = currentView === labelView;
