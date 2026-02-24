@@ -49,6 +49,9 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                   <code className="px-1.5 py-0.5 rounded bg-[#0d0d0d] border border-white/10 font-mono text-xs text-[#e1e4e8] shadow-sm" {...props}>
                     {children}
                   </code>
+                  <div className="absolute -right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover/inline-code:opacity-100 transition-opacity">
+                    <CopyButton text={codeString} className="h-5 w-5 p-1" />
+                  </div>
                 </span>
               );
             }

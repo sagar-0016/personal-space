@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { EditorContent, ReactNodeViewRenderer, NodeViewWrapper, Editor } from '@tiptap/react';
+import { EditorContent, NodeViewWrapper, Editor } from '@tiptap/react';
 import { cn } from '@/lib/utils';
 import { 
   Terminal, 
@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const CodeBlockComponent = ({ node }: any) => {
+export const CodeBlockComponent = ({ node }: any) => {
   const [copied, setCopied] = useState(false);
   
   const handleCopy = () => {
