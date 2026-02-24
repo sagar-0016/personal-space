@@ -11,7 +11,9 @@ export type Note = {
   isPinned?: boolean;
   isArchived?: boolean;
   isDeleted?: boolean;
+  project?: string;
   labels?: string[];
+  tags?: string[];
 };
 
 export type UserProfile = {

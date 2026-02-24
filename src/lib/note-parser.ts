@@ -1,35 +1,47 @@
 
 /**
- * Simplified metadata parser that strictly extracts indexing fields 
- * from a standalone YAML metadata block.
+ * Simplified metadata parser that extracts project hierarchy and indexing fields 
+ * from a YAML metadata block.
  */
 
 export interface NoteMetadataInfo {
   title: string | null;
+  project: string | null;
+  labels: string[];
   tags: string[];
 }
 
 /**
  * Extracts key fields from a raw YAML metadata string.
- * This does NOT modify the string, ensuring data integrity.
  */
 export function extractMetadataInfo(metadata: string | undefined): NoteMetadataInfo {
-  if (!metadata) return { title: null, tags: [] };
+  if (!metadata) return { title: null, project: null, labels: [], tags: [] };
 
-  // Improved extraction logic for YAML-like formats
-  const titleMatch = metadata.match(/title:\s*(?:"(.*?)"|(.*))/);
-  const tagsMatch = metadata.match(/tags:\s*\[(.*?)\]/);
-  
-  const title = titleMatch ? (titleMatch[1] || titleMatch[2]?.trim()) : null;
-  const tagsRaw = tagsMatch ? tagsMatch[1] : "";
-  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim().replace(/"/g, '')) : [];
+  // Helper to extract matches for YAML keys
+  const getMatch = (key: string) => {
+    const regex = new RegExp(`${key}:\\s*(?:"(.*?)"|(.*))`);
+    const match = metadata.match(regex);
+    return match ? (match[1] || match[2]?.trim()) : null;
+  };
 
-  return { title, tags };
+  const getListMatch = (key: string) => {
+    const regex = new RegExp(`${key}:\\s*\\[(.*?)\\]`);
+    const match = metadata.match(regex);
+    const raw = match ? match[1] : "";
+    return raw ? raw.split(',').map(t => t.trim().replace(/"/g, '').replace(/'/g, '')) : [];
+  };
+
+  const title = getMatch('title');
+  const project = getMatch('project');
+  const labels = getListMatch('labels');
+  const tags = getListMatch('tags');
+
+  return { title, project, labels, tags };
 }
 
 /**
  * Utility to generate a basic metadata block if none exists.
  */
 export function generateDefaultMetadata(title: string): string {
-  return `title: "${title}"\ntags: []\ncategory: "general"\nstatus: "draft"`;
+  return `title: "${title}"\nproject: "Personal Space"\nlabels: []\ntags: []\nstatus: "draft"`;
 }

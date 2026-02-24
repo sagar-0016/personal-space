@@ -11,9 +11,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { 
   X, 
   Tag, 
-  X as CloseIcon, 
   Layers,
-  Trash2
+  Trash2,
+  Briefcase
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -50,6 +50,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState('');
+  const [project, setProject] = useState<string | null>(null);
   const [labels, setLabels] = useState<string[]>([]);
   const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
   
@@ -83,8 +84,11 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   const adjustTextareaHeight = useCallback(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      // Synchronous update without setting to auto first to prevent scroll jumps
+      const currentScroll = textareaRef.current.scrollTop;
+      textareaRef.current.style.height = '0px';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      textareaRef.current.scrollTop = currentScroll;
     }
   }, []);
 
@@ -93,6 +97,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       setTitle(note.title);
       setContent(note.content);
       setMetadata(note.metadata || '');
+      setProject(note.project || null);
       setLabels(note.labels || []);
       lastSavedRef.current = JSON.stringify({ t: note.title, c: note.content, m: note.metadata });
       if (editor) editor.commands.setContent(note.content, false);
@@ -120,7 +125,9 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       title: info.title || title || 'Untitled Note',
       content: content,
       metadata: metadata,
-      labels: info.tags.length > 0 ? info.tags : labels,
+      project: info.project || project,
+      labels: info.labels.length > 0 ? info.labels : labels,
+      tags: info.tags,
       updatedAt: Date.now()
     };
     const currentStr = JSON.stringify({ t: currentData.title, c: currentData.content, m: currentData.metadata });
@@ -139,13 +146,16 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   useEffect(() => {
     const info = extractMetadataInfo(metadata);
-    if (info.tags.length > 0) setLabels(info.tags);
+    setProject(info.project);
+    setLabels(info.labels);
   }, [metadata]);
 
   const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
-    e.target.style.height = 'auto';
-    e.target.style.height = `${e.target.scrollHeight}px`;
+    // Dynamic height calculation without layout-shaking the scroll position
+    const target = e.target;
+    target.style.height = 'inherit';
+    target.style.height = `${target.scrollHeight}px`;
   };
 
   return (
@@ -224,21 +234,26 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
         <div className="flex-1 overflow-y-auto pt-6 pb-20 scroll-smooth">
           <div className="px-10 space-y-6">
-            <Input
-              placeholder="Note Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-3xl font-bold px-0 bg-transparent h-auto placeholder:opacity-30"
-            />
+            <div className="space-y-1">
+              {project && (
+                <div className="flex items-center gap-2 text-xs font-bold text-primary/60 uppercase tracking-widest mb-2">
+                  <Briefcase className="h-3 w-3" />
+                  {project}
+                </div>
+              )}
+              <Input
+                placeholder="Note Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-3xl font-bold px-0 bg-transparent h-auto placeholder:opacity-30"
+              />
+            </div>
 
             <div className="flex flex-wrap items-center gap-2">
               <Tag className="h-3.5 w-3.5 text-muted-foreground" />
               {labels.map(label => (
                 <Badge key={label} variant="secondary" className="flex items-center gap-1.5 rounded-md px-2 py-0.5 bg-primary/5 text-primary border-none">
                   {label}
-                  <button onClick={() => setLabels(labels.filter(l => l !== label))} className="hover:text-destructive transition-colors">
-                    <CloseIcon className="h-2.5 w-2.5" />
-                  </button>
                 </Badge>
               ))}
             </div>

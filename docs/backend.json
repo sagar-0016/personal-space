@@ -76,12 +76,23 @@
           "type": "boolean",
           "description": "Flag for notes in trash."
         },
+        "project": {
+          "type": "string",
+          "description": "High-level categorization for projects."
+        },
         "labels": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Custom labels for organization (tags extracted from metadata)."
+          "description": "Project-specific labels for secondary organization."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Search optimization keywords extracted from metadata."
         }
       },
       "required": [

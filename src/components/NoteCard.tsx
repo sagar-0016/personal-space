@@ -4,7 +4,7 @@
 import React from 'react';
 import { Note } from '@/lib/types';
 import { Card } from '@/components/ui/card';
-import { Trash2, Edit3, Pin, Archive, RotateCcw, Tag } from 'lucide-react';
+import { Trash2, Edit3, Pin, Archive, RotateCcw, Tag, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -52,11 +52,19 @@ export function NoteCard({
       )}
     >
       <div className="flex justify-between items-start mb-3">
-        {note.title && (
-          <h3 className="text-lg font-bold line-clamp-2 text-foreground/90 pr-8 tracking-tight">
-            {note.title}
-          </h3>
-        )}
+        <div className="flex flex-col gap-1 pr-8">
+          {note.project && (
+            <div className="flex items-center gap-1.5 text-[9px] font-black text-primary/60 uppercase tracking-widest">
+              <Briefcase className="h-2.5 w-2.5" />
+              {note.project}
+            </div>
+          )}
+          {note.title && (
+            <h3 className="text-lg font-bold line-clamp-2 text-foreground/90 tracking-tight">
+              {note.title}
+            </h3>
+          )}
+        </div>
         {!isTrash && (
           <Button
             variant="ghost"

@@ -3,13 +3,14 @@
 
 import React from 'react';
 import { 
-  Lightbulb, 
+  Briefcase, 
   Tag, 
   Archive, 
   Trash2,
   Layers,
-  TagIcon,
-  X
+  ChevronRight,
+  ChevronDown,
+  LayoutPanelLeft
 } from 'lucide-react';
 import {
   Sidebar,
@@ -20,32 +21,37 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Button } from '@/components/ui/button';
+import { Note } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface AppSidebarProps {
   currentView: string;
   onViewChange: (view: string) => void;
-  labels: string[];
-  labelCounts: Record<string, number>;
-  onDeleteLabel: (label: string) => void;
-  hideEmptyLabels: boolean;
+  notes: Note[];
 }
 
 export function AppSidebar({ 
   currentView, 
   onViewChange, 
-  labels, 
-  labelCounts, 
-  onDeleteLabel,
-  hideEmptyLabels 
+  notes
 }: AppSidebarProps) {
   
-  const displayedLabels = hideEmptyLabels 
-    ? labels.filter(label => labelCounts[label] > 0)
-    : labels;
+  // Extract unique projects and their specific labels
+  const projectsMap = notes.reduce((acc, note) => {
+    if (note.project && !note.isDeleted && !note.isArchived) {
+      if (!acc[note.project]) acc[note.project] = new Set<string>();
+      (note.labels || []).forEach(label => acc[note.project].add(label));
+    }
+    return acc;
+  }, {} as Record<string, Set<string>>);
+
+  const projects = Object.keys(projectsMap).sort();
 
   return (
     <Sidebar collapsible="icon" className="border-r-0 pt-16 bg-transparent">
@@ -70,64 +76,85 @@ export function AppSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 text-[10px] uppercase tracking-widest font-black opacity-60 text-primary">Labels</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 text-[10px] uppercase tracking-widest font-black opacity-60 text-primary">Projects</SidebarGroupLabel>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                tooltip="Untagged" 
-                isActive={currentView === 'untagged'}
-                onClick={() => onViewChange('untagged')}
-                className={cn(
-                  "rounded-r-full mr-2 transition-all duration-300",
-                  currentView === 'untagged' && "bg-primary/15 text-primary font-bold shadow-sm"
-                )}
-              >
-                <TagIcon className={cn("h-4 w-4", currentView === 'untagged' && "text-primary")} />
-                <span>Untagged</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            {displayedLabels.map((label) => {
-              const isActive = currentView === `label:${label}`;
-              const isEmpty = labelCounts[label] === 0;
+            {projects.map((project) => {
+              const isActiveProject = currentView.startsWith(`project:${project}`);
+              const projectLabels = Array.from(projectsMap[project]).sort();
               
               return (
-                <SidebarMenuItem key={label} className="group/item relative">
-                  <SidebarMenuButton 
-                    tooltip={label} 
-                    isActive={isActive}
-                    onClick={() => onViewChange(`label:${label}`)}
-                    className={cn(
-                      "rounded-r-full mr-2 transition-all duration-300",
-                      isActive && "bg-primary/15 text-primary font-bold shadow-sm"
+                <Collapsible key={project} defaultOpen={isActiveProject} className="group/project">
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton 
+                        tooltip={project}
+                        isActive={isActiveProject}
+                        onClick={() => onViewChange(`project:${project}`)}
+                        className={cn(
+                          "rounded-r-full mr-2 transition-all duration-300",
+                          isActiveProject && "bg-primary/10 text-primary font-bold"
+                        )}
+                      >
+                        <Briefcase className={cn("h-4 w-4", isActiveProject && "text-primary")} />
+                        <span className="flex-1">{project}</span>
+                        {projectLabels.length > 0 && (
+                          <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/project:rotate-90" />
+                        )}
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    
+                    {projectLabels.length > 0 && (
+                      <CollapsibleContent>
+                        <SidebarMenuSub className="bg-primary/5 ml-4 rounded-l-lg border-l-2 border-primary/20">
+                          {projectLabels.map(label => {
+                            const labelView = `project:${project}:label:${label}`;
+                            const isLabelActive = currentView === labelView;
+                            
+                            return (
+                              <SidebarMenuSubItem key={label}>
+                                <SidebarMenuSubButton 
+                                  asChild 
+                                  isActive={isLabelActive}
+                                  onClick={() => onViewChange(labelView)}
+                                  className={cn(
+                                    "cursor-pointer transition-colors px-4 py-2 h-auto",
+                                    isLabelActive ? "text-primary font-bold bg-primary/10" : "hover:bg-primary/5"
+                                  )}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Tag className={cn("h-3 w-3", isLabelActive ? "text-primary" : "text-muted-foreground/60")} />
+                                    <span>{label}</span>
+                                  </div>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
                     )}
-                  >
-                    <Tag className={cn("h-4 w-4", isActive && "text-primary")} />
-                    <span>{label}</span>
-                  </SidebarMenuButton>
-                  
-                  {isEmpty && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteLabel(label);
-                        if (isActive) onViewChange('all');
-                      }}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
-                </SidebarMenuItem>
+                  </SidebarMenuItem>
+                </Collapsible>
               );
             })}
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
+        <SidebarGroup className="mt-auto">
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                tooltip="Not Categorized" 
+                isActive={currentView === 'uncategorized'}
+                onClick={() => onViewChange('uncategorized')}
+                className={cn(
+                  "rounded-r-full mr-2 transition-all duration-300",
+                  currentView === 'uncategorized' && "bg-primary/15 text-primary font-bold shadow-sm"
+                )}
+              >
+                <LayoutPanelLeft className={cn(currentView === 'uncategorized' && "text-primary")} />
+                <span>Not Categorized</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton 
                 tooltip="Archive" 

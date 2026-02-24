@@ -53,7 +53,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
   const [mounted, setMounted] = useState(false);
 
   // Hooks must be called in the same order. 
-  // useMemo and useEffect are called before any conditional logic.
+  // useMemo and useEffect are always called at the top level.
   const processedContent = useMemo(() => {
     const trimmed = (content || '').trim();
     // Automatic JSON Recognition: If it looks like JSON Frontmatter, treat as JSON code.

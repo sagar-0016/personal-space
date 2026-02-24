@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -9,7 +10,7 @@ import { NoteCard } from '@/components/NoteCard';
 import { NoteModal } from '@/components/NoteModal';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SettingsDialog } from '@/components/SettingsDialog';
-import { Loader2, Pin, Trash2, Archive, Layers, Tag as TagIcon } from 'lucide-react';
+import { Loader2, Pin, Trash2, Archive, Layers, LayoutPanelLeft } from 'lucide-react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -29,7 +30,6 @@ export default function Home() {
   const [currentView, setCurrentView] = useState('all'); 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  // Settings - Defaults updated per user request
   const [hideEmptyLabels, setHideEmptyLabels] = useState(true);
   const [sortByRecent, setSortByRecent] = useState(false);
 
@@ -62,7 +62,9 @@ export default function Home() {
       isPinned: newNoteData.isPinned,
       isArchived: !!newNoteData.isArchived,
       isDeleted: false,
-      labels: info.tags
+      project: info.project || null,
+      labels: info.labels || [],
+      tags: info.tags || []
     };
     addDocumentNonBlocking(noteRef, newNote);
   };
@@ -76,22 +78,10 @@ export default function Home() {
     updateDocumentNonBlocking(noteRef, {
       ...updatedNote,
       title: info.title || updatedNote.title,
-      labels: info.tags,
+      project: info.project || null,
+      labels: info.labels || [],
+      tags: info.tags || [],
       updatedAt: Date.now()
-    });
-  };
-
-  const handleDeleteLabel = (labelToDelete: string) => {
-    if (!db || !user || !notes) return;
-    notes.forEach(note => {
-      if (note.labels?.includes(labelToDelete)) {
-        const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
-        const updatedLabels = note.labels?.filter(l => l !== labelToDelete) || [];
-        updateDocumentNonBlocking(noteRef, { 
-          labels: updatedLabels, 
-          updatedAt: Date.now() 
-        });
-      }
     });
   };
 
@@ -137,20 +127,29 @@ export default function Home() {
   };
 
   const allFilteredNotes = (notes || []).filter(n => {
-    const matchesSearch = (n.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         (n.content || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (n.metadata || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = (n.title || '').toLowerCase().includes(searchLower) || 
+                         (n.content || '').toLowerCase().includes(searchLower) ||
+                         (n.metadata || '').toLowerCase().includes(searchLower) ||
+                         (n.tags || []).some(t => t.toLowerCase().includes(searchLower));
     
     if (!matchesSearch) return false;
 
     if (currentView === 'all') return !n.isDeleted && !n.isArchived;
-    if (currentView === 'untagged') return !n.isArchived && !n.isDeleted && (!n.labels || n.labels.length === 0);
     if (currentView === 'archive') return !!n.isArchived && !n.isDeleted;
     if (currentView === 'trash') return !!n.isDeleted;
+    if (currentView === 'uncategorized') return !n.project && !n.isDeleted && !n.isArchived;
     
-    if (currentView.startsWith('label:')) {
-      const label = currentView.split(':')[1];
-      return n.labels?.includes(label) && !n.isDeleted && !n.isArchived;
+    if (currentView.startsWith('project:')) {
+      const parts = currentView.split(':');
+      const projectName = parts[1];
+      const isProjectMatch = n.project === projectName && !n.isDeleted && !n.isArchived;
+      
+      if (parts.length > 2 && parts[2] === 'label') {
+        const labelName = parts[3];
+        return isProjectMatch && (n.labels || []).includes(labelName);
+      }
+      return isProjectMatch;
     }
     
     return !n.isArchived && !n.isDeleted;
@@ -158,13 +157,6 @@ export default function Home() {
 
   const pinnedNotes = allFilteredNotes.filter(n => n.isPinned);
   const otherNotes = allFilteredNotes.filter(n => !n.isPinned);
-
-  const allLabels = Array.from(new Set((notes || []).flatMap(n => n.labels || []))).sort();
-  const labelActiveCounts = allLabels.reduce((acc, label) => {
-    const count = (notes || []).filter(n => !n.isDeleted && !n.isArchived && n.labels?.includes(label)).length;
-    acc[label] = count;
-    return acc;
-  }, {} as Record<string, number>);
 
   if (isUserLoading || !user) {
     return (
@@ -195,15 +187,12 @@ export default function Home() {
           <AppSidebar 
             currentView={currentView} 
             onViewChange={setCurrentView} 
-            labels={allLabels}
-            labelCounts={labelActiveCounts}
-            onDeleteLabel={handleDeleteLabel}
-            hideEmptyLabels={hideEmptyLabels}
+            notes={notes || []}
           />
           
           <SidebarInset className="flex-1 overflow-y-auto bg-transparent">
             <main className="container mx-auto pt-8 pb-32">
-              {(currentView === 'all' || currentView === 'untagged') && <CreateNote onSave={handleCreateNote} />}
+              {(currentView === 'all' || currentView.startsWith('project:')) && <CreateNote onSave={handleCreateNote} />}
 
               {isNotesLoading ? (
                 <div className="flex justify-center py-20">
@@ -265,17 +254,16 @@ export default function Home() {
                   <div className="p-10 bg-primary/5 rounded-full mb-6 border border-primary/10">
                     {currentView === 'trash' ? <Trash2 className="h-16 w-16 text-primary opacity-40" /> : 
                      currentView === 'archive' ? <Archive className="h-16 w-16 text-primary opacity-40" /> :
-                     currentView === 'untagged' ? <TagIcon className="h-16 w-16 text-primary opacity-40" /> :
+                     currentView === 'uncategorized' ? <LayoutPanelLeft className="h-16 w-16 text-primary opacity-40" /> :
                      <Layers className="h-16 w-16 text-primary opacity-40" />}
                   </div>
                   <p className="text-2xl font-semibold text-foreground/80">
                     {currentView === 'trash' ? "Trash is empty" : 
                      currentView === 'archive' ? "Archive is empty" :
-                     currentView === 'untagged' ? "No untagged notes" :
-                     currentView.startsWith('label:') ? `No notes with label "${currentView.split(':')[1]}"` :
+                     currentView === 'uncategorized' ? "No uncategorized notes" :
+                     currentView.startsWith('project:') ? "No notes in this section" :
                      "No notes match your search"}
                   </p>
-                  <p className="text-sm opacity-60 mt-3">{currentView === 'all' ? "Try capturing a new thought." : ""}</p>
                 </div>
               )}
             </main>

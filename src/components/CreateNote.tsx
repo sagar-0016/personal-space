@@ -5,11 +5,11 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Pin } from 'lucide-react';
+import { Plus, Pin, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
-import { generateDefaultMetadata } from '@/lib/note-parser';
+import { generateDefaultMetadata, extractMetadataInfo } from '@/lib/note-parser';
 import { EditorToolbar } from './EditorToolbar';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -71,8 +71,9 @@ export function CreateNote({ onSave }: CreateNoteProps) {
 
   const adjustTextareaHeight = useCallback(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      const target = textareaRef.current;
+      target.style.height = 'inherit';
+      target.style.height = `${target.scrollHeight}px`;
     }
   }, []);
 
@@ -84,7 +85,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       }
     }
     if (editMode === 'markdown') {
-      // Small delay to ensure render is complete before measuring
       setTimeout(adjustTextareaHeight, 0);
     }
   }, [editMode, content, editor, adjustTextareaHeight]);
@@ -134,10 +134,12 @@ export function CreateNote({ onSave }: CreateNoteProps) {
 
   const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
-    // Adjust height inline to prevent scroll jump
-    e.target.style.height = 'auto';
-    e.target.style.height = `${e.target.scrollHeight}px`;
+    const target = e.target;
+    target.style.height = 'inherit';
+    target.style.height = `${target.scrollHeight}px`;
   };
+
+  const currentMetadataInfo = extractMetadataInfo(metadata);
 
   return (
     <div className="w-full max-w-2xl mx-auto mb-12 px-4" ref={containerRef}>
@@ -156,58 +158,66 @@ export function CreateNote({ onSave }: CreateNoteProps) {
           </div>
         ) : (
           <div className="flex flex-col note-fade-in">
-            <div className="flex items-center justify-between px-6 pt-5 pb-2">
-              <Input
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all"
-                autoFocus
-              />
-              <div className="flex items-center space-x-1">
-                <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
+            <div className="flex flex-col px-6 pt-5 pb-2">
+              {currentMetadataInfo.project && (
+                <div className="flex items-center gap-1.5 text-[9px] font-black text-primary/60 uppercase tracking-widest mb-1">
+                  <Briefcase className="h-2.5 w-2.5" />
+                  {currentMetadataInfo.project}
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <Input
+                  placeholder="Title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all"
+                  autoFocus
+                />
+                <div className="flex items-center space-x-1">
+                  <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
+                    <Button 
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditMode('preview')}
+                      className={cn(
+                        "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
+                        editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                      )}
+                    >
+                      Preview
+                    </Button>
+                    <Button 
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditMode('visual')}
+                      className={cn(
+                        "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
+                        editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                      )}
+                    >
+                      Visual Editor
+                    </Button>
+                    <Button 
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditMode('markdown')}
+                      className={cn(
+                        "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
+                        editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                      )}
+                    >
+                      Markdown Editor
+                    </Button>
+                  </div>
                   <Button 
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditMode('preview')}
-                    className={cn(
-                      "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
-                      editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
-                    )}
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setIsPinned(!isPinned)}
+                    className={cn("h-10 w-10 rounded-full transition-all", isPinned ? "text-primary bg-primary/5" : "text-muted-foreground/40")}
                   >
-                    Preview
-                  </Button>
-                  <Button 
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditMode('visual')}
-                    className={cn(
-                      "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
-                      editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    Visual Editor
-                  </Button>
-                  <Button 
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditMode('markdown')}
-                    className={cn(
-                      "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
-                      editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    Markdown Editor
+                    <Pin className={cn("h-5 w-5", isPinned && "fill-current")} />
                   </Button>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setIsPinned(!isPinned)}
-                  className={cn("h-10 w-10 rounded-full transition-all", isPinned ? "text-primary bg-primary/5" : "text-muted-foreground/40")}
-                >
-                  <Pin className={cn("h-5 w-5", isPinned && "fill-current")} />
-                </Button>
               </div>
             </div>
 
