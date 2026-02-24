@@ -13,6 +13,10 @@ interface MarkdownRendererProps {
   className?: string;
 }
 
+/**
+ * Unified Markdown Renderer
+ * Provides a single source of truth for all note rendering across the app.
+ */
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -39,6 +43,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           code({ node, inline, className, children, ...props }: any) {
             const codeString = String(children).replace(/\n$/, '');
             
+            // High-Fidelity Inline Code "Mini-Card"
             if (inline) {
               return (
                 <span className="inline-flex items-center bg-[#0d0d0d] border border-white/10 rounded-md overflow-hidden gap-0 group/inline-code mx-1 shadow-xl align-middle h-7 translate-y-[-1px]">
@@ -61,6 +66,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
               );
             }
 
+            // High-Fidelity Source Code Block
             return (
               <div className="relative my-8 group/code-render">
                 <div className="absolute -top-3 left-4 px-3 py-1 bg-[#1a1b1e] border border-white/10 rounded-md z-10 flex items-center space-x-2 shadow-xl">

@@ -11,11 +11,8 @@ import {
   X, 
   Tag, 
   X as CloseIcon, 
-  FileText,
-  Eye,
   Layers,
-  Trash2,
-  Monitor
+  Trash2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -102,6 +99,14 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       }
     }
   }, [editMode, content, editor]);
+
+  // Auto-resize textarea logic
+  useEffect(() => {
+    if (editMode === 'markdown' && textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [content, editMode]);
 
   const performSave = (isClosing: boolean = false) => {
     if (!note) return;
@@ -230,7 +235,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Edit Markdown..."
-                className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[500px]"
+                className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[500px] resize-none overflow-hidden"
               />
             ) : (
               <div className="min-h-[500px] py-4">

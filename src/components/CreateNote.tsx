@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Pin, FileText, Eye, Layers } from 'lucide-react';
+import { Plus, Pin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
@@ -76,6 +76,14 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       }
     }
   }, [editMode, content, editor]);
+
+  // Auto-resize textarea logic
+  useEffect(() => {
+    if (editMode === 'markdown' && textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [content, editMode]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
