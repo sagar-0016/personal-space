@@ -68,14 +68,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     },
   });
 
-  // Auto-resize logic for the Markdown Textarea
-  useEffect(() => {
-    if (textareaRef.current && editMode === 'markdown') {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [content, editMode]);
-
   useEffect(() => {
     if (editor && editMode === 'visual' && editor.storage.markdown) {
       const currentMarkdown = (editor.storage.markdown as any).getMarkdown();
