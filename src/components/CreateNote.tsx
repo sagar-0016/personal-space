@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -9,7 +8,7 @@ import { Plus, Pin, Briefcase, Tag, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
-import { generateDefaultMetadata, extractMetadataInfo, updateMetadataWithInfo } from '@/lib/note-parser';
+import { generateDefaultMetadata, updateMetadataWithInfo } from '@/lib/note-parser';
 import { EditorToolbar } from './EditorToolbar';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
