@@ -67,6 +67,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     },
   });
 
+  // Auto-resize logic for the Markdown Textarea
   useEffect(() => {
     if (textareaRef.current && editMode === 'markdown') {
       textareaRef.current.style.height = 'auto';
@@ -86,6 +87,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
+      // Allow metadata interaction
       if (target.closest('[data-metadata-popover="true"]')) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {

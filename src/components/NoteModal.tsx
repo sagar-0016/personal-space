@@ -133,6 +133,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   useEffect(() => {
     if (!isOpen || !note) return;
+    // Debounced auto-save every 3 seconds of inactivity
     const timer = setTimeout(() => performSave(false), 3000);
     return () => clearTimeout(timer);
   }, [title, content, metadata, isOpen, note?.id]);
