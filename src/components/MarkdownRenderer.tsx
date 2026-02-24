@@ -41,12 +41,12 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             
             if (inline) {
               return (
-                <span className="relative group/inline-code inline-block mx-1">
+                <span className="relative group/inline-code inline-flex items-center mx-1 align-baseline">
                   <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-[#1a1b1e] border border-white/10 rounded-md z-[100] flex items-center space-x-1 shadow-xl opacity-0 group-hover/inline-code:opacity-100 transition-opacity pointer-events-none">
                     <Code2 className="h-2.5 w-2.5 text-primary" />
                     <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/90 whitespace-nowrap">INLINE CODE</span>
                   </span>
-                  <code className="px-1.5 py-0.5 rounded bg-[#0d0d0d] border border-white/5 font-mono text-xs text-primary" {...props}>
+                  <code className="px-1.5 py-0.5 rounded bg-[#0d0d0d] border border-white/10 font-mono text-xs text-[#e1e4e8] shadow-sm" {...props}>
                     {children}
                   </code>
                 </span>
