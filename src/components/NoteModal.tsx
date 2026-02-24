@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -101,7 +102,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     }
   }, [editMode, content, editor]);
 
-  // Auto-resize for Markdown textareas
   useEffect(() => {
     if (editMode === 'markdown' && textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -203,13 +203,15 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
           </div>
         </div>
 
-        <EditorToolbar 
-          editor={editMode === 'visual' ? editor : null}
-          textareaRef={textareaRef}
-          metadata={metadata}
-          onMetadataChange={setMetadata}
-          onContentChange={setContent}
-        />
+        {editMode !== 'preview' && (
+          <EditorToolbar 
+            editor={editMode === 'visual' ? editor : null}
+            textareaRef={textareaRef}
+            metadata={metadata}
+            onMetadataChange={setMetadata}
+            onContentChange={setContent}
+          />
+        )}
 
         <div className="flex-1 overflow-y-auto pt-6 pb-20 scroll-smooth">
           <div className="px-10 space-y-6">

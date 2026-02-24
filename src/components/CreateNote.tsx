@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -77,7 +78,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     }
   }, [editMode, content, editor]);
 
-  // Auto-resize textarea for a seamless Markdown experience
   useEffect(() => {
     if (editMode === 'markdown' && textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -200,13 +200,15 @@ export function CreateNote({ onSave }: CreateNoteProps) {
               </div>
             </div>
 
-            <EditorToolbar 
-              editor={editMode === 'visual' ? editor : null} 
-              textareaRef={textareaRef}
-              metadata={metadata}
-              onMetadataChange={setMetadata}
-              onContentChange={setContent}
-            />
+            {editMode !== 'preview' && (
+              <EditorToolbar 
+                editor={editMode === 'visual' ? editor : null} 
+                textareaRef={textareaRef}
+                metadata={metadata}
+                onMetadataChange={setMetadata}
+                onContentChange={setContent}
+              />
+            )}
 
             <div className="px-6 py-2">
               {editMode === 'preview' ? (

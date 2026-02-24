@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -9,33 +10,33 @@ import { Terminal, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
-// Custom Neon Theme for Syntax Highlighter
+// Vibrant Neon Syntax Theme
 const neonTheme: any = {
   'code[class*="language-"]': {
-    color: 'inherit',
+    color: '#e0e0e0',
     background: 'none',
     fontFamily: 'inherit',
   },
   'pre[class*="language-"]': {
-    color: 'inherit',
+    color: '#e0e0e0',
     background: 'none',
     fontFamily: 'inherit',
     margin: 0,
     padding: 0,
     overflow: 'initial',
   },
-  'keyword': { color: 'hsl(var(--code-keyword))', fontWeight: 'bold' },
-  'string': { color: 'hsl(var(--code-string))' },
-  'function': { color: 'hsl(var(--code-function))' },
-  'comment': { color: 'hsl(var(--code-comment))', fontStyle: 'italic' },
-  'variable': { color: 'hsl(var(--code-variable))' },
-  'number': { color: 'hsl(var(--code-variable))' },
-  'operator': { color: 'inherit' },
-  'punctuation': { opacity: 0.7 },
-  'boolean': { color: 'hsl(var(--code-keyword))' },
-  'attr-name': { color: 'hsl(var(--code-variable))' },
-  'attr-value': { color: 'hsl(var(--code-string))' },
-  'property': { color: 'hsl(var(--code-function))' },
+  'keyword': { color: '#ff00ff', fontWeight: 'bold' }, // Neon Pink
+  'string': { color: '#39ff14' }, // Neon Green
+  'function': { color: '#00ffff' }, // Neon Cyan
+  'comment': { color: '#666666', fontStyle: 'italic' },
+  'variable': { color: '#ff9900' }, // Neon Orange
+  'number': { color: '#ffff00' }, // Neon Yellow
+  'operator': { color: '#ffffff' },
+  'punctuation': { color: '#cccccc' },
+  'boolean': { color: '#ff00ff' },
+  'attr-name': { color: '#00ffff' },
+  'attr-value': { color: '#39ff14' },
+  'property': { color: '#ff9900' },
 };
 
 interface MarkdownRendererProps {
@@ -45,15 +46,15 @@ interface MarkdownRendererProps {
 
 /**
  * Unified Markdown Renderer
- * The single source of truth for all note rendering across the application.
- * Features aesthetic, theme-responsive code blocks with vibrant neon-accented syntax highlighting.
+ * Consolidated rendering logic for the entire application.
+ * Features high-fidelity obsidian styling with neon syntax highlighting.
  */
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
 
-  // CRITICAL: Hooks must be at the top level
+  // Automatic JSON Recognition Logic (called before early return to satisfy Rules of Hooks)
   const processedContent = useMemo(() => {
-    const trimmed = content?.trim() || '';
+    const trimmed = (content || '').trim();
     if (trimmed.startsWith('{') && trimmed.endsWith('}') && !trimmed.includes('```')) {
       try {
         JSON.parse(trimmed);
@@ -90,28 +91,28 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const lang = match ? match[1] : 'text';
             const codeString = String(children).replace(/\n$/, '');
             
-            // High-Fidelity Inline Code "Mini-Card" - Responsive & Neon
+            // High-Fidelity "Mini-Card" Inline Code
             if (inline) {
               return (
                 <span className="inline-block align-middle mx-1 my-0.5 max-w-full">
-                  <span className="flex flex-col bg-[hsl(var(--code-bg))] border border-border/50 rounded-md overflow-hidden shadow-sm group/inline-code">
-                    <span className="flex items-center justify-between px-2 py-0.5 bg-[hsl(var(--code-header))] border-b border-border/30">
+                  <span className="flex flex-col bg-[#0d0d0d] border border-border/50 rounded-md overflow-hidden shadow-lg group/inline-code">
+                    <span className="flex items-center justify-between px-2 py-0.5 bg-[#1a1a1b] border-b border-border/30">
                       <span className="flex items-center gap-1.5">
                         <Terminal className="h-2 w-2 text-primary" />
-                        <span className="text-[7px] font-bold uppercase tracking-tighter opacity-60">SRC</span>
+                        <span className="text-[7px] font-bold uppercase tracking-tighter text-muted-foreground/80">SRC</span>
                       </span>
                       <CopyButton 
                         text={codeString} 
                         className="h-3 w-3 opacity-0 group-hover/inline-code:opacity-100 transition-opacity p-0 bg-transparent border-none" 
                       />
                     </span>
-                    <div className="px-2 py-1 overflow-x-auto max-w-[200px] scrollbar-hide">
+                    <div className="px-2 py-1 overflow-x-auto max-w-[300px] scrollbar-hide">
                       <SyntaxHighlighter
                         language={lang}
                         style={neonTheme}
                         PreTag="div"
                         CodeTag="code"
-                        customStyle={{ fontSize: '0.75rem', lineHeight: '1', padding: 0 }}
+                        customStyle={{ fontSize: '0.75rem', lineHeight: '1.2', padding: 0 }}
                       >
                         {codeString}
                       </SyntaxHighlighter>
@@ -121,15 +122,15 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
               );
             }
 
-            // Redesigned Source Code Block - Responsive Aesthetic & Neon
+            // High-Fidelity Source Code Block
             return (
               <div className="relative my-8 group/code-render">
                 <div className="absolute -top-3 left-4 px-3 py-1 bg-background border border-border/50 rounded-md z-10 flex items-center space-x-2 shadow-lg">
                   <Terminal className="h-3 w-3 text-primary" />
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80 text-foreground">SOURCE CODE</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground">SOURCE CODE</span>
                 </div>
                 
-                <div className="relative rounded-xl overflow-hidden border border-border/50 bg-[hsl(var(--code-bg))] shadow-xl">
+                <div className="relative rounded-xl overflow-hidden border border-border/50 bg-[#0d0d0d] shadow-2xl">
                   <div className="absolute top-3 right-3 z-20 opacity-0 group-hover/code-render:opacity-100 transition-opacity">
                     <CopyButton text={codeString} />
                   </div>
@@ -174,11 +175,11 @@ function CopyButton({ text, className }: { text: string, className?: string }) {
       size="icon"
       onClick={handleCopy}
       className={cn(
-        "h-7 w-7 bg-muted/40 hover:bg-muted opacity-60 hover:opacity-100 rounded-md border border-border/50",
+        "h-7 w-7 bg-muted/20 hover:bg-muted/40 opacity-60 hover:opacity-100 rounded-md border border-border/30",
         className
       )}
     >
-      {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+      {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3 text-white" />}
     </Button>
   );
 }
