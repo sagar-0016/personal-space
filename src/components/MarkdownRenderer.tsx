@@ -27,11 +27,8 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return <div className={cn("opacity-0", className)}>{content}</div>;
-  }
-
   // Automatic JSON Recognition: If content looks like a JSON object but isn't fenced, treat it as JSON code.
+  // CRITICAL: This hook is moved before the conditional return to satisfy the Rules of Hooks.
   const processedContent = React.useMemo(() => {
     const trimmed = content.trim();
     if (trimmed.startsWith('{') && trimmed.endsWith('}') && !trimmed.includes('```')) {
@@ -44,6 +41,10 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
     }
     return content;
   }, [content]);
+
+  if (!mounted) {
+    return <div className={cn("opacity-0", className)}>{content}</div>;
+  }
 
   return (
     <div className={cn(
