@@ -46,7 +46,7 @@ interface NoteModalProps {
 }
 
 export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModalProps) {
-  const { user } = userUser();
+  const { user } = useUser();
   const db = useFirestore();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
