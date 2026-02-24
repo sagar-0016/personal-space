@@ -7,10 +7,13 @@ import {
   updateDoc,
   deleteDoc,
   collection,
+  getDocs,
+  query,
   CollectionReference,
   DocumentReference,
   SetOptions,
   Firestore,
+  doc,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -98,4 +101,31 @@ export function deleteDocumentNonBlocking(docRef: DocumentReference) {
         })
       )
     });
+}
+
+/**
+ * Deletes a project and all its sub-collection labels.
+ */
+export async function deleteProjectAndLabels(db: Firestore, userId: string, projectId: string) {
+  const projectRef = doc(db, 'users', userId, 'projects', projectId);
+  const labelsRef = collection(db, 'users', userId, 'projects', projectId, 'labels');
+  
+  try {
+    // Delete all labels first
+    const labelsSnapshot = await getDocs(query(labelsRef));
+    labelsSnapshot.forEach((labelDoc) => {
+      deleteDoc(labelDoc.ref);
+    });
+    
+    // Delete the project itself
+    await deleteDoc(projectRef);
+  } catch (error: any) {
+    errorEmitter.emit(
+      'permission-error',
+      new FirestorePermissionError({
+        path: projectRef.path,
+        operation: 'delete',
+      })
+    );
+  }
 }
