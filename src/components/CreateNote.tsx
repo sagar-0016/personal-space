@@ -177,8 +177,10 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
+      // Don't close if clicking metadata popover or any project/label select menu
       if (target.closest('[data-metadata-popover="true"]')) return;
       if (target.closest('.project-select-dropdown')) return;
+      // Don't close if a dialog is currently open
       if (target.closest('[role="dialog"]')) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
@@ -191,7 +193,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [title, content, isPinned, metadata, selectedProjectId, selectedLabelId, tags]);
+  }, [title, content, isPinned, metadata, selectedProjectId, selectedLabelId, tags, isProjectDialogOpen, isLabelDialogOpen]);
 
   const handleSave = () => {
     if (title.trim() || content.trim()) {
