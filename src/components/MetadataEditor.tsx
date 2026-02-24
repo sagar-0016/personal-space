@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState } from 'react';
@@ -24,9 +25,18 @@ interface MetadataEditorProps {
  */
 export function MetadataEditor({ metadata, onMetadataChange }: MetadataEditorProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [localMetadata, setLocalMetadata] = useState(metadata);
+
+  const handleApply = () => {
+    onMetadataChange?.(localMetadata);
+    setIsOpen(false);
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open);
+      if (open) setLocalMetadata(metadata);
+    }}>
       <DialogTrigger asChild>
         <Button 
           variant="ghost" 
@@ -58,8 +68,8 @@ export function MetadataEditor({ metadata, onMetadataChange }: MetadataEditorPro
 
           <div className="p-6 space-y-4">
             <Textarea
-              value={metadata || ''}
-              onChange={(e) => onMetadataChange?.(e.target.value)}
+              value={localMetadata || ''}
+              onChange={(e) => setLocalMetadata(e.target.value)}
               placeholder={`title: "My Note"\ntags: ["tag1"]\n...`}
               className="min-h-[300px] font-mono text-xs bg-secondary/20 resize-none border-none focus-visible:ring-0 leading-relaxed cursor-text p-4 rounded-xl"
               autoFocus
@@ -69,7 +79,7 @@ export function MetadataEditor({ metadata, onMetadataChange }: MetadataEditorPro
                 Updates 'title' or 'tags' immediately affects indexing.
               </p>
               <Button 
-                onClick={() => setIsOpen(false)}
+                onClick={handleApply}
                 className="h-8 px-6 text-xs font-bold"
               >
                 Apply Changes

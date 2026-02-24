@@ -1,6 +1,7 @@
+
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -32,33 +33,82 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
   const [metadata, setMetadata] = useState('');
   const [labels, setLabels] = useState<string[]>([]);
   const [editMode, setEditMode] = useState<'visual' | 'markdown'>('visual');
+  
+  // Refs to track state for auto-save without triggering re-renders
+  const lastSavedRef = useRef<string>('');
 
+  // Initial state setup - Only reset when a different note is opened
   useEffect(() => {
-    if (note) {
+    if (note && isOpen) {
       setTitle(note.title);
       setContent(note.content);
       setMetadata(note.metadata || '');
       setLabels(note.labels || []);
+      lastSavedRef.current = JSON.stringify({ t: note.title, c: note.content, m: note.metadata });
     }
-  }, [note, isOpen]);
+  }, [note?.id, isOpen]);
 
-  const handleSave = () => {
+  // Handle immediate save logic (for metadata apply or complete review)
+  const performSave = (isClosing: boolean = false) => {
+    if (!note) return;
+
+    const info = extractMetadataInfo(metadata);
+    const currentData = {
+      ...note,
+      title: info.title || title || 'Untitled Note',
+      content: content,
+      metadata: metadata,
+      labels: info.tags.length > 0 ? info.tags : labels,
+      updatedAt: Date.now()
+    };
+
+    // Only save if data has actually changed
+    const currentStr = JSON.stringify({ t: currentData.title, c: currentData.content, m: currentData.metadata });
+    if (currentStr !== lastSavedRef.current) {
+      onSave(currentData);
+      lastSavedRef.current = currentStr;
+    }
+
+    if (isClosing) onClose();
+  };
+
+  // Auto-save logic: 3-second debounce
+  useEffect(() => {
+    if (!isOpen || !note) return;
+
+    const timer = setTimeout(() => {
+      performSave(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [title, content, metadata, isOpen, note?.id]);
+
+  // Update labels visually when metadata changes immediately
+  useEffect(() => {
+    const info = extractMetadataInfo(metadata);
+    if (info.tags.length > 0) {
+      setLabels(info.tags);
+    }
+  }, [metadata]);
+
+  const handleMetadataChange = (newMetadata: string) => {
+    setMetadata(newMetadata);
+    // User clicked "Apply Changes", so we should process this update quickly
+    const info = extractMetadataInfo(newMetadata);
     if (note) {
-      const info = extractMetadataInfo(metadata);
       onSave({
         ...note,
         title: info.title || title || 'Untitled Note',
         content: content,
-        metadata: metadata,
+        metadata: newMetadata,
         labels: info.tags.length > 0 ? info.tags : labels,
         updatedAt: Date.now()
       });
     }
-    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleSave()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && performSave(true)}>
       <DialogContent 
         className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
         onPointerDownOutside={(e) => {
@@ -96,7 +146,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           </div>
           
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" onClick={handleSave} className="rounded-full h-9 w-9">
+            <Button variant="ghost" size="icon" onClick={() => performSave(true)} className="rounded-full h-9 w-9">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -130,7 +180,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
                 content={content} 
                 onChange={setContent}
                 metadata={metadata}
-                onMetadataChange={setMetadata}
+                onMetadataChange={handleMetadataChange}
                 className="min-h-[500px]"
                 placeholder="Start writing your context..."
                 showToolbar={true}
@@ -147,7 +197,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
         </div>
 
         <div className="p-4 bg-card border-t flex justify-end items-center px-10">
-          <Button onClick={handleSave} className="rounded-lg px-8 font-bold text-sm bg-primary hover:bg-primary/90">
+          <Button onClick={() => performSave(true)} className="rounded-lg px-8 font-bold text-sm bg-primary hover:bg-primary/90">
             Complete Review
           </Button>
         </div>
