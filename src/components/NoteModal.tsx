@@ -127,8 +127,8 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       title: title || 'Untitled Note',
       content: content,
       metadata: updatedMetadata,
-      projectId: projectId === 'none' ? undefined : projectId,
-      labelId: labelId === 'none' ? undefined : labelId,
+      projectId: projectId === 'none' ? null : projectId,
+      labelId: labelId === 'none' ? null : labelId,
       tags: tags,
       updatedAt: Date.now()
     };
@@ -154,8 +154,8 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     const name = prompt("Enter label name:");
     if (name) {
       const labelsRef = collection(db, 'users', user.uid, 'projects', projectId, 'labels');
-      const doc = await addDoc(labelsRef, { name, isDefault: false });
-      setLabelId(doc.id);
+      const docRef = await addDoc(labelsRef, { name, isDefault: false });
+      setLabelId(docRef.id);
     }
   };
 

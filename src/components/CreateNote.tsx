@@ -42,7 +42,7 @@ import { Project, Label } from '@/lib/types';
 const lowlight = createLowlight(common);
 
 interface CreateNoteProps {
-  onSave: (note: { title: string; content: string; metadata: string; isPinned: boolean; projectId?: string; labelId?: string }) => void;
+  onSave: (note: { title: string; content: string; metadata: string; isPinned: boolean; projectId?: string | null; labelId?: string | null }) => void;
   defaultProjectId?: string | null;
 }
 
@@ -167,8 +167,8 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
         content, 
         metadata: finalMetadata, 
         isPinned,
-        projectId: selectedProjectId === 'none' ? undefined : selectedProjectId,
-        labelId: selectedLabelId === 'none' ? undefined : selectedLabelId
+        projectId: selectedProjectId === 'none' ? null : selectedProjectId,
+        labelId: selectedLabelId === 'none' ? null : selectedLabelId
       });
     }
     resetForm();
@@ -218,8 +218,8 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     const name = prompt("Enter label name:");
     if (name) {
       const labelsRef = collection(db, 'users', user.uid, 'projects', selectedProjectId, 'labels');
-      const doc = await addDoc(labelsRef, { name, isDefault: false });
-      setSelectedLabelId(doc.id);
+      const docRef = await addDoc(labelsRef, { name, isDefault: false });
+      setSelectedLabelId(docRef.id);
     }
   };
 

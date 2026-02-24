@@ -116,18 +116,18 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             }
 
             return (
-              <span className="relative my-8 group/code-render block">
-                <span className="absolute -top-3 left-4 px-3 py-1 bg-background border border-border/50 rounded-md z-10 flex items-center space-x-2 shadow-lg">
+              <div className="relative my-8 group/code-render block">
+                <div className="absolute -top-3 left-4 px-3 py-1 bg-background border border-border/50 rounded-md z-10 flex items-center space-x-2 shadow-lg">
                   <Terminal className="h-3 w-3 text-primary" />
                   <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground">SOURCE CODE</span>
-                </span>
+                </div>
                 
-                <span className="relative rounded-xl overflow-hidden border border-border/50 bg-[#0d0d0d] dark:bg-[#0a0a0b] shadow-2xl transition-all duration-300 block">
-                  <span className="absolute top-3 right-3 z-20 opacity-0 group-hover/code-render:opacity-100 transition-opacity">
+                <div className="relative rounded-xl overflow-hidden border border-border/50 bg-[#0d0d0d] dark:bg-[#0a0a0b] shadow-2xl transition-all duration-300 block">
+                  <div className="absolute top-3 right-3 z-20 opacity-0 group-hover/code-render:opacity-100 transition-opacity">
                     <CopyButton text={codeString} />
-                  </span>
+                  </div>
                   
-                  <span className="p-6 pt-10 overflow-x-auto block">
+                  <div className="p-6 pt-10 overflow-x-auto block">
                     <SyntaxHighlighter
                       language={lang}
                       style={neonTheme}
@@ -137,9 +137,9 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                     >
                       {codeString}
                     </SyntaxHighlighter>
-                  </span>
-                </span>
-              </span>
+                  </div>
+                </div>
+              </div>
             );
           }
         }}

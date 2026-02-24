@@ -72,7 +72,7 @@ export function NoteCard({
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="min-w-[150px]">
-              <DropdownMenuItem onClick={() => onUpdate({ ...note, projectId: undefined })}>None</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onUpdate({ ...note, projectId: null, labelId: null })}>None</DropdownMenuItem>
               {projects.map(p => (
                 <DropdownMenuItem key={p.id} onClick={() => onUpdate({ ...note, projectId: p.id })}>{p.name}</DropdownMenuItem>
               ))}
