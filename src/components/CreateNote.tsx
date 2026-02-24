@@ -67,7 +67,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     },
   });
 
-  // Auto-resize logic for the Markdown Textarea
   useEffect(() => {
     if (textareaRef.current && editMode === 'markdown') {
       textareaRef.current.style.height = 'auto';
@@ -75,7 +74,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     }
   }, [content, editMode]);
 
-  // Sync content from Textarea back to editor if switch modes
   useEffect(() => {
     if (editor && editMode === 'visual' && editor.storage.markdown) {
       const currentMarkdown = (editor.storage.markdown as any).getMarkdown();
@@ -107,7 +105,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       const finalMetadata = metadata || generateDefaultMetadata(title || 'Untitled');
       onSave({ title, content, metadata: finalMetadata, isPinned });
     }
-    // Always reset expansion and states
     setTitle('');
     setContent('');
     setMetadata('');
