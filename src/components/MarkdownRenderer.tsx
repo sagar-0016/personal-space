@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -46,10 +47,8 @@ interface MarkdownRendererProps {
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
 
-  // RULES OF HOOKS: All hooks must be at the top level
   const processedContent = useMemo(() => {
     const trimmed = (content || '').trim();
-    // Automatic JSON Recognition: If it looks like a JSON block, wrap it in code fences
     if (trimmed.startsWith('{') && trimmed.endsWith('}') && !trimmed.includes('```')) {
       try {
         JSON.parse(trimmed);
@@ -100,7 +99,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                         className="h-3 w-3 opacity-0 group-hover/inline-code:opacity-100 transition-opacity p-0 bg-transparent border-none" 
                       />
                     </span>
-                    <div className="px-2 py-1 overflow-x-auto max-w-[400px] scrollbar-hide">
+                    <span className="px-2 py-1 overflow-x-auto max-w-[400px] block scrollbar-hide">
                       <SyntaxHighlighter
                         language={lang}
                         style={neonTheme}
@@ -110,25 +109,25 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                       >
                         {codeString}
                       </SyntaxHighlighter>
-                    </div>
+                    </span>
                   </span>
                 </span>
               );
             }
 
             return (
-              <div className="relative my-8 group/code-render">
-                <div className="absolute -top-3 left-4 px-3 py-1 bg-background border border-border/50 rounded-md z-10 flex items-center space-x-2 shadow-lg">
+              <span className="relative my-8 group/code-render block">
+                <span className="absolute -top-3 left-4 px-3 py-1 bg-background border border-border/50 rounded-md z-10 flex items-center space-x-2 shadow-lg">
                   <Terminal className="h-3 w-3 text-primary" />
                   <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground">SOURCE CODE</span>
-                </div>
+                </span>
                 
-                <div className="relative rounded-xl overflow-hidden border border-border/50 bg-[#0d0d0d] dark:bg-[#0a0a0b] shadow-2xl transition-all duration-300">
-                  <div className="absolute top-3 right-3 z-20 opacity-0 group-hover/code-render:opacity-100 transition-opacity">
+                <span className="relative rounded-xl overflow-hidden border border-border/50 bg-[#0d0d0d] dark:bg-[#0a0a0b] shadow-2xl transition-all duration-300 block">
+                  <span className="absolute top-3 right-3 z-20 opacity-0 group-hover/code-render:opacity-100 transition-opacity">
                     <CopyButton text={codeString} />
-                  </div>
+                  </span>
                   
-                  <div className="p-6 pt-10 overflow-x-auto">
+                  <span className="p-6 pt-10 overflow-x-auto block">
                     <SyntaxHighlighter
                       language={lang}
                       style={neonTheme}
@@ -138,9 +137,9 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                     >
                       {codeString}
                     </SyntaxHighlighter>
-                  </div>
-                </div>
-              </div>
+                  </span>
+                </span>
+              </span>
             );
           }
         }}

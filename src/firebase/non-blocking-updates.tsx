@@ -69,6 +69,7 @@ export async function createProjectWithDefaultLabel(db: Firestore, userId: strin
         operation: 'create',
       })
     )
+    return null;
   }
 }
 

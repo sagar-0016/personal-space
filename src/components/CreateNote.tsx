@@ -256,7 +256,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                     <SelectContent className="project-select-dropdown">
                       <SelectItem value="none">No Project</SelectItem>
                       {projects?.map(p => (
-                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        p.id ? <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem> : null
                       ))}
                       <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
                     </SelectContent>
@@ -276,7 +276,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                       <SelectContent>
                         {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
                          labels?.map(l => (
-                          <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                          l.id ? <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem> : null
                         ))}
                         <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
                       </SelectContent>
