@@ -32,15 +32,12 @@ import {
   Undo,
   Redo,
   Table as TableIcon,
-  Database,
-  Info,
   Copy,
   Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import * as PopoverPrimitive from "@radix-ui/react-popover";
-import { Textarea } from '@/components/ui/textarea';
+import { MetadataEditor } from './MetadataEditor';
 
 const lowlight = createLowlight(common);
 
@@ -183,37 +180,10 @@ export function RichEditor({
           
           <div className="w-px h-4 bg-border mx-1" />
           
-          <PopoverPrimitive.Root modal={false}>
-            <PopoverPrimitive.Trigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 px-3 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/5 border border-primary/20">
-                <Database className="h-3.5 w-3.5 mr-1.5" /> Metadata
-              </Button>
-            </PopoverPrimitive.Trigger>
-            
-            <PopoverPrimitive.Content 
-              align="end" sideOffset={5}
-              className="w-[450px] p-4 bg-card shadow-2xl border border-primary/20 z-[9999] rounded-xl outline-none"
-              data-metadata-popover="true"
-              onPointerDown={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                    <Database className="h-3.5 w-3.5 text-primary" /> Metadata
-                  </h4>
-                  <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                </div>
-                <Textarea
-                  value={metadata || ''}
-                  onChange={(e) => onMetadataChange?.(e.target.value)}
-                  autoFocus
-                  placeholder={`title: "My Note"\ntags: ["tag1"]\n...`}
-                  className="min-h-[200px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1 leading-relaxed cursor-text"
-                />
-              </div>
-            </PopoverPrimitive.Content>
-          </PopoverPrimitive.Root>
+          <MetadataEditor 
+            metadata={metadata || ''} 
+            onMetadataChange={onMetadataChange || (() => {})} 
+          />
 
           <div className="flex-1" />
           <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={Undo} tooltip="Undo" />

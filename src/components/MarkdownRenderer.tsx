@@ -37,13 +37,11 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           p: ({ children }) => <div className="mb-4 leading-relaxed text-foreground/85">{children}</div>,
           blockquote: ({ children }) => <blockquote className="border-l-4 border-primary/40 bg-primary/5 py-2 px-6 rounded-r-lg italic my-6">{children}</blockquote>,
           code({ node, inline, className, children, ...props }: any) {
-            const match = /language-(\w+)/.exec(className || '');
-            const language = match ? match[1] : '';
             const codeString = String(children).replace(/\n$/, '');
             
             if (inline) {
               return (
-                <div className="relative my-4 group/inline-code">
+                <div className="relative my-4 group/inline-code inline-block w-full">
                   <div className="absolute -top-3 left-3 px-2 py-0.5 bg-[#1a1b1e] border border-white/10 rounded-md z-10 flex items-center space-x-1 shadow-xl">
                     <Code2 className="h-2.5 w-2.5 text-primary" />
                     <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/90">Inline Code</span>
