@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -41,11 +42,21 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             
             if (inline) {
               return (
-                <span className="relative group/inline-code inline-flex items-center mx-1 align-baseline">
-                  <code className="px-2 py-0.5 rounded-md bg-[#0d0d0d] border border-white/10 font-mono text-[11px] text-[#e1e4e8] shadow-sm flex items-center gap-2" {...props}>
-                    {children}
-                    <CopyButton text={codeString} className="h-4 w-4 p-0 opacity-0 group-hover/inline-code:opacity-100 transition-opacity ml-1 bg-transparent border-none hover:bg-white/10" />
-                  </code>
+                <span className="relative group/inline-code inline-flex items-center mx-1 align-baseline translate-y-[1px]">
+                  <span className="inline-flex flex-col bg-[#0d0d0d] border border-white/10 rounded-md overflow-hidden shadow-sm hover:border-primary/40 transition-colors">
+                    <span className="flex items-center justify-between px-2 py-0.5 bg-[#1a1b1e] border-b border-white/5 gap-3">
+                      <span className="text-[6px] font-black text-white/40 uppercase tracking-widest whitespace-nowrap">SOURCE</span>
+                      <CopyButton 
+                        text={codeString} 
+                        className="h-3 w-3 p-0 bg-transparent border-none opacity-0 group-hover/inline-code:opacity-100 transition-opacity" 
+                      />
+                    </span>
+                    <code className="px-2 py-0.5 font-mono text-[11px] text-[#e1e4e8] leading-tight" {...props}>
+                      <span className="text-white/20 select-none">`</span>
+                      {children}
+                      <span className="text-white/20 select-none">`</span>
+                    </code>
+                  </span>
                 </span>
               );
             }
