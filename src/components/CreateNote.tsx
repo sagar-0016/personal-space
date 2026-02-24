@@ -46,7 +46,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ codeBlock: false }),
-      Placeholder.configure({ placeholder: "Take a visual note..." }),
+      Placeholder.configure({ placeholder: "Take a note..." }),
       TaskList,
       TaskItem.configure({ nested: true }),
       Table.configure({ resizable: true }),
@@ -136,7 +136,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       )}>
         {!isExpanded ? (
           <div className="flex items-center px-6 py-4 cursor-text" onClick={() => setIsExpanded(true)}>
-            <span className="text-muted-foreground/60 font-medium flex-1 text-sm sm:text-base">Take a visual note...</span>
+            <span className="text-muted-foreground/60 font-medium flex-1 text-sm sm:text-base">Take a note...</span>
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="icon" className="h-9 w-9 opacity-40 hover:bg-primary/10 hover:text-primary transition-all rounded-full">
                 <Plus className="h-5 w-5" />

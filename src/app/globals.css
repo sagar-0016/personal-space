@@ -44,9 +44,13 @@
     --sidebar-ring: 199 89% 48%;
 
     /* Neon Code Colors - Light Mode */
-    --code-bg: 210 20% 98%;
-    --code-text: 190 90% 40%;
-    --code-header: 190 90% 30%;
+    --code-bg: 210 20% 96%;
+    --code-header: 210 20% 90%;
+    --code-keyword: 330 100% 45%;
+    --code-string: 142 70% 35%;
+    --code-function: 199 100% 40%;
+    --code-comment: 210 10% 60%;
+    --code-variable: 24 100% 45%;
   }
 
   .dark {
@@ -89,8 +93,12 @@
 
     /* Neon Code Colors - Dark Mode */
     --code-bg: 240 10% 4%;
-    --code-text: 180 100% 60%;
-    --code-header: 180 100% 75%;
+    --code-header: 240 10% 8%;
+    --code-keyword: 330 100% 70%;
+    --code-string: 142 100% 70%;
+    --code-function: 199 100% 70%;
+    --code-comment: 210 10% 40%;
+    --code-variable: 24 100% 70%;
   }
 }
 
@@ -235,20 +243,11 @@
   transition: all 0.3s ease;
 }
 
-/* Unified Code Block & Inline Code Styling */
-.neon-code-text {
-  color: hsl(var(--code-text));
-  text-shadow: 0 0 8px hsla(var(--code-text) / 0.3);
-}
-
-.ProseMirror code,
-.prose code {
-  @apply rounded bg-[hsl(var(--code-bg))] border border-border/50 font-mono text-sm px-1.5 py-0.5 shadow-sm !important;
-  @apply neon-code-text;
-  font-weight: 500 !important;
-}
-
-.ProseMirror pre code,
-.prose pre code {
-  @apply p-0 border-none bg-transparent shadow-none !important;
-}
+/* Syntax Highlighting overrides */
+.token.keyword { color: hsl(var(--code-keyword)) !important; font-weight: bold; }
+.token.string { color: hsl(var(--code-string)) !important; }
+.token.function { color: hsl(var(--code-function)) !important; }
+.token.comment { color: hsl(var(--code-comment)) !important; font-style: italic; }
+.token.variable { color: hsl(var(--code-variable)) !important; }
+.token.operator { color: hsl(var(--foreground)); }
+.token.number { color: hsl(var(--code-variable)); }
