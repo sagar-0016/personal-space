@@ -130,7 +130,7 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
               tooltip={project.name}
               isActive={isActiveProject}
               className={cn(
-                "rounded-r-full mr-2 transition-all duration-300 relative pr-16", // Increased padding for multiple icons
+                "rounded-r-full mr-2 transition-all duration-300 relative pr-16",
                 isActiveProject && "bg-primary/10 text-primary font-bold"
               )}
             >
@@ -156,7 +156,7 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <SidebarMenuAction 
                 showOnHover 
-                className="right-9 top-1/2 -translate-y-1/2" // Positioned specifically to the left of the arrow
+                className="right-9 !top-1/2 !-translate-y-1/2" 
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
                 <span className="sr-only">Project actions</span>
