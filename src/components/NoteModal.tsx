@@ -166,9 +166,8 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               {editMode === 'visual' ? <FileText className="h-3.5 w-3.5 mr-1.5" /> : <Eye className="h-3.5 w-3.5 mr-1.5" />}
               {editMode === 'visual' ? 'Code' : 'Preview'}
             </Button>
-          </div>
-          
-          <div className="flex items-center space-x-2">
+            
+            {/* Relocated Delete Button to the Left Side for Safety */}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -178,11 +177,14 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                   onClose();
                 }
               }} 
-              className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-2"
               title="Move to trash"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
+          </div>
+          
+          <div className="flex items-center space-x-2">
             <Button variant="ghost" size="icon" onClick={() => performSave(true)} className="rounded-full h-9 w-9">
               <X className="h-4 w-4" />
             </Button>

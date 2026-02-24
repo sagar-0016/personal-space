@@ -45,7 +45,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ codeBlock: false }),
-      Placeholder.configure({ placeholder: "Start writing structured content..." }),
+      Placeholder.configure({ placeholder: "Take a visual note..." }),
       TaskList,
       TaskItem.configure({ nested: true }),
       Table.configure({ resizable: true }),
@@ -80,6 +80,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
+      // Allow interaction with portaled elements like Metadata Dialog
       if (target.closest('[data-metadata-popover="true"]')) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
@@ -99,13 +100,21 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       const finalMetadata = metadata || generateDefaultMetadata(title || 'Untitled');
       onSave({ title, content, metadata: finalMetadata, isPinned });
     }
-    // Always reset
+    // Always reset expansion and states
     setTitle('');
     setContent('');
     setMetadata('');
     setIsPinned(false);
     setIsExpanded(false);
     setEditMode('visual');
+  };
+
+  const handleClose = () => {
+    if (title.trim() || content.trim()) {
+      handleSave();
+    } else {
+      setIsExpanded(false);
+    }
   };
 
   return (
@@ -180,7 +189,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
             </div>
 
             <div className="flex justify-end px-6 pb-3 pt-2 border-t border-border/10 bg-secondary/5">
-              <Button variant="ghost" onClick={handleSave} className="font-bold text-sm px-8 hover:bg-primary/10 hover:text-primary transition-all">Close</Button>
+              <Button variant="ghost" onClick={handleClose} className="font-bold text-sm px-8 hover:bg-primary/10 hover:text-primary transition-all">Close</Button>
             </div>
           </div>
         )}
