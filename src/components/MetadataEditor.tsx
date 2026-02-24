@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogTrigger 
 } from '@/components/ui/dialog';
-import { Database, Info, X } from 'lucide-react';
+import { Database, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -55,7 +55,6 @@ export function MetadataEditor({ metadata, onMetadataChange }: MetadataEditorPro
                   Technical Metadata
                 </DialogTitle>
               </div>
-              <Info className="h-4 w-4 text-muted-foreground cursor-help" title="YAML Metadata Format" />
             </div>
             <DialogDescription className="text-[10px] opacity-60 uppercase tracking-tight pt-1">
               Note parameters, indexing tags, and structural metadata.

@@ -27,7 +27,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        // Interaction with nested Dialogs is handled by the Dialog portal system
         if (title.trim() || content.trim()) {
           handleSave();
         }
