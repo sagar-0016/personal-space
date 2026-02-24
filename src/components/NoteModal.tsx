@@ -14,7 +14,8 @@ import {
   FileText,
   Eye,
   Layers,
-  Trash2
+  Trash2,
+  Monitor
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,7 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 import { Markdown } from 'tiptap-markdown';
 import { format } from 'date-fns';
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 const lowlight = createLowlight(common);
 
@@ -51,7 +53,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState('');
   const [labels, setLabels] = useState<string[]>([]);
-  const [editMode, setEditMode] = useState<'visual' | 'markdown'>('visual');
+  const [editMode, setEditMode] = useState<'visual' | 'markdown' | 'preview'>('visual');
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedRef = useRef<string>('');
@@ -91,14 +93,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       if (editor) editor.commands.setContent(note.content, false);
     }
   }, [note?.id, isOpen, editor]);
-
-  // Auto-resize logic for the Markdown Textarea
-  useEffect(() => {
-    if (textareaRef.current && editMode === 'markdown') {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [content, editMode]);
 
   useEffect(() => {
     if (editor && editMode === 'visual' && editor.storage.markdown) {
@@ -159,18 +153,32 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
               <Layers className="h-4 w-4 text-primary" />
             </div>
-            <span className="text-sm font-bold">
-              {editMode === 'visual' ? 'Preview' : 'Code'}
-            </span>
-            <Button 
-              variant="secondary" 
-              size="sm"
-              onClick={() => setEditMode(editMode === 'visual' ? 'markdown' : 'visual')}
-              className="h-7 px-3 text-xs"
-            >
-              {editMode === 'visual' ? <FileText className="h-3.5 w-3.5 mr-1.5" /> : <Eye className="h-3.5 w-3.5 mr-1.5" />}
-              {editMode === 'visual' ? 'Code' : 'Preview'}
-            </Button>
+            <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
+              <Button 
+                variant={editMode === 'visual' ? 'secondary' : 'ghost'} 
+                size="sm"
+                onClick={() => setEditMode('visual')}
+                className="h-7 px-3 text-xs font-bold uppercase tracking-tight"
+              >
+                Visual
+              </Button>
+              <Button 
+                variant={editMode === 'markdown' ? 'secondary' : 'ghost'} 
+                size="sm"
+                onClick={() => setEditMode('markdown')}
+                className="h-7 px-3 text-xs font-bold uppercase tracking-tight"
+              >
+                Code
+              </Button>
+              <Button 
+                variant={editMode === 'preview' ? 'secondary' : 'ghost'} 
+                size="sm"
+                onClick={() => setEditMode('preview')}
+                className="h-7 px-3 text-xs font-bold uppercase tracking-tight"
+              >
+                Preview
+              </Button>
+            </div>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -216,14 +224,18 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 editor={editor}
                 className="min-h-[500px]"
               />
-            ) : (
+            ) : editMode === 'markdown' ? (
               <Textarea
                 ref={textareaRef}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Edit Markdown..."
-                className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed resize-none overflow-hidden"
+                className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[500px]"
               />
+            ) : (
+              <div className="min-h-[500px] py-4">
+                <MarkdownRenderer content={content || "_No content to preview_"} />
+              </div>
             )}
           </div>
         </div>

@@ -1,11 +1,10 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Pin, FileText, Eye } from 'lucide-react';
+import { Plus, Pin, FileText, Eye, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,6 +24,7 @@ import Link from '@tiptap/extension-link';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 import { Markdown } from 'tiptap-markdown';
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 const lowlight = createLowlight(common);
 
@@ -38,7 +38,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState('');
   const [isPinned, setIsPinned] = useState(false);
-  const [editMode, setEditMode] = useState<'visual' | 'markdown'>('visual');
+  const [editMode, setEditMode] = useState<'visual' | 'markdown' | 'preview'>('visual');
   
   const containerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -146,15 +146,32 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                 autoFocus
               />
               <div className="flex items-center space-x-1">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setEditMode(editMode === 'visual' ? 'markdown' : 'visual')}
-                  className="h-8 px-2 text-[10px] font-bold uppercase tracking-tighter opacity-60 hover:opacity-100 transition-all"
-                >
-                  {editMode === 'visual' ? <FileText className="h-3.5 w-3.5 mr-1.5" /> : <Eye className="h-3.5 w-3.5 mr-1.5" />}
-                  {editMode === 'visual' ? 'Code' : 'Preview'}
-                </Button>
+                <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
+                  <Button 
+                    variant={editMode === 'visual' ? 'secondary' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setEditMode('visual')}
+                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-tighter"
+                  >
+                    Visual
+                  </Button>
+                  <Button 
+                    variant={editMode === 'markdown' ? 'secondary' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setEditMode('markdown')}
+                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-tighter"
+                  >
+                    Code
+                  </Button>
+                  <Button 
+                    variant={editMode === 'preview' ? 'secondary' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setEditMode('preview')}
+                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-tighter"
+                  >
+                    Preview
+                  </Button>
+                </div>
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -180,7 +197,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                   editor={editor}
                   className="min-h-[120px]"
                 />
-              ) : (
+              ) : editMode === 'markdown' ? (
                 <Textarea
                   ref={textareaRef}
                   value={content}
@@ -188,6 +205,10 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                   placeholder="Edit Markdown..."
                   className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed resize-none overflow-hidden"
                 />
+              ) : (
+                <div className="min-h-[120px] py-4">
+                  <MarkdownRenderer content={content || "_No content to preview_"} />
+                </div>
               )}
             </div>
 

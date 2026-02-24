@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -43,21 +42,21 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             if (inline) {
               return (
                 <span className="inline-flex items-center bg-[#0d0d0d] border border-white/10 rounded-md overflow-hidden gap-0 group/inline-code mx-1 shadow-xl align-middle h-7 translate-y-[-1px]">
-                  <div className="flex items-center px-1.5 h-full bg-white/5 border-r border-white/10">
+                  <span className="flex items-center px-1.5 h-full bg-white/5 border-r border-white/10">
                     <Terminal className="h-2.5 w-2.5 text-primary" />
-                  </div>
-                  <div className="px-1.5 h-full bg-white/10 border-r border-white/10 flex items-center">
+                  </span>
+                  <span className="px-1.5 h-full bg-white/10 border-r border-white/10 flex items-center">
                     <span className="text-[7px] font-bold uppercase tracking-tighter text-white/40">SRC</span>
-                  </div>
+                  </span>
                   <code className="font-mono text-[0.7rem] text-[#e1e4e8] leading-none px-2 py-1" {...props}>
                     {children}
                   </code>
-                  <div className="flex items-center h-full pr-1.5 pl-1 bg-white/10 border-l border-white/10 opacity-0 group-hover/inline-code:opacity-100 transition-opacity">
+                  <span className="flex items-center h-full pr-1.5 pl-1 bg-white/10 border-l border-white/10 opacity-0 group-hover/inline-code:opacity-100 transition-opacity">
                     <CopyButton 
                       text={codeString} 
                       className="h-4 w-4 bg-transparent border-none text-white/40 hover:text-white p-0" 
                     />
-                  </div>
+                  </span>
                 </span>
               );
             }
