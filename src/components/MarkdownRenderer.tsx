@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -17,15 +16,15 @@ interface MarkdownRendererProps {
 /**
  * Unified Markdown Renderer
  * The single source of truth for all note rendering across the application.
- * Features aesthetic, theme-responsive code blocks and high-fidelity inline snippets.
+ * Features aesthetic, theme-responsive code blocks with neon-accented text.
  */
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
 
   // Automatic JSON Recognition: If content looks like a JSON object but isn't fenced, treat it as JSON code.
-  // This hook must stay at the top level to follow the Rules of Hooks.
+  // CRITICAL: useMemo MUST be called before any conditional return to follow Rules of Hooks.
   const processedContent = React.useMemo(() => {
-    const trimmed = content.trim();
+    const trimmed = content?.trim() || '';
     if (trimmed.startsWith('{') && trimmed.endsWith('}') && !trimmed.includes('```')) {
       try {
         JSON.parse(trimmed);
@@ -60,26 +59,22 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           code({ node, inline, className, children, ...props }: any) {
             const codeString = String(children).replace(/\n$/, '');
             
-            // High-Fidelity Inline Code "Mini-Card" - Responsive
+            // High-Fidelity Inline Code "Mini-Card" - Responsive & Neon
             if (inline) {
-              const isMultiLine = codeString.includes('\n');
               return (
-                <span className={cn(
-                  "inline-block align-middle mx-1 my-0.5 max-w-full",
-                  isMultiLine && "block my-4"
-                )}>
-                  <span className="flex flex-col bg-muted/30 dark:bg-[#0d0d0 anticorruption] border border-border/50 dark:border-white/10 rounded-md overflow-hidden shadow-sm group/inline-code">
-                    <span className="flex items-center justify-between px-2 py-0.5 bg-muted/50 dark:bg-white/5 border-b border-border/50 dark:border-white/5">
+                <span className="inline-block align-middle mx-1 my-0.5 max-w-full">
+                  <span className="flex flex-col bg-[hsl(var(--code-bg))] border border-border/50 rounded-md overflow-hidden shadow-sm group/inline-code">
+                    <span className="flex items-center justify-between px-2 py-0.5 bg-muted/30 border-b border-border/30">
                       <span className="flex items-center gap-1.5">
                         <Terminal className="h-2 w-2 text-primary" />
                         <span className="text-[7px] font-bold uppercase tracking-tighter opacity-60">SRC</span>
                       </span>
                       <CopyButton 
                         text={codeString} 
-                        className="h-3.5 w-3.5 opacity-0 group-hover/inline-code:opacity-100 transition-opacity p-0 bg-transparent border-none opacity-40 hover:opacity-100" 
+                        className="h-3 w-3 opacity-0 group-hover/inline-code:opacity-100 transition-opacity p-0 bg-transparent border-none" 
                       />
                     </span>
-                    <code className="font-mono text-[0.7rem] leading-tight px-2 py-1.5 whitespace-pre-wrap break-all dark:text-[#e1e4e8]" {...props}>
+                    <code className="font-mono text-[0.75rem] leading-tight px-2 py-1 neon-code-text whitespace-nowrap overflow-x-auto max-w-[200px] scrollbar-hide" {...props}>
                       {children}
                     </code>
                   </span>
@@ -87,20 +82,20 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
               );
             }
 
-            // Redesigned Source Code Block - Responsive Aesthetic
+            // Redesigned Source Code Block - Responsive Aesthetic & Neon
             return (
               <div className="relative my-8 group/code-render">
-                <div className="absolute -top-3 left-4 px-3 py-1 bg-background dark:bg-[#1a1b1e] border border-border/50 dark:border-white/10 rounded-md z-10 flex items-center space-x-2 shadow-lg">
+                <div className="absolute -top-3 left-4 px-3 py-1 bg-background border border-border/50 rounded-md z-10 flex items-center space-x-2 shadow-lg">
                   <Terminal className="h-3 w-3 text-primary" />
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">SOURCE CODE</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80 text-foreground">SOURCE CODE</span>
                 </div>
                 
-                <div className="relative rounded-xl overflow-hidden border border-border/50 dark:border-white/5 bg-secondary/30 dark:bg-[#0d0d0d] shadow-xl">
+                <div className="relative rounded-xl overflow-hidden border border-border/50 bg-[hsl(var(--code-bg))] shadow-xl">
                   <div className="absolute top-3 right-3 opacity-0 group-hover/code-render:opacity-100 transition-opacity">
                     <CopyButton text={codeString} />
                   </div>
                   
-                  <pre className="p-6 pt-8 font-mono text-sm leading-relaxed overflow-x-auto dark:text-[#e1e4e8]">
+                  <pre className="p-6 pt-10 font-mono text-sm leading-relaxed overflow-x-auto neon-code-text">
                     <code>{codeString}</code>
                   </pre>
                 </div>
@@ -132,7 +127,7 @@ function CopyButton({ text, className }: { text: string, className?: string }) {
       size="icon"
       onClick={handleCopy}
       className={cn(
-        "h-7 w-7 bg-muted/50 hover:bg-muted dark:bg-white/5 dark:hover:bg-white/10 opacity-60 hover:opacity-100 rounded-md border border-border dark:border-white/5",
+        "h-7 w-7 bg-muted/40 hover:bg-muted opacity-60 hover:opacity-100 rounded-md border border-border/50",
         className
       )}
     >

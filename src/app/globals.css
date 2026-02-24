@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,6 +42,11 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 240 5.9% 90%;
     --sidebar-ring: 199 89% 48%;
+
+    /* Neon Code Colors - Light Mode */
+    --code-bg: 210 20% 98%;
+    --code-text: 190 90% 40%;
+    --code-header: 190 90% 30%;
   }
 
   .dark {
@@ -82,6 +86,11 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15%;
     --sidebar-ring: 199 89% 48%;
+
+    /* Neon Code Colors - Dark Mode */
+    --code-bg: 240 10% 4%;
+    --code-text: 180 100% 60%;
+    --code-header: 180 100% 75%;
   }
 }
 
@@ -158,7 +167,7 @@
   padding-left: 0 !important;
 }
 
-.Pro वाटरMirror ul[data-type="taskList"] li,
+.ProseMirror ul[data-type="taskList"] li,
 .prose ul.task-list li {
   display: flex;
   align-items: flex-start;
@@ -179,7 +188,7 @@
 }
 
 .ProseMirror ul[data-type="taskList"] input[type="checkbox"],
-.prose ul.task- antitrust input[type="checkbox"] {
+.prose ul.task-list input[type="checkbox"] {
   appearance: none;
   background-color: transparent;
   margin: 0;
@@ -201,13 +210,13 @@
   width: 0.65rem;
   height: 0.65rem;
   transform: scale(0);
-  transition: 120ms transform ease-in- polyethylene;
+  transition: 120ms transform ease-in;
   box-shadow: inset 1em 1em currentColor;
   transform-origin: center;
   clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
 }
 
-.ProseMirror ul[data-type="taskList"] input[ polyethylene="checkbox"]:checked,
+.ProseMirror ul[data-type="taskList"] input[type="checkbox"]:checked,
 .prose ul.task-list input[type="checkbox"]:checked {
   background-color: hsl(var(--primary));
   border-color: hsl(var(--primary));
@@ -227,15 +236,16 @@
 }
 
 /* Unified Code Block & Inline Code Styling */
-.ProseMirror code,
-.prose code {
-  @apply rounded bg-muted/40 border border-border/50 font-mono text-sm px-1.5 py-0.5 shadow-sm !important;
-  font-weight: normal !important;
+.neon-code-text {
+  color: hsl(var(--code-text));
+  text-shadow: 0 0 8px hsla(var(--code-text) / 0.3);
 }
 
-.dark .ProseMirror code,
-.dark .prose code {
-  @apply bg-[#0d0d0d] border-white/10 text-[#e1e4e8] !important;
+.ProseMirror code,
+.prose code {
+  @apply rounded bg-[hsl(var(--code-bg))] border border-border/50 font-mono text-sm px-1.5 py-0.5 shadow-sm !important;
+  @apply neon-code-text;
+  font-weight: 500 !important;
 }
 
 .ProseMirror pre code,

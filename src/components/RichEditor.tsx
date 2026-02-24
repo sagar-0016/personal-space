@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useEffect, useState } from 'react';
@@ -21,25 +20,25 @@ export const CodeBlockComponent = ({ node }: any) => {
   };
 
   return (
-    <NodeViewWrapper className="relative my-6 group/code">
-      <div className="absolute -top-3 left-4 px-3 py-1 bg-background dark:bg-[#1a1b1e] border border-border/50 dark:border-white/10 rounded-md z-10 flex items-center space-x-2 shadow-lg">
+    <NodeViewWrapper className="relative my-8 group/code">
+      <div className="absolute -top-3 left-4 px-3 py-1 bg-background border border-border/50 rounded-md z-10 flex items-center space-x-2 shadow-lg">
         <Terminal className="h-3 w-3 text-primary" />
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">SOURCE CODE</span>
+        <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80 text-foreground">SOURCE CODE</span>
       </div>
       
-      <div className="relative rounded-xl overflow-hidden border border-border/50 dark:border-white/5 bg-secondary/30 dark:bg-[#0d0d0d] shadow-xl">
+      <div className="relative rounded-xl overflow-hidden border border-border/50 bg-[hsl(var(--code-bg))] shadow-xl">
         <div className="absolute top-3 right-3 opacity-0 group-hover/code:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="icon"
             onClick={handleCopy}
-            className="h-7 w-7 bg-muted/50 hover:bg-muted dark:bg-white/5 dark:hover:bg-white/10 opacity-60 hover:opacity-100 rounded-md border border-border dark:border-white/5"
+            className="h-7 w-7 bg-muted/40 hover:bg-muted opacity-60 hover:opacity-100 rounded-md border border-border/50"
           >
             {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
           </Button>
         </div>
         
-        <pre className="p-6 pt-8 font-mono text-sm leading-relaxed overflow-x-auto dark:text-[#e1e4e8]">
+        <pre className="p-6 pt-10 font-mono text-sm leading-relaxed overflow-x-auto neon-code-text">
           <code className="outline-none block min-h-[1em]">{node.textContent}</code>
         </pre>
       </div>
