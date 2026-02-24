@@ -82,7 +82,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     },
   });
 
-  // Initial state setup
   useEffect(() => {
     if (note && isOpen) {
       setTitle(note.title);
@@ -102,7 +101,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     }
   }, [content, editMode]);
 
-  // Sync content from Textarea back to editor if switch modes
   useEffect(() => {
     if (editor && editMode === 'visual' && editor.storage.markdown) {
       const currentMarkdown = (editor.storage.markdown as any).getMarkdown();
@@ -133,7 +131,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   useEffect(() => {
     if (!isOpen || !note) return;
-    // Debounced auto-save every 3 seconds of inactivity
     const timer = setTimeout(() => performSave(false), 3000);
     return () => clearTimeout(timer);
   }, [title, content, metadata, isOpen, note?.id]);

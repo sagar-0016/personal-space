@@ -87,7 +87,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      // Allow metadata interaction
       if (target.closest('[data-metadata-popover="true"]')) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {

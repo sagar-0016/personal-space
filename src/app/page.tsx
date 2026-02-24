@@ -29,7 +29,7 @@ export default function Home() {
   const [currentView, setCurrentView] = useState('all'); 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  // Settings - Initialized to requested defaults
+  // Settings - Defaults updated per user request
   const [hideEmptyLabels, setHideEmptyLabels] = useState(true);
   const [sortByRecent, setSortByRecent] = useState(false);
 
