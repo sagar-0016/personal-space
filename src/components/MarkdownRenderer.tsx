@@ -42,14 +42,19 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             
             if (inline) {
               return (
-                <span className="inline-flex items-center bg-[#0d0d0d] border border-white/10 rounded-md px-2 py-0.5 gap-2 group/inline-code mx-1 shadow-sm align-middle">
-                  <code className="font-mono text-[0.85rem] text-[#e1e4e8] leading-tight" {...props}>
+                <span className="inline-flex items-center bg-[#0d0d0d] border border-white/10 rounded-lg overflow-hidden gap-0 group/inline-code mx-1 shadow-xl align-middle h-7">
+                  <div className="flex items-center px-1.5 h-full bg-white/5 border-r border-white/5">
+                    <Terminal className="h-2.5 w-2.5 text-primary" />
+                  </div>
+                  <code className="font-mono text-[0.75rem] text-[#e1e4e8] leading-none px-2 py-1" {...props}>
                     {children}
                   </code>
-                  <CopyButton 
-                    text={codeString} 
-                    className="h-4 w-4 bg-transparent border-none text-white/40 hover:text-white transition-all opacity-0 group-hover/inline-code:opacity-100" 
-                  />
+                  <div className="flex items-center h-full pr-1.5 pl-1 bg-white/5 border-l border-white/5 opacity-0 group-hover/inline-code:opacity-100 transition-opacity">
+                    <CopyButton 
+                      text={codeString} 
+                      className="h-4 w-4 bg-transparent border-none text-white/40 hover:text-white p-0" 
+                    />
+                  </div>
                 </span>
               );
             }
