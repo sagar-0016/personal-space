@@ -38,7 +38,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState('');
   const [isPinned, setIsPinned] = useState(false);
-  const [editMode, setEditMode] = useState<'visual' | 'markdown' | 'preview'>('visual');
+  const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('visual');
   
   const containerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -156,12 +156,20 @@ export function CreateNote({ onSave }: CreateNoteProps) {
               <div className="flex items-center space-x-1">
                 <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
                   <Button 
+                    variant={editMode === 'preview' ? 'secondary' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setEditMode('preview')}
+                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-tighter"
+                  >
+                    Preview
+                  </Button>
+                  <Button 
                     variant={editMode === 'visual' ? 'secondary' : 'ghost'} 
                     size="sm"
                     onClick={() => setEditMode('visual')}
                     className="h-7 px-2 text-[10px] font-bold uppercase tracking-tighter"
                   >
-                    Visual
+                    Visual Editor
                   </Button>
                   <Button 
                     variant={editMode === 'markdown' ? 'secondary' : 'ghost'} 
@@ -169,15 +177,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                     onClick={() => setEditMode('markdown')}
                     className="h-7 px-2 text-[10px] font-bold uppercase tracking-tighter"
                   >
-                    Code
-                  </Button>
-                  <Button 
-                    variant={editMode === 'preview' ? 'secondary' : 'ghost'} 
-                    size="sm"
-                    onClick={() => setEditMode('preview')}
-                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-tighter"
-                  >
-                    Preview
+                    Markdown Editor
                   </Button>
                 </div>
                 <Button 
@@ -200,12 +200,16 @@ export function CreateNote({ onSave }: CreateNoteProps) {
             />
 
             <div className="px-6 py-2">
-              {editMode === 'visual' ? (
+              {editMode === 'preview' ? (
+                <div className="min-h-[120px] py-4">
+                  <MarkdownRenderer content={content || "_No content to preview_"} />
+                </div>
+              ) : editMode === 'visual' ? (
                 <RichEditor 
                   editor={editor}
                   className="min-h-[120px]"
                 />
-              ) : editMode === 'markdown' ? (
+              ) : (
                 <Textarea
                   ref={textareaRef}
                   value={content}
@@ -213,10 +217,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                   placeholder="Edit Markdown..."
                   className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed resize-none overflow-hidden"
                 />
-              ) : (
-                <div className="min-h-[120px] py-4">
-                  <MarkdownRenderer content={content || "_No content to preview_"} />
-                </div>
               )}
             </div>
 

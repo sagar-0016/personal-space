@@ -16,6 +16,7 @@ interface MarkdownRendererProps {
 /**
  * Unified Markdown Renderer
  * Provides a single source of truth for all note rendering across the app.
+ * Features high-fidelity block-like styling for inline code snippets.
  */
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);

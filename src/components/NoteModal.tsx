@@ -50,7 +50,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState('');
   const [labels, setLabels] = useState<string[]>([]);
-  const [editMode, setEditMode] = useState<'visual' | 'markdown' | 'preview'>('visual');
+  const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedRef = useRef<string>('');
@@ -88,6 +88,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       setLabels(note.labels || []);
       lastSavedRef.current = JSON.stringify({ t: note.title, c: note.content, m: note.metadata });
       if (editor) editor.commands.setContent(note.content, false);
+      setEditMode('preview');
     }
   }, [note?.id, isOpen, editor]);
 
@@ -160,12 +161,20 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             </div>
             <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
               <Button 
+                variant={editMode === 'preview' ? 'secondary' : 'ghost'} 
+                size="sm"
+                onClick={() => setEditMode('preview')}
+                className="h-7 px-3 text-xs font-bold uppercase tracking-tight"
+              >
+                Preview
+              </Button>
+              <Button 
                 variant={editMode === 'visual' ? 'secondary' : 'ghost'} 
                 size="sm"
                 onClick={() => setEditMode('visual')}
                 className="h-7 px-3 text-xs font-bold uppercase tracking-tight"
               >
-                Visual
+                Visual Editor
               </Button>
               <Button 
                 variant={editMode === 'markdown' ? 'secondary' : 'ghost'} 
@@ -173,15 +182,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 onClick={() => setEditMode('markdown')}
                 className="h-7 px-3 text-xs font-bold uppercase tracking-tight"
               >
-                Code
-              </Button>
-              <Button 
-                variant={editMode === 'preview' ? 'secondary' : 'ghost'} 
-                size="sm"
-                onClick={() => setEditMode('preview')}
-                className="h-7 px-3 text-xs font-bold uppercase tracking-tight"
-              >
-                Preview
+                Markdown Editor
               </Button>
             </div>
           </div>
@@ -224,12 +225,16 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
           </div>
           
           <div className="mt-6 px-10">
-            {editMode === 'visual' ? (
+            {editMode === 'preview' ? (
+              <div className="min-h-[500px] py-4">
+                <MarkdownRenderer content={content || "_No content to preview_"} />
+              </div>
+            ) : editMode === 'visual' ? (
               <RichEditor 
                 editor={editor}
                 className="min-h-[500px]"
               />
-            ) : editMode === 'markdown' ? (
+            ) : (
               <Textarea
                 ref={textareaRef}
                 value={content}
@@ -237,10 +242,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 placeholder="Edit Markdown..."
                 className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[500px] resize-none overflow-hidden"
               />
-            ) : (
-              <div className="min-h-[500px] py-4">
-                <MarkdownRenderer content={content || "_No content to preview_"} />
-              </div>
             )}
           </div>
         </div>
