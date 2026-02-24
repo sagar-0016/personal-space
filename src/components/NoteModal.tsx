@@ -57,6 +57,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     onClose();
   };
 
+  // Logic to prevent focus stealing from the portaled metadata window
   const handleFocusPriority = (e: any) => {
     if (e.target.closest('[data-metadata-popover]')) {
       e.preventDefault();
