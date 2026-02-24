@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -15,8 +16,8 @@ interface MarkdownRendererProps {
 
 /**
  * Unified Markdown Renderer
- * Provides a single source of truth for all note rendering across the app.
- * Features high-fidelity block-like styling for both inline and block code.
+ * The single source of truth for all note rendering across the application.
+ * Ensures high-fidelity code blocks and inline code "mini-cards" are consistent.
  */
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
@@ -45,10 +46,14 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const codeString = String(children).replace(/\n$/, '');
             
             // High-Fidelity Inline Code "Mini-Card"
-            // Handles multi-line snippets gracefully with block-like styling
+            // Optimized to handle multi-line snippets like JSON strings while appearing like a structured block.
             if (inline) {
+              const isMultiLine = codeString.includes('\n');
               return (
-                <span className="inline-block align-middle mx-1 my-0.5 max-w-full">
+                <span className={cn(
+                  "inline-block align-middle mx-1 my-0.5 max-w-full",
+                  isMultiLine && "block my-4"
+                )}>
                   <span className="flex flex-col bg-[#0d0d0d] border border-white/10 rounded-md overflow-hidden shadow-xl group/inline-code">
                     <span className="flex items-center justify-between px-2 py-0.5 bg-white/5 border-b border-white/5">
                       <span className="flex items-center gap-1.5">

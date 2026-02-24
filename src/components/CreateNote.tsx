@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -77,7 +78,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     }
   }, [editMode, content, editor]);
 
-  // Auto-resize textarea logic
+  // Auto-resize textarea for a seamless Markdown experience
   useEffect(() => {
     if (editMode === 'markdown' && textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -160,7 +161,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                     size="sm"
                     onClick={() => setEditMode('preview')}
                     className={cn(
-                      "h-7 px-2 text-[10px] font-bold uppercase tracking-tighter transition-all",
+                      "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
                       editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
                     )}
                   >
@@ -171,7 +172,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                     size="sm"
                     onClick={() => setEditMode('visual')}
                     className={cn(
-                      "h-7 px-2 text-[10px] font-bold uppercase tracking-tighter transition-all",
+                      "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
                       editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
                     )}
                   >
@@ -182,7 +183,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                     size="sm"
                     onClick={() => setEditMode('markdown')}
                     className={cn(
-                      "h-7 px-2 text-[10px] font-bold uppercase tracking-tighter transition-all",
+                      "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
                       editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
                     )}
                   >

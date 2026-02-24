@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -101,7 +102,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     }
   }, [editMode, content, editor]);
 
-  // Auto-resize textarea logic
+  // Auto-resize for Markdown textareas
   useEffect(() => {
     if (editMode === 'markdown' && textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -165,7 +166,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 size="sm"
                 onClick={() => setEditMode('preview')}
                 className={cn(
-                  "h-7 px-3 text-xs font-bold uppercase tracking-tight transition-all",
+                  "h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all",
                   editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
                 )}
               >
@@ -176,7 +177,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 size="sm"
                 onClick={() => setEditMode('visual')}
                 className={cn(
-                  "h-7 px-3 text-xs font-bold uppercase tracking-tight transition-all",
+                  "h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all",
                   editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
                 )}
               >
@@ -187,7 +188,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 size="sm"
                 onClick={() => setEditMode('markdown')}
                 className={cn(
-                  "h-7 px-3 text-xs font-bold uppercase tracking-tight transition-all",
+                  "h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all",
                   editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
                 )}
               >
