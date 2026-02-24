@@ -10,17 +10,17 @@ import { Terminal, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
-// Vibrant Neon Syntax Theme
+// Vibrant Neon Syntax Theme (mirrors high-end code editors)
 const neonTheme: any = {
   'code[class*="language-"]': {
     color: '#e0e0e0',
     background: 'none',
-    fontFamily: 'inherit',
+    fontFamily: '"JetBrains Mono", "Fira Code", monospace',
   },
   'pre[class*="language-"]': {
     color: '#e0e0e0',
     background: 'none',
-    fontFamily: 'inherit',
+    fontFamily: '"JetBrains Mono", "Fira Code", monospace',
     margin: 0,
     padding: 0,
     overflow: 'initial',
@@ -47,14 +47,16 @@ interface MarkdownRendererProps {
 /**
  * Unified Markdown Renderer
  * Consolidated rendering logic for the entire application.
- * Features high-fidelity obsidian styling with neon syntax highlighting.
+ * Features high-fidelity obsidian styling with vibrant neon syntax highlighting.
  */
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
 
-  // Automatic JSON Recognition Logic (called before early return to satisfy Rules of Hooks)
+  // Hooks must be called in the same order. 
+  // useMemo and useEffect are called before any conditional logic.
   const processedContent = useMemo(() => {
     const trimmed = (content || '').trim();
+    // Automatic JSON Recognition: If it looks like JSON Frontmatter, treat as JSON code.
     if (trimmed.startsWith('{') && trimmed.endsWith('}') && !trimmed.includes('```')) {
       try {
         JSON.parse(trimmed);
@@ -95,7 +97,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             if (inline) {
               return (
                 <span className="inline-block align-middle mx-1 my-0.5 max-w-full">
-                  <span className="flex flex-col bg-[#0d0d0d] border border-border/50 rounded-md overflow-hidden shadow-lg group/inline-code">
+                  <span className="flex flex-col bg-[#0d0d0d] dark:bg-[#0a0a0b] border border-border/50 rounded-md overflow-hidden shadow-lg group/inline-code">
                     <span className="flex items-center justify-between px-2 py-0.5 bg-[#1a1a1b] border-b border-border/30">
                       <span className="flex items-center gap-1.5">
                         <Terminal className="h-2 w-2 text-primary" />
@@ -106,7 +108,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                         className="h-3 w-3 opacity-0 group-hover/inline-code:opacity-100 transition-opacity p-0 bg-transparent border-none" 
                       />
                     </span>
-                    <div className="px-2 py-1 overflow-x-auto max-w-[300px] scrollbar-hide">
+                    <div className="px-2 py-1 overflow-x-auto max-w-[400px] scrollbar-hide">
                       <SyntaxHighlighter
                         language={lang}
                         style={neonTheme}
@@ -130,7 +132,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                   <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground">SOURCE CODE</span>
                 </div>
                 
-                <div className="relative rounded-xl overflow-hidden border border-border/50 bg-[#0d0d0d] shadow-2xl">
+                <div className="relative rounded-xl overflow-hidden border border-border/50 bg-[#0d0d0d] dark:bg-[#0a0a0b] shadow-2xl transition-all duration-300">
                   <div className="absolute top-3 right-3 z-20 opacity-0 group-hover/code-render:opacity-100 transition-opacity">
                     <CopyButton text={codeString} />
                   </div>

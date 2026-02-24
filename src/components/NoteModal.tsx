@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -81,6 +81,13 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     },
   });
 
+  const adjustTextareaHeight = useCallback(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, []);
+
   useEffect(() => {
     if (note && isOpen) {
       setTitle(note.title);
@@ -100,14 +107,10 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         editor.commands.setContent(content, false);
       }
     }
-  }, [editMode, content, editor]);
-
-  useEffect(() => {
-    if (editMode === 'markdown' && textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    if (editMode === 'markdown') {
+      setTimeout(adjustTextareaHeight, 0);
     }
-  }, [content, editMode]);
+  }, [editMode, content, editor, adjustTextareaHeight]);
 
   const performSave = (isClosing: boolean = false) => {
     if (!note) return;
@@ -138,6 +141,12 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     const info = extractMetadataInfo(metadata);
     if (info.tags.length > 0) setLabels(info.tags);
   }, [metadata]);
+
+  const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && performSave(true)}>
@@ -249,7 +258,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               <Textarea
                 ref={textareaRef}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={handleMarkdownChange}
                 placeholder="Edit Markdown..."
                 className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[500px] resize-none overflow-hidden"
               />

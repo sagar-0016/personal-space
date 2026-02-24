@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -69,6 +69,13 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     },
   });
 
+  const adjustTextareaHeight = useCallback(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, []);
+
   useEffect(() => {
     if (editor && editMode === 'visual' && editor.storage.markdown) {
       const currentMarkdown = (editor.storage.markdown as any).getMarkdown();
@@ -76,14 +83,11 @@ export function CreateNote({ onSave }: CreateNoteProps) {
         editor.commands.setContent(content, false);
       }
     }
-  }, [editMode, content, editor]);
-
-  useEffect(() => {
-    if (editMode === 'markdown' && textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    if (editMode === 'markdown') {
+      // Small delay to ensure render is complete before measuring
+      setTimeout(adjustTextareaHeight, 0);
     }
-  }, [content, editMode]);
+  }, [editMode, content, editor, adjustTextareaHeight]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -126,6 +130,13 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       setIsPinned(false);
       setEditMode('preview');
     }
+  };
+
+  const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value);
+    // Adjust height inline to prevent scroll jump
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
   return (
@@ -224,7 +235,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                 <Textarea
                   ref={textareaRef}
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={handleMarkdownChange}
                   placeholder="Edit Markdown..."
                   className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed resize-none overflow-hidden"
                 />
