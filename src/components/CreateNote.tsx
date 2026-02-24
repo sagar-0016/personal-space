@@ -54,7 +54,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState('');
   const [isPinned, setIsPinned] = useState(false);
-  const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
+  const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('visual');
   
   const [selectedProjectId, setSelectedProjectId] = useState<string>(defaultProjectId || 'none');
   const [selectedLabelId, setSelectedLabelId] = useState<string>('none');
@@ -180,7 +180,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     setMetadata('');
     setIsPinned(false);
     setIsExpanded(false);
-    setEditMode('preview');
+    setEditMode('visual');
     setTags([]);
     setTagInput('');
     setSelectedProjectId(defaultProjectId || 'none');
@@ -301,7 +301,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 <div className="flex items-center bg-primary/5 rounded-full px-2 py-0.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
                   <Tag className="h-3 w-3 text-primary/40 mr-2" />
-                  <input placeholder="Add tag..." className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none w-20 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTag()} />
+                  <input placeholder="Add label..." className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none w-20 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTag()} />
                 </div>
                 {tags.map(t => (
                   <Badge key={t} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1">

@@ -55,7 +55,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
   const [labelId, setLabelId] = useState<string>('none');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
-  const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
+  const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('visual');
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedRef = useRef<string>('');
@@ -107,7 +107,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       setTags(note.tags || []);
       lastSavedRef.current = JSON.stringify({ t: note.title, c: note.content, m: note.metadata, p: note.projectId, l: note.labelId });
       if (editor) editor.commands.setContent(note.content, false);
-      setEditMode('preview');
+      setEditMode('visual');
     }
   }, [note?.id, isOpen, editor]);
 
@@ -225,7 +225,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center bg-primary/5 rounded-full px-3 py-1 border border-primary/10 group focus-within:border-primary/30 transition-all">
                 <Tag className="h-3.5 w-3.5 text-primary/40 mr-2" />
-                <input placeholder="Add tag..." className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-24 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (setTags([...tags, tagInput]), setTagInput(''))} />
+                <input placeholder="Add label..." className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-24 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (setTags([...tags, tagInput]), setTagInput(''))} />
               </div>
               {tags.map(t => <Badge key={t} variant="secondary" className="flex items-center gap-2 rounded-lg px-3 py-1 bg-primary/10 text-primary border-none">{t}<X className="h-3 w-3 cursor-pointer" onClick={() => setTags(tags.filter(tg => tg !== t))} /></Badge>)}
             </div>
