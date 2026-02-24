@@ -87,9 +87,10 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
   const db = useFirestore();
   const isActiveProject = currentView.startsWith(`project:${project.id}`);
   
-  const [isRenameOpen, setIsRenameOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [newName, setNewName] = useState(project.name);
+  const [selectedIcon, setSelectedIcon] = useState(project.iconName || 'Briefcase');
   const [deleteConfirm, setDeleteConfirm] = useState('');
 
   const labelsQuery = useMemoFirebase(() => {
@@ -99,14 +100,17 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
   
   const { data: labels, isLoading } = useCollection<Label>(labelsQuery);
 
-  const handleRename = () => {
-    if (!db || !newName.trim() || newName === project.name) {
-      setIsRenameOpen(false);
+  const handleUpdate = () => {
+    if (!db || !newName.trim()) {
+      setIsEditOpen(false);
       return;
     }
     const projectRef = doc(db, 'users', userId, 'projects', project.id);
-    updateDocumentNonBlocking(projectRef, { name: newName.trim() });
-    setIsRenameOpen(false);
+    updateDocumentNonBlocking(projectRef, { 
+      name: newName.trim(),
+      iconName: selectedIcon 
+    });
+    setIsEditOpen(false);
   };
 
   const handleDelete = async () => {
@@ -117,7 +121,6 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
     setDeleteConfirm('');
   };
 
-  // Dynamically resolve icon from lucide-react
   const IconComponent = (LucideIcons as any)[project.iconName || 'Briefcase'] || Briefcase;
 
   return (
@@ -163,9 +166,13 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
               </SidebarMenuAction>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="right" align="start">
-              <DropdownMenuItem onClick={() => setIsRenameOpen(true)}>
+              <DropdownMenuItem onClick={() => {
+                setNewName(project.name);
+                setSelectedIcon(project.iconName || 'Briefcase');
+                setIsEditOpen(true);
+              }}>
                 <Edit2 className="mr-2 h-4 w-4" />
-                <span>Rename</span>
+                <span>Edit</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive focus:text-destructive">
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -206,23 +213,45 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
         </SidebarMenuItem>
       </Collapsible>
 
-      {/* Rename Dialog */}
-      <Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
-        <DialogContent>
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Rename Project</DialogTitle>
+            <DialogTitle>Edit Project</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
-            <Input 
-              value={newName} 
-              onChange={(e) => setNewName(e.target.value)} 
-              onKeyDown={(e) => e.key === 'Enter' && handleRename()}
-              autoFocus 
-            />
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Project Name</label>
+              <Input 
+                value={newName} 
+                onChange={(e) => setNewName(e.target.value)} 
+                onKeyDown={(e) => e.key === 'Enter' && handleUpdate()}
+                autoFocus 
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose Icon</label>
+              <div className="grid grid-cols-5 gap-2">
+                {SAMPLE_ICONS.map((item) => (
+                  <Button
+                    key={item.name}
+                    variant="outline"
+                    size="icon"
+                    className={cn(
+                      "h-10 w-10",
+                      selectedIcon === item.name && "border-primary bg-primary/10 text-primary"
+                    )}
+                    onClick={() => setSelectedIcon(item.name)}
+                  >
+                    <item.icon className="h-5 w-5" />
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsRenameOpen(false)}>Cancel</Button>
-            <Button onClick={handleRename}>Save</Button>
+            <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+            <Button onClick={handleUpdate}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -286,14 +315,9 @@ export function AppSidebar({
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !db || !user) return;
-    
-    // Close the dialog immediately
     setIsDialogOpen(false);
-    
     const projectId = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim(), selectedIcon);
     if (projectId) onViewChange(`project:${projectId}`);
-    
-    // Reset internal state
     setNewProjectName('');
     setSelectedIcon('Briefcase');
   };
@@ -362,9 +386,6 @@ export function AppSidebar({
                         </Button>
                       ))}
                     </div>
-                    <p className="text-[10px] text-muted-foreground italic mt-2">
-                      Powered by Lucide Icons.
-                    </p>
                   </div>
                 </div>
                 <DialogFooter>
