@@ -61,6 +61,18 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleSave()}>
       <DialogContent 
         className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
+        onPointerDownOutside={(e) => {
+          const target = e.target as HTMLElement;
+          if (target.closest('[data-metadata-popover="true"]')) {
+            e.preventDefault();
+          }
+        }}
+        onInteractOutside={(e) => {
+          const target = e.target as HTMLElement;
+          if (target.closest('[data-metadata-popover="true"]')) {
+            e.preventDefault();
+          }
+        }}
       >
         <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
         

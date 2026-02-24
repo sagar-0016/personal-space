@@ -26,7 +26,14 @@ export function CreateNote({ onSave }: CreateNoteProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as HTMLElement;
+      
+      // CRITICAL: If the click is inside a metadata portal, do not close the CreateNote card.
+      if (target.closest('[data-metadata-popover="true"]')) {
+        return;
+      }
+
+      if (containerRef.current && !containerRef.current.contains(target)) {
         if (title.trim() || content.trim()) {
           handleSave();
         }
