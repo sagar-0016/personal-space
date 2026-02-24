@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -19,6 +18,23 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { extractMetadataInfo } from '@/lib/note-parser';
+import { EditorToolbar } from './EditorToolbar';
+import { useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableHeader from '@tiptap/extension-table-header';
+import TableCell from '@tiptap/extension-table-cell';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { common, createLowlight } from 'lowlight';
+import { Markdown } from 'tiptap-markdown';
+
+const lowlight = createLowlight(common);
 
 interface NoteModalProps {
   note: Note | null;
@@ -34,10 +50,35 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
   const [labels, setLabels] = useState<string[]>([]);
   const [editMode, setEditMode] = useState<'visual' | 'markdown'>('visual');
   
-  // Refs to track state for auto-save without triggering re-renders
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedRef = useRef<string>('');
 
-  // Initial state setup - Only reset when a different note is opened
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({ codeBlock: false }),
+      Placeholder.configure({ placeholder: "Start writing..." }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      Table.configure({ resizable: true }),
+      TableRow, TableHeader, TableCell,
+      Image,
+      CodeBlockLowlight.configure({ lowlight }),
+      Link.configure({ openOnClick: false }),
+      Markdown.configure({ html: true, tightLists: true }),
+    ],
+    content: content,
+    onUpdate: ({ editor }) => {
+      const markdown = (editor.storage.markdown as any).getMarkdown();
+      setContent(markdown);
+    },
+    editorProps: {
+      attributes: {
+        class: "prose prose-sm sm:prose-base dark:prose-invert max-w-none focus:outline-none min-h-[400px] py-4",
+      },
+    },
+  });
+
+  // Initial state setup
   useEffect(() => {
     if (note && isOpen) {
       setTitle(note.title);
@@ -45,13 +86,22 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
       setMetadata(note.metadata || '');
       setLabels(note.labels || []);
       lastSavedRef.current = JSON.stringify({ t: note.title, c: note.content, m: note.metadata });
+      if (editor) editor.commands.setContent(note.content, false);
     }
-  }, [note?.id, isOpen]);
+  }, [note?.id, isOpen, editor]);
 
-  // Handle immediate save logic (for metadata apply or complete review)
+  // Sync content from Textarea back to editor if switch modes
+  useEffect(() => {
+    if (editor && editMode === 'visual' && editor.storage.markdown) {
+      const currentMarkdown = (editor.storage.markdown as any).getMarkdown();
+      if (content !== currentMarkdown) {
+        editor.commands.setContent(content, false);
+      }
+    }
+  }, [editMode, content, editor]);
+
   const performSave = (isClosing: boolean = false) => {
     if (!note) return;
-
     const info = extractMetadataInfo(metadata);
     const currentData = {
       ...note,
@@ -61,51 +111,24 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
       labels: info.tags.length > 0 ? info.tags : labels,
       updatedAt: Date.now()
     };
-
-    // Only save if data has actually changed
     const currentStr = JSON.stringify({ t: currentData.title, c: currentData.content, m: currentData.metadata });
     if (currentStr !== lastSavedRef.current) {
       onSave(currentData);
       lastSavedRef.current = currentStr;
     }
-
     if (isClosing) onClose();
   };
 
-  // Auto-save logic: 3-second debounce
   useEffect(() => {
     if (!isOpen || !note) return;
-
-    const timer = setTimeout(() => {
-      performSave(false);
-    }, 3000);
-
+    const timer = setTimeout(() => performSave(false), 3000);
     return () => clearTimeout(timer);
   }, [title, content, metadata, isOpen, note?.id]);
 
-  // Update labels visually when metadata changes immediately
   useEffect(() => {
     const info = extractMetadataInfo(metadata);
-    if (info.tags.length > 0) {
-      setLabels(info.tags);
-    }
+    if (info.tags.length > 0) setLabels(info.tags);
   }, [metadata]);
-
-  const handleMetadataChange = (newMetadata: string) => {
-    setMetadata(newMetadata);
-    // User clicked "Apply Changes", so we should process this update quickly
-    const info = extractMetadataInfo(newMetadata);
-    if (note) {
-      onSave({
-        ...note,
-        title: info.title || title || 'Untitled Note',
-        content: content,
-        metadata: newMetadata,
-        labels: info.tags.length > 0 ? info.tags : labels,
-        updatedAt: Date.now()
-      });
-    }
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && performSave(true)}>
@@ -113,15 +136,11 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
         className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
         onPointerDownOutside={(e) => {
           const target = e.target as HTMLElement;
-          if (target.closest('[data-metadata-popover="true"]')) {
-            e.preventDefault();
-          }
+          if (target.closest('[data-metadata-popover="true"]')) e.preventDefault();
         }}
         onInteractOutside={(e) => {
           const target = e.target as HTMLElement;
-          if (target.closest('[data-metadata-popover="true"]')) {
-            e.preventDefault();
-          }
+          if (target.closest('[data-metadata-popover="true"]')) e.preventDefault();
         }}
       >
         <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
@@ -152,6 +171,14 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           </div>
         </div>
 
+        <EditorToolbar 
+          editor={editMode === 'visual' ? editor : null}
+          textareaRef={textareaRef}
+          metadata={metadata}
+          onMetadataChange={setMetadata}
+          onContentChange={setContent}
+        />
+
         <div className="flex-1 overflow-y-auto pt-6 pb-20 scroll-smooth">
           <div className="px-10 space-y-6">
             <Input
@@ -174,23 +201,19 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
             </div>
           </div>
           
-          <div className="mt-6 px-4">
+          <div className="mt-6 px-10">
             {editMode === 'visual' ? (
               <RichEditor 
-                content={content} 
-                onChange={setContent}
-                metadata={metadata}
-                onMetadataChange={handleMetadataChange}
+                editor={editor}
                 className="min-h-[500px]"
-                placeholder="Start writing your context..."
-                showToolbar={true}
               />
             ) : (
               <Textarea
+                ref={textareaRef}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Edit Markdown..."
-                className="min-h-[600px] border-none shadow-none focus-visible:ring-0 px-6 bg-transparent font-mono text-sm leading-relaxed resize-none"
+                className="min-h-[600px] border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed resize-none"
               />
             )}
           </div>

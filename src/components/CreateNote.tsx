@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -10,6 +9,23 @@ import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
 import { generateDefaultMetadata } from '@/lib/note-parser';
+import { EditorToolbar } from './EditorToolbar';
+import { useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableHeader from '@tiptap/extension-table-header';
+import TableCell from '@tiptap/extension-table-cell';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { common, createLowlight } from 'lowlight';
+import { Markdown } from 'tiptap-markdown';
+
+const lowlight = createLowlight(common);
 
 interface CreateNoteProps {
   onSave: (note: { title: string; content: string; metadata: string; isPinned: boolean; isArchived?: boolean }) => void;
@@ -24,21 +40,54 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   const [editMode, setEditMode] = useState<'visual' | 'markdown'>('visual');
   
   const containerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({ codeBlock: false }),
+      Placeholder.configure({ placeholder: "Start writing structured content..." }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      Table.configure({ resizable: true }),
+      TableRow, TableHeader, TableCell,
+      Image,
+      CodeBlockLowlight.configure({ lowlight }),
+      Link.configure({ openOnClick: false }),
+      Markdown.configure({ html: true, tightLists: true }),
+    ],
+    content: content,
+    onUpdate: ({ editor }) => {
+      const markdown = (editor.storage.markdown as any).getMarkdown();
+      setContent(markdown);
+    },
+    editorProps: {
+      attributes: {
+        class: "prose prose-sm sm:prose-base dark:prose-invert max-w-none focus:outline-none min-h-[120px] py-4",
+      },
+    },
+  });
+
+  // Sync content from Textarea back to editor if switch modes
+  useEffect(() => {
+    if (editor && editMode === 'visual' && editor.storage.markdown) {
+      const currentMarkdown = (editor.storage.markdown as any).getMarkdown();
+      if (content !== currentMarkdown) {
+        editor.commands.setContent(content, false);
+      }
+    }
+  }, [editMode, content, editor]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      
-      // CRITICAL: If the click is inside a metadata portal, do not close the CreateNote card.
-      if (target.closest('[data-metadata-popover="true"]')) {
-        return;
-      }
+      if (target.closest('[data-metadata-popover="true"]')) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
         if (title.trim() || content.trim()) {
           handleSave();
+        } else {
+          setIsExpanded(false);
         }
-        setIsExpanded(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -49,13 +98,14 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     if (title.trim() || content.trim()) {
       const finalMetadata = metadata || generateDefaultMetadata(title || 'Untitled');
       onSave({ title, content, metadata: finalMetadata, isPinned });
-      setTitle('');
-      setContent('');
-      setMetadata('');
-      setIsPinned(false);
-      setIsExpanded(false);
-      setEditMode('visual');
     }
+    // Always reset
+    setTitle('');
+    setContent('');
+    setMetadata('');
+    setIsPinned(false);
+    setIsExpanded(false);
+    setEditMode('visual');
   };
 
   return (
@@ -104,19 +154,23 @@ export function CreateNote({ onSave }: CreateNoteProps) {
               </div>
             </div>
 
+            <EditorToolbar 
+              editor={editMode === 'visual' ? editor : null} 
+              textareaRef={textareaRef}
+              metadata={metadata}
+              onMetadataChange={setMetadata}
+              onContentChange={setContent}
+            />
+
             <div className="px-6 py-2">
               {editMode === 'visual' ? (
                 <RichEditor 
-                  content={content} 
-                  onChange={setContent}
-                  metadata={metadata}
-                  onMetadataChange={setMetadata}
-                  placeholder="Start writing structured content..."
+                  editor={editor}
                   className="min-h-[120px]"
-                  showToolbar={true}
                 />
               ) : (
                 <Textarea
+                  ref={textareaRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Edit Markdown..."
