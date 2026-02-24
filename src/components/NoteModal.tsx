@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Note, Project, Label } from '@/lib/types';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Tag, Layers, Trash2, Briefcase, Loader2 } from 'lucide-react';
+import { X, Tag, Layers, Trash2, Briefcase, Loader2, Hash } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { updateMetadataWithInfo } from '@/lib/note-parser';
@@ -120,6 +120,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       title,
       project: projectName,
       labels: [labelName],
+      tags: tags
     });
 
     const currentData = {
@@ -223,8 +224,8 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center bg-primary/5 rounded-full px-3 py-1 border border-primary/10 group focus-within:border-primary/30 transition-all">
-                <Tag className="h-3.5 w-3.5 text-primary/40 mr-2" />
-                <input placeholder="Add label..." className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-24 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (setTags([...tags, tagInput]), setTagInput(''))} />
+                <Hash className="h-3.5 w-3.5 text-primary/40 mr-2" />
+                <input placeholder="Add tag..." className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-24 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (setTags([...tags, tagInput]), setTagInput(''))} />
               </div>
               {tags.map(t => <Badge key={t} variant="secondary" className="flex items-center gap-2 rounded-lg px-3 py-1 bg-primary/10 text-primary border-none">{t}<X className="h-3 w-3 cursor-pointer" onClick={() => setTags(tags.filter(tg => tg !== t))} /></Badge>)}
             </div>

@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Pin, Briefcase, Tag, X, Loader2 } from 'lucide-react';
+import { Plus, Pin, Briefcase, Tag, X, Loader2, Hash } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
@@ -158,7 +158,8 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
       finalMetadata = updateMetadataWithInfo(finalMetadata, {
         project: projectName,
         labels: [labelName],
-        title: title || 'Untitled'
+        title: title || 'Untitled',
+        tags: tags
       });
       
       onSave({ 
@@ -299,8 +300,8 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
               
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 <div className="flex items-center bg-primary/5 rounded-full px-2 py-0.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
-                  <Tag className="h-3 w-3 text-primary/40 mr-2" />
-                  <input placeholder="Add label..." className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none w-20 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTag()} />
+                  <Hash className="h-3 w-3 text-primary/40 mr-2" />
+                  <input placeholder="Add tag..." className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none w-20 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTag()} />
                 </div>
                 {tags.map(t => (
                   <Badge key={t} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1">
