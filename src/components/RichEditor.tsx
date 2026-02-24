@@ -54,7 +54,7 @@ const CodeBlockComponent = ({ node }: any) => {
     <NodeViewWrapper className="relative my-6 group/code">
       <div className="absolute -top-3 left-4 px-3 py-1 bg-[#1a1b1e] border border-white/10 rounded-md z-10 flex items-center space-x-2 shadow-xl">
         <Terminal className="h-3 w-3 text-primary" />
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/90">Source Code</span>
+        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/90">SOURCE CODE</span>
       </div>
       
       <div className="relative rounded-xl overflow-hidden border border-white/5 bg-[#0d0d0d] shadow-2xl">

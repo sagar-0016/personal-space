@@ -1,7 +1,14 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from 'react';
-import * as PopoverPrimitive from "@radix-ui/react-popover";
+import React, { useState } from 'react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogTrigger 
+} from '@/components/ui/dialog';
 import { Database, Info, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,15 +20,15 @@ interface MetadataEditorProps {
 }
 
 /**
- * MetadataEditor - A decoupled, standalone component for technical note metadata.
- * Uses a portaled popover to avoid clipping by parent containers and focus trap interference.
+ * MetadataEditor - Migrated to Dialog to resolve Focus Trap conflicts with NoteModal.
+ * Radix UI natively handles nested Dialogs, ensuring focus is managed correctly.
  */
 export function MetadataEditor({ metadata, onMetadataChange }: MetadataEditorProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <PopoverPrimitive.Root open={isOpen} onOpenChange={setIsOpen} modal={false}>
-      <PopoverPrimitive.Trigger asChild>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
         <Button 
           variant="ghost" 
           size="sm" 
@@ -32,51 +39,51 @@ export function MetadataEditor({ metadata, onMetadataChange }: MetadataEditorPro
         >
           <Database className="h-3.5 w-3.5 mr-1.5" /> Metadata
         </Button>
-      </PopoverPrimitive.Trigger>
+      </DialogTrigger>
       
-      <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content
-          side="bottom"
-          align="end"
-          sideOffset={8}
-          data-metadata-popover="true"
-          className="w-[450px] p-4 bg-card shadow-2xl border border-primary/20 z-[9999] rounded-xl animate-in fade-in-0 zoom-in-95"
-          onOpenAutoFocus={(e) => {
-            // Ensure focus is captured by the internal textarea
-            const textarea = e.currentTarget.querySelector('textarea');
-            textarea?.focus();
-            e.preventDefault();
-          }}
-        >
-          <div className="space-y-4">
+      <DialogContent 
+        className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-2xl z-[10000]"
+      >
+        <div className="bg-card">
+          <DialogHeader className="p-6 pb-2 border-b bg-secondary/10">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                <Database className="h-3.5 w-3.5 text-primary" /> Metadata
-              </h4>
               <div className="flex items-center gap-2">
-                <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" title="YAML Metadata Format" />
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Database className="h-4 w-4 text-primary" />
+                </div>
+                <DialogTitle className="text-sm font-bold uppercase tracking-widest">
+                  Technical Metadata
+                </DialogTitle>
               </div>
+              <Info className="h-4 w-4 text-muted-foreground cursor-help" title="YAML Metadata Format" />
             </div>
+            <DialogDescription className="text-[10px] opacity-60 uppercase tracking-tight pt-1">
+              Note parameters, indexing tags, and structural metadata.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="p-6 space-y-4">
             <Textarea
               value={metadata || ''}
               onChange={(e) => onMetadataChange?.(e.target.value)}
               placeholder={`title: "My Note"\ntags: ["tag1"]\n...`}
-              className="min-h-[200px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1 leading-relaxed cursor-text"
+              className="min-h-[300px] font-mono text-xs bg-secondary/20 resize-none border-none focus-visible:ring-1 focus-visible:ring-primary/30 leading-relaxed cursor-text p-4 rounded-xl"
+              autoFocus
             />
-            <p className="text-[9px] text-muted-foreground/60 italic">
-              Changes here will automatically update note indexing fields.
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-[9px] text-muted-foreground/60 italic font-medium">
+                Note: Updating 'title' or 'tags' here affects indexing.
+              </p>
+              <Button 
+                onClick={() => setIsOpen(false)}
+                className="h-8 px-6 text-xs font-bold"
+              >
+                Apply Changes
+              </Button>
+            </div>
           </div>
-        </PopoverPrimitive.Content>
-      </PopoverPrimitive.Portal>
-    </PopoverPrimitive.Root>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

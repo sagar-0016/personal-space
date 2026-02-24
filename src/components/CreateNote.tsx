@@ -27,10 +27,8 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        // Only collapse if we didn't click on the technical data window
-        const target = event.target as HTMLElement;
-        if (target.closest('[data-metadata-popover]')) return;
-
+        // Since Metadata is now a separate Dialog, interactions with it
+        // are handled by the Dialog system and won't trigger this click-outside
         if (title.trim() || content.trim()) {
           handleSave();
         }
