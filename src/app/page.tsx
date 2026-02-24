@@ -28,7 +28,8 @@ export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [currentView, setCurrentView] = useState('all'); 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [hideEmptyLabels, setHideEmptyLabels] = useState(false);
+  const [hideEmptyLabels, setHideEmptyLabels] = useState(true);
+  const [sortByRecent, setSortByRecent] = useState(false);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -151,7 +152,7 @@ export default function Home() {
     }
     
     return !n.isArchived && !n.isDeleted;
-  }).sort((a, b) => b.updatedAt - a.updatedAt);
+  }).sort((a, b) => sortByRecent ? (b.updatedAt - a.updatedAt) : (b.createdAt - a.createdAt));
 
   const pinnedNotes = allFilteredNotes.filter(n => n.isPinned);
   const otherNotes = allFilteredNotes.filter(n => !n.isPinned);
@@ -292,6 +293,8 @@ export default function Home() {
           onClose={() => setIsSettingsOpen(false)}
           hideEmptyLabels={hideEmptyLabels}
           onToggleHideEmptyLabels={() => setHideEmptyLabels(!hideEmptyLabels)}
+          sortByRecent={sortByRecent}
+          onToggleSortByRecent={() => setSortByRecent(!sortByRecent)}
         />
       </div>
     </SidebarProvider>

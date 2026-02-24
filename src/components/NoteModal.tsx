@@ -14,7 +14,8 @@ import {
   FileText,
   Eye,
   Layers,
-  Trash2
+  Trash2,
+  Calendar
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,7 @@ import Link from '@tiptap/extension-link';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 import { Markdown } from 'tiptap-markdown';
+import { format } from 'date-fns';
 
 const lowlight = createLowlight(common);
 
@@ -235,7 +237,21 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
           </div>
         </div>
 
-        <div className="p-4 bg-card border-t flex justify-end items-center px-10">
+        <div className="p-4 bg-card border-t flex justify-between items-center px-10">
+          <div className="flex flex-col space-y-0.5 text-[10px] text-muted-foreground/60 font-medium uppercase tracking-tight">
+            {note && (
+              <>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-primary/40">Created:</span>
+                  <span>{format(note.createdAt, 'MMM d, yyyy · HH:mm')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-primary/40">Edited:</span>
+                  <span>{format(note.updatedAt, 'MMM d, yyyy · HH:mm')}</span>
+                </div>
+              </>
+            )}
+          </div>
           <Button onClick={() => performSave(true)} className="rounded-lg px-8 font-bold text-sm bg-primary hover:bg-primary/90">
             Complete Review
           </Button>

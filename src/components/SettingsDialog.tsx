@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from 'react';
@@ -11,20 +10,24 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Settings as SettingsIcon, Filter } from 'lucide-react';
+import { Settings as SettingsIcon, Filter, Clock } from 'lucide-react';
 
 interface SettingsDialogProps {
   isOpen: boolean;
   onClose: () => void;
   hideEmptyLabels: boolean;
   onToggleHideEmptyLabels: () => void;
+  sortByRecent: boolean;
+  onToggleSortByRecent: () => void;
 }
 
 export function SettingsDialog({ 
   isOpen, 
   onClose, 
   hideEmptyLabels, 
-  onToggleHideEmptyLabels 
+  onToggleHideEmptyLabels,
+  sortByRecent,
+  onToggleSortByRecent
 }: SettingsDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -41,7 +44,7 @@ export function SettingsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-6 space-y-6">
+        <div className="py-6 space-y-4">
           <div className="flex items-center justify-between space-x-4 bg-secondary/30 p-4 rounded-xl border border-border/50">
             <div className="flex items-center gap-4">
               <div className="h-10 w-10 shrink-0 bg-background rounded-lg shadow-sm flex items-center justify-center border border-border/20">
@@ -58,6 +61,25 @@ export function SettingsDialog({
               id="hide-empty" 
               checked={hideEmptyLabels} 
               onCheckedChange={onToggleHideEmptyLabels}
+            />
+          </div>
+
+          <div className="flex items-center justify-between space-x-4 bg-secondary/30 p-4 rounded-xl border border-border/50">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 shrink-0 bg-background rounded-lg shadow-sm flex items-center justify-center border border-border/20">
+                <Clock className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div className="space-y-0.5">
+                <Label htmlFor="sort-recent" className="text-sm font-bold cursor-pointer">Sort by recent</Label>
+                <p className="text-xs text-muted-foreground leading-relaxed pr-2">
+                  Show recently accessed and edited notes at the top.
+                </p>
+              </div>
+            </div>
+            <Switch 
+              id="sort-recent" 
+              checked={sortByRecent} 
+              onCheckedChange={onToggleSortByRecent}
             />
           </div>
         </div>
