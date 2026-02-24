@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useEffect, useState } from 'react';
@@ -45,8 +44,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 const lowlight = createLowlight(common);
 
-// High-Fidelity Code Block Component for the Visual Editor
-const CodeBlockComponent = ({ node, updateAttributes, extension }: any) => {
+const CodeBlockComponent = ({ node }: any) => {
   const [copied, setCopied] = useState(false);
   
   const handleCopy = () => {
@@ -109,27 +107,18 @@ export function RichEditor({
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        codeBlock: false,
-      }),
+      StarterKit.configure({ codeBlock: false }),
       Placeholder.configure({ placeholder }),
       TaskList,
       TaskItem.configure({ nested: true }),
       Table.configure({ resizable: true }),
-      TableRow,
-      TableHeader,
-      TableCell,
+      TableRow, TableHeader, TableCell,
       Image,
       CodeBlockLowlight.extend({
-        addNodeView() {
-          return ReactNodeViewRenderer(CodeBlockComponent);
-        },
+        addNodeView() { return ReactNodeViewRenderer(CodeBlockComponent); },
       }).configure({ lowlight }),
       Link.configure({ openOnClick: false }),
-      Markdown.configure({
-        html: true,
-        tightLists: true,
-      }),
+      Markdown.configure({ html: true, tightLists: true }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -154,31 +143,14 @@ export function RichEditor({
 
   if (!mounted || !editor) return null;
 
-  const ToolbarButton = ({ 
-    onClick, 
-    active = false, 
-    icon: Icon, 
-    tooltip 
-  }: { 
-    onClick: () => void; 
-    active?: boolean; 
-    icon: any; 
-    tooltip: string 
-  }) => (
+  const ToolbarButton = ({ onClick, active = false, icon: Icon, tooltip }: any) => (
     <TooltipProvider delayDuration={400}>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "h-8 w-8",
-              active ? "bg-primary/10 text-primary" : "text-muted-foreground"
-            )}
-            onClick={(e) => {
-              e.preventDefault();
-              onClick();
-            }}
+            variant="ghost" size="icon"
+            className={cn("h-8 w-8", active ? "bg-primary/10 text-primary" : "text-muted-foreground")}
+            onClick={(e) => { e.preventDefault(); onClick(); }}
           >
             <Icon className="h-4 w-4" />
           </Button>
@@ -192,142 +164,53 @@ export function RichEditor({
     <div className="flex flex-col w-full h-full relative">
       {showToolbar && (
         <div className="flex flex-wrap items-center gap-1 p-1 border-b bg-background sticky top-0 z-[30]">
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} 
-            active={editor.isActive('heading', { level: 1 })}
-            icon={Heading1}
-            tooltip="Heading 1"
-          />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} 
-            active={editor.isActive('heading', { level: 2 })}
-            icon={Heading2}
-            tooltip="Heading 2"
-          />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} 
-            active={editor.isActive('heading', { level: 3 })}
-            icon={Heading3}
-            tooltip="Heading 3"
-          />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} icon={Heading1} tooltip="Heading 1" />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} icon={Heading2} tooltip="Heading 2" />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} icon={Heading3} tooltip="Heading 3" />
           <div className="w-px h-4 bg-border mx-1" />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleBold().run()} 
-            active={editor.isActive('bold')}
-            icon={Bold}
-            tooltip="Bold"
-          />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleItalic().run()} 
-            active={editor.isActive('italic')}
-            icon={Italic}
-            tooltip="Italic"
-          />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleStrike().run()} 
-            active={editor.isActive('strike')}
-            icon={Strikethrough}
-            tooltip="Strikethrough"
-          />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} icon={Bold} tooltip="Bold" />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} icon={Italic} tooltip="Italic" />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} icon={Strikethrough} tooltip="Strikethrough" />
           <div className="w-px h-4 bg-border mx-1" />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleBulletList().run()} 
-            active={editor.isActive('bulletList')}
-            icon={List}
-            tooltip="Bullet List"
-          />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleOrderedList().run()} 
-            active={editor.isActive('orderedList')}
-            icon={ListOrdered}
-            tooltip="Numbered List"
-          />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleTaskList().run()} 
-            active={editor.isActive('taskList')}
-            icon={CheckSquare}
-            tooltip="Task List"
-          />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} icon={List} tooltip="Bullet List" />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} icon={ListOrdered} tooltip="Numbered List" />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleTaskList().run()} active={editor.isActive('taskList')} icon={CheckSquare} tooltip="Task List" />
           <div className="w-px h-4 bg-border mx-1" />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()} 
-            active={editor.isActive('codeBlock')}
-            icon={Terminal}
-            tooltip="Code Block"
-          />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleCode().run()} 
-            active={editor.isActive('code')}
-            icon={Code2}
-            tooltip="Inline Code"
-          />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleBlockquote().run()} 
-            active={editor.isActive('blockquote')}
-            icon={Quote}
-            tooltip="Blockquote"
-          />
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-            icon={TableIcon}
-            tooltip="Insert Table"
-            active={editor.isActive('table')}
-          />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} icon={Terminal} tooltip="Code Block" />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')} icon={Code2} tooltip="Inline Code" />
+          <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} icon={Quote} tooltip="Blockquote" />
+          <ToolbarButton onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} icon={TableIcon} tooltip="Insert Table" active={editor.isActive('table')} />
           
           <div className="w-px h-4 bg-border mx-1" />
           
           <PopoverPrimitive.Root modal={false}>
             <PopoverPrimitive.Trigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-3 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/5 hover:bg-primary/10 transition-all border border-primary/20"
-              >
-                <Database className="h-3.5 w-3.5 mr-1.5" />
-                Metadata
+              <Button variant="ghost" size="sm" className="h-8 px-3 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/5 border border-primary/20">
+                <Database className="h-3.5 w-3.5 mr-1.5" /> Metadata
               </Button>
             </PopoverPrimitive.Trigger>
             
-            {/* NO PORTAL HERE: This keeps the metadata window inside the Dialog focus tree */}
             <PopoverPrimitive.Content 
-              align="end"
-              sideOffset={5}
-              className="w-[450px] p-4 bg-card shadow-2xl border border-primary/20 z-[200] rounded-xl pointer-events-auto outline-none"
+              align="end" sideOffset={5}
+              className="w-[450px] p-4 bg-card shadow-2xl border border-primary/20 z-[9999] rounded-xl outline-none"
+              data-metadata-popover="true"
               onPointerDown={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                    <Database className="h-3.5 w-3.5 text-primary" />
-                    Metadata
+                    <Database className="h-3.5 w-3.5 text-primary" /> Metadata
                   </h4>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-[250px] text-[10px] leading-relaxed">
-                        Enter YAML metadata. The app extracts "title" and "tags" for your note's identity.
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                 </div>
-                <div className="relative group">
-                  <Textarea
-                    value={metadata || ''}
-                    onChange={(e) => onMetadataChange?.(e.target.value)}
-                    autoFocus
-                    placeholder={`title: "My Note"\ntags: ["tag1"]\n...`}
-                    className="min-h-[200px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1 leading-relaxed cursor-text"
-                  />
-                  <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity pointer-events-none">
-                    <code className="text-[9px] bg-background px-1 rounded">YAML</code>
-                  </div>
-                </div>
-                <p className="text-[10px] text-muted-foreground italic leading-tight">
-                  The parser identifies the title and tags fields from this block.
-                </p>
+                <Textarea
+                  value={metadata || ''}
+                  onChange={(e) => onMetadataChange?.(e.target.value)}
+                  autoFocus
+                  placeholder={`title: "My Note"\ntags: ["tag1"]\n...`}
+                  className="min-h-[200px] font-mono text-[11px] bg-secondary/30 resize-none border-none focus-visible:ring-1 leading-relaxed cursor-text"
+                />
               </div>
             </PopoverPrimitive.Content>
           </PopoverPrimitive.Root>

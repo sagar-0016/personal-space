@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -58,9 +57,19 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     onClose();
   };
 
+  const handleFocusPriority = (e: any) => {
+    if (e.target.closest('[data-metadata-popover]')) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleSave()}>
-      <DialogContent className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl">
+      <DialogContent 
+        className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
+        onPointerDownOutside={handleFocusPriority}
+        onInteractOutside={handleFocusPriority}
+      >
         <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
         
         <div className="flex items-center justify-between p-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-[50]">
@@ -77,7 +86,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
               onClick={() => setEditMode(editMode === 'visual' ? 'markdown' : 'visual')}
               className="h-7 px-3 text-xs"
             >
-              {editMode === 'visual' ? <FileText className="h-3 w-3 mr-1.5" /> : <Eye className="h-3 w-3 mr-1.5" />}
+              {editMode === 'visual' ? <FileText className="h-3.5 w-3.5 mr-1.5" /> : <Eye className="h-3.5 w-3.5 mr-1.5" />}
               {editMode === 'visual' ? 'Code' : 'Preview'}
             </Button>
           </div>

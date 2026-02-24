@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -6,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { cn } from '@/lib/utils';
-import { Terminal, Copy, Check } from 'lucide-react';
+import { Terminal, Copy, Check, Code2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MarkdownRendererProps {
@@ -44,9 +43,20 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             
             if (inline) {
               return (
-                <code className="bg-[#202124] text-primary px-1.5 py-0.5 rounded-md font-mono text-[0.9em] font-bold" {...props}>
-                  {children}
-                </code>
+                <div className="relative my-4 group/inline-code">
+                  <div className="absolute -top-3 left-3 px-2 py-0.5 bg-[#1a1b1e] border border-white/10 rounded-md z-10 flex items-center space-x-1 shadow-xl">
+                    <Code2 className="h-2.5 w-2.5 text-primary" />
+                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/90">Inline Code</span>
+                  </div>
+                  <div className="relative rounded-lg overflow-hidden border border-white/5 bg-[#0d0d0d] shadow-lg p-3 pt-5">
+                    <div className="absolute top-2 right-2 opacity-0 group-hover/inline-code:opacity-100 transition-opacity">
+                      <CopyButton text={codeString} />
+                    </div>
+                    <code className="font-mono text-xs text-[#e1e4e8] break-all" {...props}>
+                      {children}
+                    </code>
+                  </div>
+                </div>
               );
             }
 
