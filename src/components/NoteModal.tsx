@@ -94,6 +94,14 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     }
   }, [note?.id, isOpen, editor]);
 
+  // Auto-resize logic for the Markdown Textarea
+  useEffect(() => {
+    if (textareaRef.current && editMode === 'markdown') {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [content, editMode]);
+
   // Sync content from Textarea back to editor if switch modes
   useEffect(() => {
     if (editor && editMode === 'visual' && editor.storage.markdown) {
@@ -217,7 +225,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Edit Markdown..."
-                className="min-h-[600px] border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed resize-none"
+                className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed resize-none overflow-hidden"
               />
             )}
           </div>

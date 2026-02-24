@@ -67,6 +67,14 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     },
   });
 
+  // Auto-resize logic for the Markdown Textarea
+  useEffect(() => {
+    if (textareaRef.current && editMode === 'markdown') {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [content, editMode]);
+
   // Sync content from Textarea back to editor if switch modes
   useEffect(() => {
     if (editor && editMode === 'visual' && editor.storage.markdown) {
@@ -80,7 +88,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      // Allow interaction with portaled elements like Metadata Dialog
       if (target.closest('[data-metadata-popover="true"]')) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
@@ -183,7 +190,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Edit Markdown..."
-                  className="min-h-[120px] border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm resize-none"
+                  className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed resize-none overflow-hidden"
                 />
               )}
             </div>
