@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { cn } from '@/lib/utils';
-import { Terminal, Copy, Check, Code2 } from 'lucide-react';
+import { Terminal, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MarkdownRendererProps {
@@ -42,7 +42,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             if (inline) {
               return (
                 <span className="relative group/inline-code inline-flex items-center mx-1 align-baseline">
-                  <code className="px-2 py-0.5 rounded bg-[#0d0d0d] border border-white/10 font-mono text-xs text-[#e1e4e8] shadow-sm flex items-center gap-2" {...props}>
+                  <code className="px-2 py-0.5 rounded-md bg-[#0d0d0d] border border-white/10 font-mono text-[11px] text-[#e1e4e8] shadow-sm flex items-center gap-2" {...props}>
                     {children}
                     <CopyButton text={codeString} className="h-4 w-4 p-0 opacity-0 group-hover/inline-code:opacity-100 transition-opacity ml-1 bg-transparent border-none hover:bg-white/10" />
                   </code>
