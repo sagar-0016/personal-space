@@ -114,31 +114,35 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
               <Briefcase className={cn("h-4 w-4", isActiveProject && "text-primary")} />
               <span className="flex-1 truncate">{project.name}</span>
               
+              {/* Actions Menu - Positioned to the left of the arrow */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 rounded-md opacity-0 group-hover/project:opacity-100 hover:bg-primary/20 transition-opacity mr-1"
+                  >
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="right" align="start">
+                  <DropdownMenuItem onClick={() => setIsRenameOpen(true)}>
+                    <Edit2 className="mr-2 h-4 w-4" />
+                    <span>Rename</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive focus:text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Delete</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               {isLoading ? <Loader2 className="h-3 w-3 animate-spin opacity-40" /> : (labels && labels.length > 0) && (
                 <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/project:rotate-90" />
               )}
             </SidebarMenuButton>
           </CollapsibleTrigger>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuAction showOnHover>
-                <MoreHorizontal />
-                <span className="sr-only">More</span>
-              </SidebarMenuAction>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start">
-              <DropdownMenuItem onClick={() => setIsRenameOpen(true)}>
-                <Edit2 className="mr-2 h-4 w-4" />
-                <span>Rename</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive focus:text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                <span>Delete</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           {!isLoading && labels && labels.length > 0 && (
             <CollapsibleContent>
               <SidebarMenuSub className="bg-primary/5 ml-4 rounded-l-lg border-l-2 border-primary/20 py-1">
