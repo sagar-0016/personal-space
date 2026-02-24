@@ -45,7 +45,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const codeString = String(children).replace(/\n$/, '');
             
             // High-Fidelity Inline Code "Mini-Card"
-            // Handles multi-line snippets (like JSON) gracefully
+            // Handles multi-line snippets gracefully with block-like styling
             if (inline) {
               return (
                 <span className="inline-block align-middle mx-1 my-0.5 max-w-full">

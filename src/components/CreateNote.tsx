@@ -156,26 +156,35 @@ export function CreateNote({ onSave }: CreateNoteProps) {
               <div className="flex items-center space-x-1">
                 <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
                   <Button 
-                    variant={editMode === 'preview' ? 'secondary' : 'ghost'} 
+                    variant="ghost"
                     size="sm"
                     onClick={() => setEditMode('preview')}
-                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-tighter"
+                    className={cn(
+                      "h-7 px-2 text-[10px] font-bold uppercase tracking-tighter transition-all",
+                      editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                    )}
                   >
                     Preview
                   </Button>
                   <Button 
-                    variant={editMode === 'visual' ? 'secondary' : 'ghost'} 
+                    variant="ghost"
                     size="sm"
                     onClick={() => setEditMode('visual')}
-                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-tighter"
+                    className={cn(
+                      "h-7 px-2 text-[10px] font-bold uppercase tracking-tighter transition-all",
+                      editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                    )}
                   >
                     Visual Editor
                   </Button>
                   <Button 
-                    variant={editMode === 'markdown' ? 'secondary' : 'ghost'} 
+                    variant="ghost"
                     size="sm"
                     onClick={() => setEditMode('markdown')}
-                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-tighter"
+                    className={cn(
+                      "h-7 px-2 text-[10px] font-bold uppercase tracking-tighter transition-all",
+                      editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                    )}
                   >
                     Markdown Editor
                   </Button>
