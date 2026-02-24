@@ -128,7 +128,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete, projects = 
   const performSave = (isClosing: boolean = false) => {
     if (!note) return;
     
-    // Sync UI fields back to metadata
     const updatedMetadata = updateMetadataWithInfo(metadata, {
       title,
       project: project || '',
@@ -257,7 +256,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete, projects = 
           <div className="px-10 space-y-6">
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <Select value={project || ""} onValueChange={(val) => setProject(val || null)}>
+                <Select value={project || "none"} onValueChange={(val) => setProject(val === "none" ? null : val)}>
                   <SelectTrigger className="w-[200px] h-9 text-[11px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0 project-select-dropdown">
                     <div className="flex items-center gap-2">
                       <Briefcase className="h-3.5 w-3.5 text-primary" />
@@ -265,7 +264,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete, projects = 
                     </div>
                   </SelectTrigger>
                   <SelectContent className="project-select-dropdown">
-                    <SelectItem value="null">No Project</SelectItem>
+                    <SelectItem value="none">No Project</SelectItem>
                     {projects.map(p => (
                       <SelectItem key={p} value={p}>{p}</SelectItem>
                     ))}

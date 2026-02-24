@@ -50,7 +50,7 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
   const [isPinned, setIsPinned] = useState(false);
   const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
   
-  const [selectedProject, setSelectedProject] = useState<string>(defaultProject || '');
+  const [selectedProject, setSelectedProject] = useState<string>(defaultProject || 'none');
   const [labels, setLabels] = useState<string[]>([]);
   const [labelInput, setLabelInput] = useState('');
 
@@ -83,13 +83,13 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
   });
 
   useEffect(() => {
-    if (defaultProject) setSelectedProject(defaultProject);
+    setSelectedProject(defaultProject || 'none');
   }, [defaultProject]);
 
   const adjustTextareaHeight = useCallback(() => {
     if (textareaRef.current) {
       const target = textareaRef.current;
-      target.style.height = 'auto'; // Reset height briefly to get accurate scrollHeight
+      target.style.height = 'auto';
       target.style.height = `${target.scrollHeight}px`;
     }
   }, []);
@@ -128,7 +128,7 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
     if (title.trim() || content.trim()) {
       let finalMetadata = metadata || generateDefaultMetadata(title || 'Untitled');
       finalMetadata = updateMetadataWithInfo(finalMetadata, {
-        project: selectedProject,
+        project: selectedProject === 'none' ? null : selectedProject,
         labels: labels,
         title: title || 'Untitled'
       });
@@ -146,12 +146,12 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
     setEditMode('preview');
     setLabels([]);
     setLabelInput('');
+    setSelectedProject(defaultProject || 'none');
   };
 
   const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
     const target = e.target;
-    // Manual synchronous height update to prevent scroll jump
     target.style.height = 'auto';
     target.style.height = `${target.scrollHeight}px`;
   };
@@ -195,7 +195,7 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
                       </div>
                     </SelectTrigger>
                     <SelectContent className="project-select-dropdown">
-                      <SelectItem value="">No Project</SelectItem>
+                      <SelectItem value="none">No Project</SelectItem>
                       {projects.map(p => (
                         <SelectItem key={p} value={p}>{p}</SelectItem>
                       ))}
