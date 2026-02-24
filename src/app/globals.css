@@ -232,3 +232,15 @@
   opacity: 0.5;
   transition: all 0.3s ease;
 }
+
+/* Unified Code Block & Inline Code Styling */
+.ProseMirror code,
+.prose code {
+  @apply rounded bg-[#0d0d0d] border border-white/10 font-mono text-sm text-[#e1e4e8] px-1.5 py-0.5 shadow-sm !important;
+  font-weight: normal !important;
+}
+
+.ProseMirror pre code,
+.prose pre code {
+  @apply p-0 border-none bg-transparent shadow-none !important;
+}
