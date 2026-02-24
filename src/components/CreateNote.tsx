@@ -27,8 +27,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        // Since Metadata is now a separate Dialog, interactions with it
-        // are handled by the Dialog system and won't trigger this click-outside
+        // Interaction with nested Dialogs is handled by the Dialog portal system
         if (title.trim() || content.trim()) {
           handleSave();
         }
@@ -74,7 +73,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                 placeholder="Title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="border-none shadow-none focus-visible:ring-0 text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all"
+                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all"
                 autoFocus
               />
               <div className="flex items-center space-x-1">

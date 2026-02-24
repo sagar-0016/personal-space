@@ -96,7 +96,7 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
               placeholder="Note Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="border-none shadow-none focus-visible:ring-0 text-3xl font-bold px-0 bg-transparent h-auto placeholder:opacity-30"
+              className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-3xl font-bold px-0 bg-transparent h-auto placeholder:opacity-30"
             />
 
             <div className="flex flex-wrap items-center gap-2">
