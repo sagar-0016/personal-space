@@ -18,6 +18,7 @@ interface MarkdownRendererProps {
  * Unified Markdown Renderer
  * The single source of truth for all note rendering across the application.
  * Ensures high-fidelity code blocks and inline code "mini-cards" are consistent.
+ * Includes automatic detection for JSON-formatted content.
  */
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
@@ -29,6 +30,20 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
   if (!mounted) {
     return <div className={cn("opacity-0", className)}>{content}</div>;
   }
+
+  // Automatic JSON Recognition: If content looks like a JSON object but isn't fenced, treat it as JSON code.
+  const processedContent = React.useMemo(() => {
+    const trimmed = content.trim();
+    if (trimmed.startsWith('{') && trimmed.endsWith('}') && !trimmed.includes('```')) {
+      try {
+        JSON.parse(trimmed);
+        return `\`\`\`json\n${trimmed}\n\`\`\``;
+      } catch (e) {
+        return content;
+      }
+    }
+    return content;
+  }, [content]);
 
   return (
     <div className={cn(
@@ -46,7 +61,6 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const codeString = String(children).replace(/\n$/, '');
             
             // High-Fidelity Inline Code "Mini-Card"
-            // Optimized to handle multi-line snippets like JSON strings while appearing like a structured block.
             if (inline) {
               const isMultiLine = codeString.includes('\n');
               return (
@@ -95,7 +109,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           }
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );
