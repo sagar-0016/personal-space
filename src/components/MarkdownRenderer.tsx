@@ -41,20 +41,16 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             
             if (inline) {
               return (
-                <div className="relative my-4 group/inline-code inline-block w-full">
-                  <div className="absolute -top-3 left-3 px-2 py-0.5 bg-[#1a1b1e] border border-white/10 rounded-md z-10 flex items-center space-x-1 shadow-xl">
+                <span className="relative group/inline-code inline-block mx-1">
+                  <span className="absolute -top-7 left-0 px-2 py-0.5 bg-[#1a1b1e] border border-white/10 rounded-md z-10 flex items-center space-x-1 shadow-xl opacity-0 group-hover/inline-code:opacity-100 transition-opacity">
                     <Code2 className="h-2.5 w-2.5 text-primary" />
-                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/90">Inline Code</span>
-                  </div>
-                  <div className="relative rounded-lg overflow-hidden border border-white/5 bg-[#0d0d0d] shadow-lg p-3 pt-5">
-                    <div className="absolute top-2 right-2 opacity-0 group-hover/inline-code:opacity-100 transition-opacity">
-                      <CopyButton text={codeString} />
-                    </div>
-                    <code className="font-mono text-xs text-[#e1e4e8] break-all" {...props}>
-                      {children}
-                    </code>
-                  </div>
-                </div>
+                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/90 whitespace-nowrap">Inline Code</span>
+                    <CopyButton text={codeString} className="ml-2 h-4 w-4" />
+                  </span>
+                  <code className="px-1.5 py-0.5 rounded bg-[#0d0d0d] border border-white/5 font-mono text-xs text-primary" {...props}>
+                    {children}
+                  </code>
+                </span>
               );
             }
 
@@ -85,7 +81,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
   );
 }
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, className }: { text: string, className?: string }) {
   const [copied, setCopied] = useState(false);
   
   const handleCopy = (e: React.MouseEvent) => {
@@ -100,7 +96,10 @@ function CopyButton({ text }: { text: string }) {
       variant="ghost"
       size="icon"
       onClick={handleCopy}
-      className="h-7 w-7 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-md border border-white/5"
+      className={cn(
+        "h-7 w-7 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-md border border-white/5",
+        className
+      )}
     >
       {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
     </Button>

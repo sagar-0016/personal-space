@@ -57,19 +57,10 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
     onClose();
   };
 
-  // Logic to prevent focus stealing from the portaled metadata window
-  const handleFocusPriority = (e: any) => {
-    if (e.target.closest('[data-metadata-popover]')) {
-      e.preventDefault();
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleSave()}>
       <DialogContent 
         className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
-        onPointerDownOutside={handleFocusPriority}
-        onInteractOutside={handleFocusPriority}
       >
         <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
         

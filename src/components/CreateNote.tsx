@@ -27,10 +27,6 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        // Only save and collapse if we're not clicking into a metadata popover
-        const target = event.target as HTMLElement;
-        if (target.closest('[data-metadata-popover]')) return;
-
         if (title.trim() || content.trim()) {
           handleSave();
         }
@@ -86,7 +82,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
                   onClick={() => setEditMode(editMode === 'visual' ? 'markdown' : 'visual')}
                   className="h-8 px-2 text-[10px] font-bold uppercase tracking-tighter opacity-60 hover:opacity-100 transition-all"
                 >
-                  {editMode === 'visual' ? <FileText className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
+                  {editMode === 'visual' ? <FileText className="h-3.5 w-3.5 mr-1.5" /> : <Eye className="h-3.5 w-3.5 mr-1.5" />}
                   {editMode === 'visual' ? 'Code' : 'Preview'}
                 </Button>
                 <Button 
