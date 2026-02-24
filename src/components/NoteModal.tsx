@@ -166,22 +166,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               {editMode === 'visual' ? <FileText className="h-3.5 w-3.5 mr-1.5" /> : <Eye className="h-3.5 w-3.5 mr-1.5" />}
               {editMode === 'visual' ? 'Code' : 'Preview'}
             </Button>
-            
-            {/* Relocated Delete Button to the Left Side for Safety */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => {
-                if (note) {
-                  onDelete(note);
-                  onClose();
-                }
-              }} 
-              className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-2"
-              title="Move to trash"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -240,20 +224,38 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         </div>
 
         <div className="p-4 bg-card border-t flex justify-between items-center px-10">
-          <div className="flex flex-col space-y-0.5 text-[10px] text-muted-foreground/60 font-medium uppercase tracking-tight">
-            {note && (
-              <>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-primary/40">Created:</span>
-                  <span>{format(note.createdAt, 'MMM d, yyyy · HH:mm')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-primary/40">Edited:</span>
-                  <span>{format(note.updatedAt, 'MMM d, yyyy · HH:mm')}</span>
-                </div>
-              </>
-            )}
+          <div className="flex items-center gap-6">
+            <div className="flex flex-col space-y-0.5 text-[10px] text-muted-foreground/60 font-medium uppercase tracking-tight">
+              {note && (
+                <>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-primary/40">Created:</span>
+                    <span>{format(note.createdAt, 'MMM d, yyyy · HH:mm')}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-primary/40">Edited:</span>
+                    <span>{format(note.updatedAt, 'MMM d, yyyy · HH:mm')}</span>
+                  </div>
+                </>
+              )}
+            </div>
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => {
+                if (note) {
+                  onDelete(note);
+                  onClose();
+                }
+              }} 
+              className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              title="Move to trash"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
+          
           <Button onClick={() => performSave(true)} className="rounded-lg px-8 font-bold text-sm bg-primary hover:bg-primary/90">
             Complete Review
           </Button>
