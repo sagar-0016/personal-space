@@ -2,6 +2,7 @@
 "use client"
 
 import React, { useState } from 'react';
+import * as LucideIcons from 'lucide-react';
 import { 
   Briefcase, 
   Tag, 
@@ -14,7 +15,15 @@ import {
   Loader2,
   MoreHorizontal,
   Edit2,
-  AlertTriangle
+  AlertTriangle,
+  Code,
+  Database,
+  Book,
+  Zap,
+  Star,
+  Heart,
+  Target,
+  Compass
 } from 'lucide-react';
 import {
   Sidebar,
@@ -55,6 +64,18 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, doc } from 'firebase/firestore';
 import { createProjectWithDefaultLabel, updateDocumentNonBlocking, deleteProjectAndLabels } from '@/firebase/non-blocking-updates';
 
+const SAMPLE_ICONS = [
+  { name: 'Briefcase', icon: Briefcase },
+  { name: 'Code', icon: Code },
+  { name: 'Database', icon: Database },
+  { name: 'Book', icon: Book },
+  { name: 'Zap', icon: Zap },
+  { name: 'Star', icon: Star },
+  { name: 'Heart', icon: Heart },
+  { name: 'Target', icon: Target },
+  { name: 'Compass', icon: Compass },
+];
+
 interface ProjectItemProps {
   project: Project;
   currentView: string;
@@ -66,7 +87,6 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
   const db = useFirestore();
   const isActiveProject = currentView.startsWith(`project:${project.id}`);
   
-  // States for actions
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [newName, setNewName] = useState(project.name);
@@ -97,6 +117,9 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
     setDeleteConfirm('');
   };
 
+  // Dynamically resolve icon
+  const IconComponent = (LucideIcons as any)[project.iconName || 'Briefcase'] || Briefcase;
+
   return (
     <>
       <Collapsible defaultOpen={isActiveProject} className="group/project">
@@ -107,7 +130,7 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
               tooltip={project.name}
               isActive={isActiveProject}
               className={cn(
-                "rounded-r-full mr-2 transition-all duration-300",
+                "rounded-r-full mr-2 transition-all duration-300 relative pr-12",
                 isActiveProject && "bg-primary/10 text-primary font-bold"
               )}
             >
@@ -117,13 +140,13 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
                   onViewChange(`project:${project.id}`);
                 }}
               >
-                <Briefcase className={cn("h-4 w-4 mr-2", isActiveProject && "text-primary")} />
-                <span className="flex-1 truncate pr-10">{project.name}</span>
+                <IconComponent className={cn("h-4 w-4 mr-2", isActiveProject && "text-primary")} />
+                <span className="flex-1 truncate">{project.name}</span>
                 
                 {isLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin opacity-40 ml-2" />
                 ) : (labels && labels.length > 0) && (
-                  <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/project:rotate-90 ml-2" />
+                  <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/project:rotate-90 absolute right-2 top-1/2 -translate-y-1/2" />
                 )}
               </div>
             </SidebarMenuButton>
@@ -133,7 +156,7 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <SidebarMenuAction 
                 showOnHover 
-                className="right-7" // Positioned to the left of the arrow
+                className="right-8 top-1/2 -translate-y-1/2"
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
                 <span className="sr-only">Project actions</span>
@@ -251,6 +274,7 @@ export function AppSidebar({
   const { user } = useUser();
   const db = useFirestore();
   const [newProjectName, setNewProjectName] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState('Briefcase');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const projectsQuery = useMemoFirebase(() => {
@@ -262,10 +286,16 @@ export function AppSidebar({
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !db || !user) return;
-    const projectId = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim());
-    if (projectId) onViewChange(`project:${projectId}`);
-    setNewProjectName('');
+    
+    // Immediately close the dialog
     setIsDialogOpen(false);
+    
+    const projectId = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim(), selectedIcon);
+    if (projectId) onViewChange(`project:${projectId}`);
+    
+    // Reset state after closing
+    setNewProjectName('');
+    setSelectedIcon('Briefcase');
   };
 
   return (
@@ -303,14 +333,36 @@ export function AppSidebar({
                 <DialogHeader>
                   <DialogTitle>Create New Project</DialogTitle>
                 </DialogHeader>
-                <div className="py-4">
-                  <Input 
-                    placeholder="Project name..." 
-                    value={newProjectName} 
-                    onChange={(e) => setNewProjectName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
-                    autoFocus
-                  />
+                <div className="py-4 space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Project Name</label>
+                    <Input 
+                      placeholder="Project name..." 
+                      value={newProjectName} 
+                      onChange={(e) => setNewProjectName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
+                      autoFocus
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose Icon</label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {SAMPLE_ICONS.map((item) => (
+                        <Button
+                          key={item.name}
+                          variant="outline"
+                          size="icon"
+                          className={cn(
+                            "h-10 w-10",
+                            selectedIcon === item.name && "border-primary bg-primary/10 text-primary"
+                          )}
+                          onClick={() => setSelectedIcon(item.name)}
+                        >
+                          <item.icon className="h-5 w-5" />
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button onClick={handleCreateProject}>Create Project</Button>

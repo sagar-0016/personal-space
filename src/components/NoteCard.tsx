@@ -2,6 +2,7 @@
 "use client"
 
 import React from 'react';
+import * as LucideIcons from 'lucide-react';
 import { Note, Project } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Trash2, Edit3, Pin, Archive, RotateCcw, Tag, Briefcase } from 'lucide-react';
@@ -52,6 +53,7 @@ export function NoteCard({
 }: NoteCardProps) {
   
   const currentProject = projects.find(p => p.id === note.projectId);
+  const ProjectIcon = (LucideIcons as any)[currentProject?.iconName || 'Briefcase'] || Briefcase;
 
   return (
     <Card 
@@ -67,7 +69,7 @@ export function NoteCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-1.5 text-[9px] font-black text-primary/60 uppercase tracking-widest cursor-pointer hover:text-primary transition-colors">
-                <Briefcase className="h-2.5 w-2.5" />
+                <ProjectIcon className="h-2.5 w-2.5" />
                 {currentProject?.name || "Uncategorized"}
               </div>
             </DropdownMenuTrigger>

@@ -21,6 +21,7 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
+        "iconName": { "type": "string" },
         "createdAt": { "type": "number" }
       },
       "required": ["id", "name"]

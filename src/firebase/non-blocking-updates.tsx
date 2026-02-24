@@ -49,11 +49,12 @@ export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
 /**
  * Creates a project and automatically attaches an 'Unlabelled' label.
  */
-export async function createProjectWithDefaultLabel(db: Firestore, userId: string, name: string) {
+export async function createProjectWithDefaultLabel(db: Firestore, userId: string, name: string, iconName?: string) {
   const projectsRef = collection(db, 'users', userId, 'projects');
   try {
     const projectDoc = await addDoc(projectsRef, {
       name,
+      iconName: iconName || 'Briefcase',
       createdAt: Date.now()
     });
     

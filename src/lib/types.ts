@@ -18,6 +18,7 @@ export type Note = {
 export type Project = {
   id: string;
   name: string;
+  iconName?: string;
   createdAt: number;
 };
 
