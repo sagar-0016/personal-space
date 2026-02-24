@@ -5,15 +5,26 @@ export type Note = {
   content: string;
   metadata?: string;
   userId: string;
-  color?: string;
   createdAt: number;
   updatedAt: number;
   isPinned?: boolean;
   isArchived?: boolean;
   isDeleted?: boolean;
-  project?: string;
-  labels?: string[];
+  projectId?: string; // Reference to Project document ID
+  labelId?: string;   // Reference to Label document ID
   tags?: string[];
+};
+
+export type Project = {
+  id: string;
+  name: string;
+  createdAt: number;
+};
+
+export type Label = {
+  id: string;
+  name: string;
+  isDefault?: boolean;
 };
 
 export type UserProfile = {
@@ -26,7 +37,7 @@ export type UserProfile = {
 export type Theme = {
   id: string;
   name: string;
-  primary: string; // HSL e.g. "199 89% 48%"
+  primary: string; 
   background: string;
   accent: string;
 };

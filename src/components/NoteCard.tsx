@@ -1,7 +1,8 @@
+
 "use client"
 
 import React from 'react';
-import { Note } from '@/lib/types';
+import { Note, Project } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Trash2, Edit3, Pin, Archive, RotateCcw, Tag, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,7 @@ interface NoteCardProps {
   onTogglePin: () => void;
   isTrash?: boolean;
   onPermanentDelete?: () => void;
-  projects?: string[];
+  projects?: Project[];
 }
 
 export function NoteCard({ 
@@ -50,9 +51,7 @@ export function NoteCard({
   projects = []
 }: NoteCardProps) {
   
-  const handleProjectChange = (projectName: string) => {
-    onUpdate({ ...note, project: projectName || null });
-  };
+  const currentProject = projects.find(p => p.id === note.projectId);
 
   return (
     <Card 
@@ -69,13 +68,13 @@ export function NoteCard({
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-1.5 text-[9px] font-black text-primary/60 uppercase tracking-widest cursor-pointer hover:text-primary transition-colors">
                 <Briefcase className="h-2.5 w-2.5" />
-                {note.project || "Uncategorized"}
+                {currentProject?.name || "Uncategorized"}
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="min-w-[150px]">
-              <DropdownMenuItem onClick={() => handleProjectChange("")}>None</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onUpdate({ ...note, projectId: undefined })}>None</DropdownMenuItem>
               {projects.map(p => (
-                <DropdownMenuItem key={p} onClick={() => handleProjectChange(p)}>{p}</DropdownMenuItem>
+                <DropdownMenuItem key={p.id} onClick={() => onUpdate({ ...note, projectId: p.id })}>{p.name}</DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -113,12 +112,12 @@ export function NoteCard({
         </div>
       </div>
 
-      {note.labels && note.labels.length > 0 && (
+      {note.tags && note.tags.length > 0 && (
         <div className="mt-5 flex flex-wrap gap-1.5">
-          {note.labels.map(label => (
-            <Badge key={label} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1 hover:bg-primary/20 transition-colors uppercase tracking-wider">
+          {note.tags.map(tag => (
+            <Badge key={tag} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1 hover:bg-primary/20 transition-colors uppercase tracking-wider">
               <Tag className="h-2 w-2" />
-              {label}
+              {tag}
             </Badge>
           ))}
         </div>
@@ -132,87 +131,23 @@ export function NoteCard({
               size="icon"
               className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-full"
               title="Restore"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(note.id);
-              }}
+              onClick={(e) => { e.stopPropagation(); onDelete(note.id); }}
             >
               <RotateCcw className="h-4 w-4" />
             </Button>
-            
             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
-                  title="Delete permanently"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
+              <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
               <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete note permanently?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This note will be gone forever.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onPermanentDelete?.();
-                    }}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
+                <AlertDialogHeader><AlertDialogTitle>Delete note permanently?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={(e) => { e.stopPropagation(); onPermanentDelete?.(); }} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction></AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           </>
         ) : (
           <>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(note);
-              }}
-            >
-              <Edit3 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full",
-                note.isArchived && "text-primary bg-primary/10 opacity-100"
-              )}
-              title={note.isArchived ? "Unarchive" : "Archive"}
-              onClick={(e) => {
-                e.stopPropagation();
-                onArchive();
-              }}
-            >
-              <Archive className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(note.id);
-              }}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full" onClick={(e) => { e.stopPropagation(); onEdit(note); }}><Edit3 className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className={cn("h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full", note.isArchived && "text-primary bg-primary/10 opacity-100")} onClick={(e) => { e.stopPropagation(); onArchive(); }}><Archive className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full" onClick={(e) => { e.stopPropagation(); onDelete(note.id); }}><Trash2 className="h-4 w-4" /></Button>
           </>
         )}
       </div>

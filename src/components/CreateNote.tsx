@@ -1,10 +1,11 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Pin, Briefcase, Tag, X } from 'lucide-react';
+import { Plus, Pin, Briefcase, Tag, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,16 +34,21 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
+import { Project, Label } from '@/lib/types';
 
 const lowlight = createLowlight(common);
 
 interface CreateNoteProps {
-  onSave: (note: { title: string; content: string; metadata: string; isPinned: boolean; isArchived?: boolean }) => void;
-  defaultProject?: string | null;
-  projects?: string[];
+  onSave: (note: { title: string; content: string; metadata: string; isPinned: boolean; projectId?: string; labelId?: string }) => void;
+  defaultProjectId?: string | null;
 }
 
-export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNoteProps) {
+export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
+  const { user } = useUser();
+  const db = useFirestore();
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -50,12 +56,25 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
   const [isPinned, setIsPinned] = useState(false);
   const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
   
-  const [selectedProject, setSelectedProject] = useState<string>(defaultProject || 'none');
-  const [labels, setLabels] = useState<string[]>([]);
-  const [labelInput, setLabelInput] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(defaultProjectId || 'none');
+  const [selectedLabelId, setSelectedLabelId] = useState<string>('none');
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const projectsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, 'users', user.uid, 'projects');
+  }, [db, user]);
+  const { data: projects } = useCollection<Project>(projectsQuery);
+
+  const labelsQuery = useMemoFirebase(() => {
+    if (!db || !user || selectedProjectId === 'none') return null;
+    return collection(db, 'users', user.uid, 'projects', selectedProjectId, 'labels');
+  }, [db, user, selectedProjectId]);
+  const { data: labels, isLoading: labelsLoading } = useCollection<Label>(labelsQuery);
 
   const editor = useEditor({
     extensions: [
@@ -83,8 +102,15 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
   });
 
   useEffect(() => {
-    setSelectedProject(defaultProject || 'none');
-  }, [defaultProject]);
+    if (defaultProjectId) setSelectedProjectId(defaultProjectId);
+  }, [defaultProjectId]);
+
+  useEffect(() => {
+    if (labels && labels.length > 0 && selectedLabelId === 'none') {
+      const defaultLabel = labels.find(l => l.isDefault) || labels[0];
+      setSelectedLabelId(defaultLabel.id);
+    }
+  }, [labels, selectedLabelId]);
 
   const adjustTextareaHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -122,17 +148,28 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [title, content, isPinned, metadata, selectedProject, labels]);
+  }, [title, content, isPinned, metadata, selectedProjectId, selectedLabelId, tags]);
 
   const handleSave = () => {
     if (title.trim() || content.trim()) {
+      const projectName = projects?.find(p => p.id === selectedProjectId)?.name || '';
+      const labelName = labels?.find(l => l.id === selectedLabelId)?.name || '';
+      
       let finalMetadata = metadata || generateDefaultMetadata(title || 'Untitled');
       finalMetadata = updateMetadataWithInfo(finalMetadata, {
-        project: selectedProject === 'none' ? null : selectedProject,
-        labels: labels,
+        project: projectName,
+        labels: [labelName],
         title: title || 'Untitled'
       });
-      onSave({ title: title || 'Untitled', content, metadata: finalMetadata, isPinned });
+      
+      onSave({ 
+        title: title || 'Untitled', 
+        content, 
+        metadata: finalMetadata, 
+        isPinned,
+        projectId: selectedProjectId === 'none' ? undefined : selectedProjectId,
+        labelId: selectedLabelId === 'none' ? undefined : selectedLabelId
+      });
     }
     resetForm();
   };
@@ -144,9 +181,10 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
     setIsPinned(false);
     setIsExpanded(false);
     setEditMode('preview');
-    setLabels([]);
-    setLabelInput('');
-    setSelectedProject(defaultProject || 'none');
+    setTags([]);
+    setTagInput('');
+    setSelectedProjectId(defaultProjectId || 'none');
+    setSelectedLabelId('none');
   };
 
   const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -156,15 +194,33 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
     target.style.height = `${target.scrollHeight}px`;
   };
 
-  const addLabel = () => {
-    if (labelInput.trim() && !labels.includes(labelInput.trim())) {
-      setLabels([...labels, labelInput.trim()]);
-      setLabelInput('');
+  const addTag = () => {
+    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput('');
     }
   };
 
-  const removeLabel = (labelToRemove: string) => {
-    setLabels(labels.filter(l => l !== labelToRemove));
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(t => t !== tagToRemove));
+  };
+
+  const createNewProject = async () => {
+    const name = prompt("Enter project name:");
+    if (name && db && user) {
+      const id = await createProjectWithDefaultLabel(db, user.uid, name);
+      if (id) setSelectedProjectId(id);
+    }
+  };
+
+  const createNewLabel = async () => {
+    if (selectedProjectId === 'none' || !db || !user) return;
+    const name = prompt("Enter label name:");
+    if (name) {
+      const labelsRef = collection(db, 'users', user.uid, 'projects', selectedProjectId, 'labels');
+      const doc = await addDoc(labelsRef, { name, isDefault: false });
+      setSelectedLabelId(doc.id);
+    }
   };
 
   return (
@@ -187,7 +243,10 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
             <div className="flex flex-col px-6 pt-5 pb-2">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <Select value={selectedProject} onValueChange={setSelectedProject}>
+                  <Select value={selectedProjectId} onValueChange={(val) => {
+                    if (val === 'new') createNewProject();
+                    else setSelectedProjectId(val);
+                  }}>
                     <SelectTrigger className="w-[180px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0 project-select-dropdown">
                       <div className="flex items-center gap-2">
                         <Briefcase className="h-3 w-3 text-primary" />
@@ -196,116 +255,73 @@ export function CreateNote({ onSave, defaultProject, projects = [] }: CreateNote
                     </SelectTrigger>
                     <SelectContent className="project-select-dropdown">
                       <SelectItem value="none">No Project</SelectItem>
-                      {projects.map(p => (
-                        <SelectItem key={p} value={p}>{p}</SelectItem>
+                      {projects?.map(p => (
+                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                       ))}
+                      <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
                     </SelectContent>
                   </Select>
+
+                  {selectedProjectId !== 'none' && (
+                    <Select value={selectedLabelId} onValueChange={(val) => {
+                      if (val === 'new') createNewLabel();
+                      else setSelectedLabelId(val);
+                    }}>
+                      <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                        <div className="flex items-center gap-2">
+                          <Tag className="h-3 w-3 text-primary" />
+                          <SelectValue placeholder="Select Label" />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
+                         labels?.map(l => (
+                          <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                        ))}
+                        <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
                 
                 <div className="flex items-center space-x-1">
                   <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
-                    <Button 
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditMode('preview')}
-                      className={cn(
-                        "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
-                        editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
-                      )}
-                    >
-                      Preview
-                    </Button>
-                    <Button 
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditMode('visual')}
-                      className={cn(
-                        "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
-                        editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
-                      )}
-                    >
-                      Visual Editor
-                    </Button>
-                    <Button 
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditMode('markdown')}
-                      className={cn(
-                        "h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all",
-                        editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
-                      )}
-                    >
-                      Markdown Editor
-                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setEditMode('preview')} className={cn("h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Preview</Button>
+                    <Button variant="ghost" size="sm" onClick={() => setEditMode('visual')} className={cn("h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Visual</Button>
+                    <Button variant="ghost" size="sm" onClick={() => setEditMode('markdown')} className={cn("h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Markdown</Button>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => setIsPinned(!isPinned)}
-                    className={cn("h-10 w-10 rounded-full transition-all", isPinned ? "text-primary bg-primary/5" : "text-muted-foreground/40")}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => setIsPinned(!isPinned)} className={cn("h-10 w-10 rounded-full transition-all", isPinned ? "text-primary bg-primary/5" : "text-muted-foreground/40")}>
                     <Pin className={cn("h-5 w-5", isPinned && "fill-current")} />
                   </Button>
                 </div>
               </div>
 
-              <Input
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all"
-                autoFocus
-              />
+              <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" autoFocus />
               
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 <div className="flex items-center bg-primary/5 rounded-full px-2 py-0.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
                   <Tag className="h-3 w-3 text-primary/40 mr-2" />
-                  <input 
-                    placeholder="Add label..." 
-                    className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none w-20 placeholder:text-muted-foreground/30"
-                    value={labelInput}
-                    onChange={(e) => setLabelInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && addLabel()}
-                  />
+                  <input placeholder="Add tag..." className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none w-20 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTag()} />
                 </div>
-                {labels.map(l => (
-                  <Badge key={l} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1">
-                    {l}
-                    <X className="h-2 w-2 cursor-pointer hover:text-destructive" onClick={() => removeLabel(l)} />
+                {tags.map(t => (
+                  <Badge key={t} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1">
+                    {t} <X className="h-2 w-2 cursor-pointer hover:text-destructive" onClick={() => removeTag(t)} />
                   </Badge>
                 ))}
               </div>
             </div>
 
             {editMode !== 'preview' && (
-              <EditorToolbar 
-                editor={editMode === 'visual' ? editor : null} 
-                textareaRef={textareaRef}
-                metadata={metadata}
-                onMetadataChange={setMetadata}
-                onContentChange={setContent}
-              />
+              <EditorToolbar editor={editMode === 'visual' ? editor : null} textareaRef={textareaRef} metadata={metadata} onMetadataChange={setMetadata} onContentChange={setContent} />
             )}
 
             <div className="px-6 py-2">
               {editMode === 'preview' ? (
-                <div className="min-h-[120px] py-4">
-                  <MarkdownRenderer content={content || "_No content to preview_"} />
-                </div>
+                <div className="min-h-[120px] py-4"><MarkdownRenderer content={content || "_No content to preview_"} /></div>
               ) : editMode === 'visual' ? (
-                <RichEditor 
-                  editor={editor}
-                  className="min-h-[120px]"
-                />
+                <RichEditor editor={editor} className="min-h-[120px]" />
               ) : (
-                <Textarea
-                  ref={textareaRef}
-                  value={content}
-                  onChange={handleMarkdownChange}
-                  placeholder="Edit Markdown..."
-                  className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed resize-none overflow-hidden"
-                />
+                <Textarea ref={textareaRef} value={content} onChange={handleMarkdownChange} placeholder="Edit Markdown..." className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed resize-none overflow-hidden" />
               )}
             </div>
 

@@ -1,17 +1,23 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // User profile and settings: Access restricted to the specific owner
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
       
-      // User-specific notes: Only the owner can manage their notes
+      match /projects/{projectId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        match /labels/{labelId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+      }
+      
       match /notes/{noteId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
 
-    // Global application themes: Readable by any authenticated user
     match /themes/{themeId} {
       allow read: if request.auth != null;
       allow write: if false;

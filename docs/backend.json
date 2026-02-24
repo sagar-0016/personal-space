@@ -5,156 +5,79 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user of the Personal Space application, associated with authentication and preferences.",
+      "description": "Represents a user of the Personal Space application.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity."
-        },
-        "email": {
-          "type": "string",
-          "description": "The email address of the user.",
-          "format": "email"
-        },
-        "displayName": {
-          "type": "string",
-          "description": "The display name of the user."
-        },
-        "preferredThemeId": {
-          "type": "string",
-          "description": "Reference to the Theme entity."
-        }
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "preferredThemeId": { "type": "string" }
       },
-      "required": [
-        "id",
-        "email"
-      ]
+      "required": ["id", "email"]
+    },
+    "Project": {
+      "title": "Project",
+      "type": "object",
+      "description": "A high-level container for notes.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "name"]
+    },
+    "Label": {
+      "title": "Label",
+      "type": "object",
+      "description": "A category within a project.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "isDefault": { "type": "boolean" }
+      },
+      "required": ["id", "name"]
     },
     "Note": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Note",
       "type": "object",
-      "description": "Represents a single note created by a user with separated technical metadata.",
+      "description": "Represents a single note created by a user.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Note entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Owner of the note."
-        },
-        "title": {
-          "type": "string",
-          "description": "The title of the note (often extracted from metadata)."
-        },
-        "content": {
-          "type": "string",
-          "description": "The main markdown text content."
-        },
-        "metadata": {
-          "type": "string",
-          "description": "Raw YAML metadata string stored separately."
-        },
-        "createdAt": {
-          "type": "number",
-          "description": "Timestamp indicating when the note was created."
-        },
-        "updatedAt": {
-          "type": "number",
-          "description": "Timestamp indicating when the note was last updated."
-        },
-        "isPinned": {
-          "type": "boolean",
-          "description": "Flag for pinned notes."
-        },
-        "isArchived": {
-          "type": "boolean",
-          "description": "Flag for archived notes."
-        },
-        "isDeleted": {
-          "type": "boolean",
-          "description": "Flag for notes in trash."
-        },
-        "project": {
-          "type": "string",
-          "description": "High-level categorization for projects."
-        },
-        "labels": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Project-specific labels for secondary organization."
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Search optimization keywords extracted from metadata."
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "metadata": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "isPinned": { "type": "boolean" },
+        "isArchived": { "type": "boolean" },
+        "isDeleted": { "type": "boolean" },
+        "projectId": { "type": "string", "description": "ID of the Project document" },
+        "labelId": { "type": "string", "description": "ID of the Label document" },
+        "tags": { "type": "array", "items": { "type": "string" } }
       },
-      "required": [
-        "id",
-        "userId",
-        "title",
-        "content",
-        "updatedAt"
-      ]
-    },
-    "Theme": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Theme",
-      "type": "object",
-      "description": "Defines application theme characteristics.",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "primary": {
-          "type": "string",
-          "description": "HSL primary color (e.g. '199 68% 77%')"
-        },
-        "background": {
-          "type": "string",
-          "description": "HSL background color"
-        },
-        "accent": {
-          "type": "string",
-          "description": "HSL accent color"
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "primary",
-        "background",
-        "accent"
-      ]
+      "required": ["id", "userId", "title", "content", "updatedAt"]
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "google.com"
-    ]
+    "providers": ["password", "google.com"]
   },
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/User" },
       "description": "User profiles and settings."
     },
+    "/users/{userId}/projects/{projectId}": {
+      "schema": { "$ref": "#/backend/entities/Project" },
+      "description": "User projects."
+    },
+    "/users/{userId}/projects/{projectId}/labels/{labelId}": {
+      "schema": { "$ref": "#/backend/entities/Label" },
+      "description": "Labels within a project."
+    },
     "/users/{userId}/notes/{noteId}": {
       "schema": { "$ref": "#/backend/entities/Note" },
       "description": "User-specific notes."
-    },
-    "/themes/{themeId}": {
-      "schema": { "$ref": "#/backend/entities/Theme" },
-      "description": "Global predefined themes."
     }
   }
 }

@@ -1,3 +1,4 @@
+
 'use client';
     
 import {
@@ -5,37 +6,28 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  collection,
   CollectionReference,
   DocumentReference,
   SetOptions,
+  Firestore,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
-import {FirestorePermissionError} from '@/firebase/errors';
+import { FirestorePermissionError } from '@/firebase/errors';
 
-/**
- * Initiates a setDoc operation for a document reference.
- * Does NOT await the write operation internally.
- */
 export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options: SetOptions) {
   setDoc(docRef, data, options).catch(error => {
     errorEmitter.emit(
       'permission-error',
       new FirestorePermissionError({
         path: docRef.path,
-        operation: 'write', // or 'create'/'update' based on options
+        operation: 'write',
         requestResourceData: data,
       })
     )
   })
-  // Execution continues immediately
 }
 
-
-/**
- * Initiates an addDoc operation for a collection reference.
- * Does NOT await the write operation internally.
- * Returns the Promise for the new doc ref, but typically not awaited by caller.
- */
 export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
   const promise = addDoc(colRef, data)
     .catch(error => {
@@ -51,11 +43,35 @@ export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
   return promise;
 }
 
-
 /**
- * Initiates an updateDoc operation for a document reference.
- * Does NOT await the write operation internally.
+ * Creates a project and automatically attaches an 'Unlabelled' label.
  */
+export async function createProjectWithDefaultLabel(db: Firestore, userId: string, name: string) {
+  const projectsRef = collection(db, 'users', userId, 'projects');
+  try {
+    const projectDoc = await addDoc(projectsRef, {
+      name,
+      createdAt: Date.now()
+    });
+    
+    const labelsRef = collection(db, 'users', userId, 'projects', projectDoc.id, 'labels');
+    await addDoc(labelsRef, {
+      name: 'Unlabelled',
+      isDefault: true
+    });
+    
+    return projectDoc.id;
+  } catch (error: any) {
+    errorEmitter.emit(
+      'permission-error',
+      new FirestorePermissionError({
+        path: projectsRef.path,
+        operation: 'create',
+      })
+    )
+  }
+}
+
 export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) {
   updateDoc(docRef, data)
     .catch(error => {
@@ -70,11 +86,6 @@ export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) 
     });
 }
 
-
-/**
- * Initiates a deleteDoc operation for a document reference.
- * Does NOT await the write operation internally.
- */
 export function deleteDocumentNonBlocking(docRef: DocumentReference) {
   deleteDoc(docRef)
     .catch(error => {

@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState } from 'react';
@@ -9,7 +10,8 @@ import {
   Layers,
   ChevronRight,
   LayoutPanelLeft,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
 import {
   Sidebar,
@@ -25,7 +27,7 @@ import {
   SidebarMenuSubButton,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Note } from '@/lib/types';
+import { Note, Project, Label } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -38,35 +40,104 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
 
-interface AppSidebarProps {
+interface ProjectItemProps {
+  project: Project;
   currentView: string;
   onViewChange: (view: string) => void;
-  notes: Note[];
+  userId: string;
+}
+
+function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItemProps) {
+  const db = useFirestore();
+  const isActiveProject = currentView.startsWith(`project:${project.id}`);
+  
+  const labelsQuery = useMemoFirebase(() => {
+    if (!db || !userId) return null;
+    return collection(db, 'users', userId, 'projects', project.id, 'labels');
+  }, [db, userId, project.id]);
+  
+  const { data: labels, isLoading } = useCollection<Label>(labelsQuery);
+
+  return (
+    <Collapsible defaultOpen={isActiveProject} className="group/project">
+      <SidebarMenuItem>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton 
+            tooltip={project.name}
+            isActive={isActiveProject}
+            onClick={() => onViewChange(`project:${project.id}`)}
+            className={cn(
+              "rounded-r-full mr-2 transition-all duration-300",
+              isActiveProject && "bg-primary/10 text-primary font-bold"
+            )}
+          >
+            <Briefcase className={cn("h-4 w-4", isActiveProject && "text-primary")} />
+            <span className="flex-1">{project.name}</span>
+            {isLoading ? <Loader2 className="h-3 w-3 animate-spin opacity-40" /> : (labels && labels.length > 0) && (
+              <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/project:rotate-90" />
+            )}
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        
+        {!isLoading && labels && labels.length > 0 && (
+          <CollapsibleContent>
+            <SidebarMenuSub className="bg-primary/5 ml-4 rounded-l-lg border-l-2 border-primary/20 py-1">
+              {labels.map(label => {
+                const labelView = `project:${project.id}:label:${label.id}`;
+                const isLabelActive = currentView === labelView;
+                
+                return (
+                  <SidebarMenuSubItem key={label.id}>
+                    <SidebarMenuSubButton 
+                      asChild 
+                      isActive={isLabelActive}
+                      onClick={() => onViewChange(labelView)}
+                      className={cn(
+                        "cursor-pointer transition-colors px-4 py-2 h-auto",
+                        isLabelActive ? "text-primary font-bold bg-primary/10" : "hover:bg-primary/5"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Tag className={cn("h-3 w-3", isLabelActive ? "text-primary" : "text-muted-foreground/60")} />
+                        <span>{label.name}</span>
+                      </div>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                );
+              })}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        )}
+      </SidebarMenuItem>
+    </Collapsible>
+  );
 }
 
 export function AppSidebar({ 
   currentView, 
   onViewChange, 
-  notes
-}: AppSidebarProps) {
+  notes 
+}: { currentView: string; onViewChange: (v: string) => void; notes: Note[] }) {
+  const { user } = useUser();
+  const db = useFirestore();
   const [newProjectName, setNewProjectName] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
-  // Extract unique projects and their specific labels
-  const projectsMap = notes.reduce((acc, note) => {
-    if (note.project && !note.isDeleted && !note.isArchived) {
-      if (!acc[note.project]) acc[note.project] = new Set<string>();
-      (note.labels || []).forEach(label => acc[note.project].add(label));
-    }
-    return acc;
-  }, {} as Record<string, Set<string>>);
 
-  const projects = Object.keys(projectsMap).sort();
+  const projectsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, 'users', user.uid, 'projects');
+  }, [db, user]);
 
-  const handleCreateProject = () => {
-    if (!newProjectName.trim()) return;
-    onViewChange(`project:${newProjectName.trim()}`);
+  const { data: projects, isLoading } = useCollection<Project>(projectsQuery);
+
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim() || !db || !user) return;
+    const projectId = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim());
+    if (projectId) onViewChange(`project:${projectId}`);
     setNewProjectName('');
     setIsDialogOpen(false);
   };
@@ -122,64 +193,17 @@ export function AppSidebar({
             </Dialog>
           </div>
           <SidebarMenu>
-            {projects.map((project) => {
-              const isActiveProject = currentView.startsWith(`project:${project}`);
-              const projectLabels = Array.from(projectsMap[project]).sort();
-              
-              return (
-                <Collapsible key={project} defaultOpen={isActiveProject} className="group/project">
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton 
-                        tooltip={project}
-                        isActive={isActiveProject}
-                        onClick={() => onViewChange(`project:${project}`)}
-                        className={cn(
-                          "rounded-r-full mr-2 transition-all duration-300",
-                          isActiveProject && "bg-primary/10 text-primary font-bold"
-                        )}
-                      >
-                        <Briefcase className={cn("h-4 w-4", isActiveProject && "text-primary")} />
-                        <span className="flex-1">{project}</span>
-                        {projectLabels.length > 0 && (
-                          <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/project:rotate-90" />
-                        )}
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    
-                    {projectLabels.length > 0 && (
-                      <CollapsibleContent>
-                        <SidebarMenuSub className="bg-primary/5 ml-4 rounded-l-lg border-l-2 border-primary/20 py-1">
-                          {projectLabels.map(label => {
-                            const labelView = `project:${project}:label:${label}`;
-                            const isLabelActive = currentView === labelView;
-                            
-                            return (
-                              <SidebarMenuSubItem key={label}>
-                                <SidebarMenuSubButton 
-                                  asChild 
-                                  isActive={isLabelActive}
-                                  onClick={() => onViewChange(labelView)}
-                                  className={cn(
-                                    "cursor-pointer transition-colors px-4 py-2 h-auto",
-                                    isLabelActive ? "text-primary font-bold bg-primary/10" : "hover:bg-primary/5"
-                                  )}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Tag className={cn("h-3 w-3", isLabelActive ? "text-primary" : "text-muted-foreground/60")} />
-                                    <span>{label}</span>
-                                  </div>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            );
-                          })}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    )}
-                  </SidebarMenuItem>
-                </Collapsible>
-              );
-            })}
+            {isLoading ? (
+              <div className="flex justify-center p-4"><Loader2 className="h-4 w-4 animate-spin opacity-20" /></div>
+            ) : projects?.map((project) => (
+              <ProjectItem 
+                key={project.id} 
+                project={project} 
+                currentView={currentView} 
+                onViewChange={onViewChange}
+                userId={user?.uid || ''}
+              />
+            ))}
           </SidebarMenu>
         </SidebarGroup>
 
