@@ -120,6 +120,11 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       handleSave();
     } else {
       setIsExpanded(false);
+      setTitle('');
+      setContent('');
+      setMetadata('');
+      setIsPinned(false);
+      setEditMode('visual');
     }
   };
 

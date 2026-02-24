@@ -46,12 +46,10 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                     <Code2 className="h-2.5 w-2.5 text-primary" />
                     <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/90 whitespace-nowrap">INLINE CODE</span>
                   </span>
-                  <code className="px-1.5 py-0.5 rounded bg-[#0d0d0d] border border-white/10 font-mono text-xs text-[#e1e4e8] shadow-sm" {...props}>
+                  <code className="px-1.5 py-0.5 rounded bg-[#0d0d0d] border border-white/10 font-mono text-xs text-[#e1e4e8] shadow-sm flex items-center gap-2" {...props}>
                     {children}
+                    <CopyButton text={codeString} className="h-4 w-4 p-0 opacity-0 group-hover/inline-code:opacity-100 transition-opacity ml-1" />
                   </code>
-                  <div className="absolute -right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover/inline-code:opacity-100 transition-opacity">
-                    <CopyButton text={codeString} className="h-5 w-5 p-1" />
-                  </div>
                 </span>
               );
             }
