@@ -117,20 +117,20 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
     setDeleteConfirm('');
   };
 
-  // Dynamically resolve icon
+  // Dynamically resolve icon from lucide-react
   const IconComponent = (LucideIcons as any)[project.iconName || 'Briefcase'] || Briefcase;
 
   return (
     <>
       <Collapsible defaultOpen={isActiveProject} className="group/project">
-        <SidebarMenuItem>
+        <SidebarMenuItem className="relative">
           <CollapsibleTrigger asChild>
             <SidebarMenuButton 
               asChild
               tooltip={project.name}
               isActive={isActiveProject}
               className={cn(
-                "rounded-r-full mr-2 transition-all duration-300 relative pr-12",
+                "rounded-r-full mr-2 transition-all duration-300 relative pr-16", // Increased padding for multiple icons
                 isActiveProject && "bg-primary/10 text-primary font-bold"
               )}
             >
@@ -140,13 +140,13 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
                   onViewChange(`project:${project.id}`);
                 }}
               >
-                <IconComponent className={cn("h-4 w-4 mr-2", isActiveProject && "text-primary")} />
+                <IconComponent className={cn("h-4 w-4 mr-2 shrink-0", isActiveProject && "text-primary")} />
                 <span className="flex-1 truncate">{project.name}</span>
                 
                 {isLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin opacity-40 ml-2" />
                 ) : (labels && labels.length > 0) && (
-                  <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/project:rotate-90 absolute right-2 top-1/2 -translate-y-1/2" />
+                  <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 absolute right-2 top-1/2 -translate-y-1/2" />
                 )}
               </div>
             </SidebarMenuButton>
@@ -156,7 +156,7 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <SidebarMenuAction 
                 showOnHover 
-                className="right-8 top-1/2 -translate-y-1/2"
+                className="right-9 top-1/2 -translate-y-1/2" // Positioned specifically to the left of the arrow
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
                 <span className="sr-only">Project actions</span>
@@ -287,13 +287,13 @@ export function AppSidebar({
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !db || !user) return;
     
-    // Immediately close the dialog
+    // Close the dialog immediately
     setIsDialogOpen(false);
     
     const projectId = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim(), selectedIcon);
     if (projectId) onViewChange(`project:${projectId}`);
     
-    // Reset state after closing
+    // Reset internal state
     setNewProjectName('');
     setSelectedIcon('Briefcase');
   };
@@ -362,6 +362,9 @@ export function AppSidebar({
                         </Button>
                       ))}
                     </div>
+                    <p className="text-[10px] text-muted-foreground italic mt-2">
+                      Powered by Lucide Icons.
+                    </p>
                   </div>
                 </div>
                 <DialogFooter>

@@ -76,7 +76,12 @@ export function NoteCard({
             <DropdownMenuContent align="start" className="min-w-[150px]">
               <DropdownMenuItem onClick={() => onUpdate({ ...note, projectId: null, labelId: null })}>None</DropdownMenuItem>
               {projects.map(p => (
-                <DropdownMenuItem key={p.id} onClick={() => onUpdate({ ...note, projectId: p.id })}>{p.name}</DropdownMenuItem>
+                <DropdownMenuItem key={p.id} onClick={() => onUpdate({ ...note, projectId: p.id })}>
+                  <div className="flex items-center gap-2">
+                    {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
+                    {p.name}
+                  </div>
+                </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>

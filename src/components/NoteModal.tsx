@@ -2,6 +2,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import * as LucideIcons from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -45,7 +46,7 @@ interface NoteModalProps {
 }
 
 export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModalProps) {
-  const { user } = useUser();
+  const { user } = userUser();
   const db = useFirestore();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -66,7 +67,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
   const { data: projects } = useCollection<Project>(projectsQuery);
 
   const labelsQuery = useMemoFirebase(() => {
-    if (!db || !user || projectId === 'none') return null;
+    if (!db || !user || projectId === 'none' || projectId === 'new') return null;
     return collection(db, 'users', user.uid, 'projects', projectId, 'labels');
   }, [db, user, projectId]);
   const { data: labels, isLoading: labelsLoading } = useCollection<Label>(labelsQuery);
@@ -186,16 +187,26 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             <div className="flex items-center gap-4">
               <Select value={projectId} onValueChange={(val) => val === 'new' ? createNewProject() : setProjectId(val)}>
                 <SelectTrigger className="w-[200px] h-9 text-[11px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                  <div className="flex items-center gap-2"><Briefcase className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Project" /></div>
+                  <div className="flex items-center gap-2">
+                    {projectId !== 'none' && projectId !== 'new' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3.5 w-3.5 text-primary" })}
+                    <SelectValue placeholder="Project" />
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No Project</SelectItem>
-                  {projects?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                  {projects?.map(p => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <div className="flex items-center gap-2">
+                        {React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
+                        {p.name}
+                      </div>
+                    </SelectItem>
+                  ))}
                   <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
                 </SelectContent>
               </Select>
 
-              {projectId !== 'none' && (
+              {projectId !== 'none' && projectId !== 'new' && (
                 <Select value={labelId} onValueChange={(val) => val === 'new' ? createNewLabel() : setLabelId(val)}>
                   <SelectTrigger className="w-[180px] h-9 text-[11px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                     <div className="flex items-center gap-2"><Tag className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
