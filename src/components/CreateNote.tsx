@@ -1,10 +1,27 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Pin, Briefcase, Tag, X, Loader2, Hash } from 'lucide-react';
+import { 
+  Plus, 
+  Pin, 
+  Briefcase, 
+  Tag, 
+  X, 
+  Loader2, 
+  Hash,
+  Star,
+  Heart,
+  Target,
+  Compass,
+  Zap,
+  Code,
+  Database,
+  Book
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,6 +50,13 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter 
+} from '@/components/ui/dialog';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
@@ -40,8 +64,20 @@ import { Project, Label } from '@/lib/types';
 
 const lowlight = createLowlight(common);
 
+const SAMPLE_ICONS = [
+  { name: 'Briefcase', icon: Briefcase },
+  { name: 'Code', icon: Code },
+  { name: 'Database', icon: Database },
+  { name: 'Book', icon: Book },
+  { name: 'Zap', icon: Zap },
+  { name: 'Star', icon: Star },
+  { name: 'Heart', icon: Heart },
+  { name: 'Target', icon: Target },
+  { name: 'Compass', icon: Compass },
+];
+
 interface CreateNoteProps {
-  onSave: (note: { title: string; content: string; metadata: string; isPinned: boolean; projectId?: string | null; labelId?: string | null }) => void;
+  onSave: (note: { title: string; content: string; metadata: string; isPinned: boolean; projectId?: string | null; labelId?: string | null; tags?: string[] }) => void;
   defaultProjectId?: string | null;
 }
 
@@ -59,6 +95,13 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   const [selectedLabelId, setSelectedLabelId] = useState<string>('none');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+
+  // Dialog States
+  const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
+  const [isLabelDialogOpen, setIsLabelDialogOpen] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newLabelName, setNewLabelName] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState('Briefcase');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -136,6 +179,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
       const target = event.target as HTMLElement;
       if (target.closest('[data-metadata-popover="true"]')) return;
       if (target.closest('.project-select-dropdown')) return;
+      if (target.closest('[role="dialog"]')) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
         if (title.trim() || content.trim()) {
@@ -168,7 +212,8 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
         metadata: finalMetadata, 
         isPinned,
         projectId: selectedProjectId === 'none' ? null : selectedProjectId,
-        labelId: selectedLabelId === 'none' ? null : selectedLabelId
+        labelId: selectedLabelId === 'none' ? null : selectedLabelId,
+        tags: tags
       });
     }
     resetForm();
@@ -205,22 +250,22 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     setTags(tags.filter(t => t !== tagToRemove));
   };
 
-  const createNewProject = async () => {
-    const name = prompt("Enter project name:");
-    if (name && db && user) {
-      const id = await createProjectWithDefaultLabel(db, user.uid, name);
-      if (id) setSelectedProjectId(id);
-    }
+  const handleCreateProjectAction = async () => {
+    if (!newProjectName.trim() || !db || !user) return;
+    setIsProjectDialogOpen(false);
+    const id = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim(), selectedIcon);
+    if (id) setSelectedProjectId(id);
+    setNewProjectName('');
+    setSelectedIcon('Briefcase');
   };
 
-  const createNewLabel = async () => {
-    if (selectedProjectId === 'none' || !db || !user) return;
-    const name = prompt("Enter label name:");
-    if (name) {
-      const labelsRef = collection(db, 'users', user.uid, 'projects', selectedProjectId, 'labels');
-      const docRef = await addDoc(labelsRef, { name, isDefault: false });
-      setSelectedLabelId(docRef.id);
-    }
+  const handleCreateLabelAction = async () => {
+    if (selectedProjectId === 'none' || !newLabelName.trim() || !db || !user) return;
+    setIsLabelDialogOpen(false);
+    const labelsRef = collection(db, 'users', user.uid, 'projects', selectedProjectId, 'labels');
+    const docRef = await addDoc(labelsRef, { name: newLabelName.trim(), isDefault: false });
+    setSelectedLabelId(docRef.id);
+    setNewLabelName('');
   };
 
   return (
@@ -244,7 +289,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Select value={selectedProjectId} onValueChange={(val) => {
-                    if (val === 'new') createNewProject();
+                    if (val === 'new') setIsProjectDialogOpen(true);
                     else setSelectedProjectId(val);
                   }}>
                     <SelectTrigger className="w-[180px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0 project-select-dropdown">
@@ -258,13 +303,13 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                       {projects?.map(p => (
                         p.id ? <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem> : null
                       ))}
-                      <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                      <SelectItem value="new" className="text-primary font-bold">+ Create New Project</SelectItem>
                     </SelectContent>
                   </Select>
 
                   {selectedProjectId !== 'none' && (
                     <Select value={selectedLabelId} onValueChange={(val) => {
-                      if (val === 'new') createNewLabel();
+                      if (val === 'new') setIsLabelDialogOpen(true);
                       else setSelectedLabelId(val);
                     }}>
                       <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
@@ -278,7 +323,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                          labels?.map(l => (
                           l.id ? <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem> : null
                         ))}
-                        <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                        <SelectItem value="new" className="text-primary font-bold">+ Create New Label</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -331,6 +376,73 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
           </div>
         )}
       </Card>
+
+      {/* Project Creation Dialog */}
+      <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Project Name</label>
+              <Input 
+                placeholder="Project name..." 
+                value={newProjectName} 
+                onChange={(e) => setNewProjectName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateProjectAction()}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose Icon</label>
+              <div className="grid grid-cols-5 gap-2">
+                {SAMPLE_ICONS.map((item) => (
+                  <Button
+                    key={item.name}
+                    variant="outline"
+                    size="icon"
+                    className={cn(
+                      "h-10 w-10",
+                      selectedIcon === item.name && "border-primary bg-primary/10 text-primary"
+                    )}
+                    onClick={() => setSelectedIcon(item.name)}
+                  >
+                    <item.icon className="h-5 w-5" />
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleCreateProjectAction}>Create Project</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Label Creation Dialog */}
+      <Dialog open={isLabelDialogOpen} onOpenChange={setIsLabelDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create New Label</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Label Name</label>
+              <Input 
+                placeholder="Label name..." 
+                value={newLabelName} 
+                onChange={(e) => setNewLabelName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateLabelAction()}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleCreateLabelAction}>Create Label</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
