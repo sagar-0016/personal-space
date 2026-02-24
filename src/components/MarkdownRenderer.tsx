@@ -16,7 +16,7 @@ interface MarkdownRendererProps {
 /**
  * Unified Markdown Renderer
  * Provides a single source of truth for all note rendering across the app.
- * Features high-fidelity block-like styling for inline code snippets.
+ * Features high-fidelity block-like styling for both inline and block code.
  */
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [mounted, setMounted] = useState(false);
@@ -45,23 +45,24 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const codeString = String(children).replace(/\n$/, '');
             
             // High-Fidelity Inline Code "Mini-Card"
+            // Handles multi-line snippets (like JSON) gracefully
             if (inline) {
               return (
-                <span className="inline-flex items-center bg-[#0d0d0d] border border-white/10 rounded-md overflow-hidden gap-0 group/inline-code mx-1 shadow-xl align-middle h-7 translate-y-[-1px]">
-                  <span className="flex items-center px-1.5 h-full bg-white/5 border-r border-white/10">
-                    <Terminal className="h-2.5 w-2.5 text-primary" />
-                  </span>
-                  <span className="px-1.5 h-full bg-white/10 border-r border-white/10 flex items-center">
-                    <span className="text-[7px] font-bold uppercase tracking-tighter text-white/40">SRC</span>
-                  </span>
-                  <code className="font-mono text-[0.7rem] text-[#e1e4e8] leading-none px-2 py-1" {...props}>
-                    {children}
-                  </code>
-                  <span className="flex items-center h-full pr-1.5 pl-1 bg-white/10 border-l border-white/10 opacity-0 group-hover/inline-code:opacity-100 transition-opacity">
-                    <CopyButton 
-                      text={codeString} 
-                      className="h-4 w-4 bg-transparent border-none text-white/40 hover:text-white p-0" 
-                    />
+                <span className="inline-block align-middle mx-1 my-0.5 max-w-full">
+                  <span className="flex flex-col bg-[#0d0d0d] border border-white/10 rounded-md overflow-hidden shadow-xl group/inline-code">
+                    <span className="flex items-center justify-between px-2 py-0.5 bg-white/5 border-b border-white/5">
+                      <span className="flex items-center gap-1.5">
+                        <Terminal className="h-2 w-2 text-primary" />
+                        <span className="text-[7px] font-bold uppercase tracking-tighter text-white/40">SRC</span>
+                      </span>
+                      <CopyButton 
+                        text={codeString} 
+                        className="h-3.5 w-3.5 opacity-0 group-hover/inline-code:opacity-100 transition-opacity p-0 bg-transparent border-none text-white/40 hover:text-white" 
+                      />
+                    </span>
+                    <code className="font-mono text-[0.7rem] text-[#e1e4e8] leading-tight px-2 py-1.5 whitespace-pre-wrap break-all" {...props}>
+                      {children}
+                    </code>
                   </span>
                 </span>
               );

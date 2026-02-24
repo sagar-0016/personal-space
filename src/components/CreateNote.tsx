@@ -38,7 +38,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState('');
   const [isPinned, setIsPinned] = useState(false);
-  const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('visual');
+  const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
   
   const containerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -112,7 +112,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
     setMetadata('');
     setIsPinned(false);
     setIsExpanded(false);
-    setEditMode('visual');
+    setEditMode('preview');
   };
 
   const handleClose = () => {
@@ -124,7 +124,7 @@ export function CreateNote({ onSave }: CreateNoteProps) {
       setContent('');
       setMetadata('');
       setIsPinned(false);
-      setEditMode('visual');
+      setEditMode('preview');
     }
   };
 
