@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -285,6 +284,7 @@ export default function Home() {
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)} 
           onSave={handleUpdateNote}
+          onDelete={handleTrashNote}
         />
 
         <SettingsDialog 

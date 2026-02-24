@@ -13,7 +13,8 @@ import {
   X as CloseIcon, 
   FileText,
   Eye,
-  Layers
+  Layers,
+  Trash2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -41,9 +42,10 @@ interface NoteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (note: Note) => void;
+  onDelete: (note: Note) => void;
 }
 
-export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
+export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [metadata, setMetadata] = useState('');
@@ -165,6 +167,20 @@ export function NoteModal({ note, isOpen, onClose, onSave }: NoteModalProps) {
           </div>
           
           <div className="flex items-center space-x-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => {
+                if (note) {
+                  onDelete(note);
+                  onClose();
+                }
+              }} 
+              className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              title="Move to trash"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => performSave(true)} className="rounded-full h-9 w-9">
               <X className="h-4 w-4" />
             </Button>
