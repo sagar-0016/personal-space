@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as LucideIcons from 'lucide-react';
 import { 
   Dialog, 
@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { updateMetadataWithInfo, generateDefaultMetadata } from '@/lib/note-parser';
+import { updateMetadataWithInfo, generateDefaultMetadata, extractMetadataInfo } from '@/lib/note-parser';
 import { EditorToolbar } from './EditorToolbar';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -131,6 +131,14 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     },
   });
 
+  const adjustTextareaHeight = useCallback(() => {
+    if (textareaRef.current) {
+      const target = textareaRef.current;
+      target.style.height = 'auto';
+      target.style.height = `${target.scrollHeight}px`;
+    }
+  }, []);
+
   useEffect(() => {
     if (note && isOpen) {
       setTitle(note.title);
@@ -146,14 +154,27 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     }
   }, [note?.id, isOpen, editor]);
 
+  useEffect(() => {
+    if (editMode === 'markdown' && isOpen) {
+      setTimeout(adjustTextareaHeight, 10);
+    }
+  }, [editMode, content, isOpen, adjustTextareaHeight]);
+
   const setInteracting = (open: boolean) => {
     if (open) {
       isInteracting.current = true;
     } else {
       setTimeout(() => {
         isInteracting.current = false;
-      }, 200);
+      }, 300);
     }
+  };
+
+  const handleMetadataChange = (newMetadata: string) => {
+    setMetadata(newMetadata);
+    const info = extractMetadataInfo(newMetadata);
+    if (info.tags && info.tags.length > 0) setTags(info.tags);
+    if (info.title) setTitle(info.title);
   };
 
   const performSave = (isClosing: boolean = false) => {
@@ -386,7 +407,13 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
           </div>
 
           {editMode !== 'preview' && (
-            <EditorToolbar editor={editMode === 'visual' ? editor : null} textareaRef={textareaRef} metadata={metadata} onMetadataChange={setMetadata} onContentChange={setContent} />
+            <EditorToolbar 
+              editor={editMode === 'visual' ? editor : null} 
+              textareaRef={textareaRef} 
+              metadata={metadata} 
+              onMetadataChange={handleMetadataChange} 
+              onContentChange={setContent} 
+            />
           )}
 
           <div className="flex-1 overflow-y-auto pt-6 sm:pt-8 pb-20 scroll-smooth">
@@ -409,7 +436,17 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               ) : editMode === 'visual' ? (
                 <RichEditor editor={editor} className="min-h-[500px]" />
               ) : (
-                <Textarea ref={textareaRef} value={content} onChange={(e) => setContent(e.target.value)} placeholder="Edit Markdown..." className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[500px] resize-none overflow-hidden" />
+                <Textarea 
+                  ref={textareaRef} 
+                  value={content} 
+                  onChange={(e) => {
+                    setContent(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }} 
+                  placeholder="Edit Markdown..." 
+                  className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[500px] resize-none overflow-hidden" 
+                />
               )}
             </div>
           </div>

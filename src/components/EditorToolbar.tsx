@@ -61,13 +61,18 @@ export function EditorToolbar({
   };
 
   const ToolbarButton = ({ onClick, active = false, icon: Icon, tooltip }: any) => (
-    <TooltipProvider delayDuration={400}>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="ghost" size="icon"
+            variant="ghost" 
+            size="icon"
             className={cn("h-8 w-8", active ? "bg-primary/10 text-primary" : "text-muted-foreground")}
-            onClick={(e) => { e.preventDefault(); onClick(); }}
+            onMouseDown={(e) => {
+              // Using onMouseDown + preventDefault is critical to avoid focus loss in the editor
+              e.preventDefault();
+              onClick();
+            }}
           >
             <Icon className="h-4 w-4" />
           </Button>

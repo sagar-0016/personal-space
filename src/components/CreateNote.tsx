@@ -24,7 +24,7 @@ import {
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
-import { generateDefaultMetadata, updateMetadataWithInfo } from '@/lib/note-parser';
+import { generateDefaultMetadata, updateMetadataWithInfo, extractMetadataInfo } from '@/lib/note-parser';
 import { EditorToolbar } from './EditorToolbar';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -211,8 +211,15 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     } else {
       setTimeout(() => {
         isInteracting.current = false;
-      }, 150);
+      }, 300);
     }
+  };
+
+  const handleMetadataChange = (newMetadata: string) => {
+    setMetadata(newMetadata);
+    const info = extractMetadataInfo(newMetadata);
+    if (info.tags && info.tags.length > 0) setTags(info.tags);
+    if (info.title) setTitle(info.title);
   };
 
   const handleSave = () => {
@@ -468,7 +475,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
               editor={editMode === 'visual' ? editor : null} 
               textareaRef={textareaRef} 
               metadata={metadata} 
-              onMetadataChange={setMetadata} 
+              onMetadataChange={handleMetadataChange} 
               onContentChange={setContent} 
             />
 

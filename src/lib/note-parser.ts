@@ -16,26 +16,33 @@ export interface NoteMetadataInfo {
 export function extractMetadataInfo(metadata: string | undefined): NoteMetadataInfo {
   if (!metadata) return { title: null, project: null, labels: [], tags: [] };
 
-  // Helper to extract matches for YAML keys
   const getMatch = (key: string) => {
-    const regex = new RegExp(`${key}:\\s*(?:"(.*?)"|(.*))`);
+    // Matches key: "value" or key: value
+    const regex = new RegExp(`^${key}:\\s*(?:"([^"]*)"|'([^']*)'|([^\\n\\r]*))`, 'm');
     const match = metadata.match(regex);
-    return match ? (match[1] || match[2]?.trim()) : null;
+    if (match) return (match[1] || match[2] || match[3] || "").trim();
+    return null;
   };
 
   const getListMatch = (key: string) => {
-    const regex = new RegExp(`${key}:\\s*\\[(.*?)\\]`);
+    // Matches key: ["a", "b"]
+    const regex = new RegExp(`^${key}:\\s*\\[(.*)\\]`, 'm');
     const match = metadata.match(regex);
-    const raw = match ? match[1] : "";
-    return raw ? raw.split(',').map(t => t.trim().replace(/"/g, '').replace(/'/g, '')) : [];
+    if (!match) return [];
+    const raw = match[1];
+    if (!raw) return [];
+    // Split by comma, then trim and remove quotes
+    return raw.split(',')
+      .map(t => t.trim().replace(/^["']|["']$/g, ''))
+      .filter(Boolean);
   };
 
-  const title = getMatch('title');
-  const project = getMatch('project');
-  const labels = getListMatch('labels');
-  const tags = getListMatch('tags');
-
-  return { title, project, labels, tags };
+  return {
+    title: getMatch('title'),
+    project: getMatch('project'),
+    labels: getListMatch('labels'),
+    tags: getListMatch('tags')
+  };
 }
 
 /**
