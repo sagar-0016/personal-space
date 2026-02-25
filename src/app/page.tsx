@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -36,9 +37,12 @@ export default function Home() {
     if (!isUserLoading) {
       if (!user) {
         router.push('/login');
-      } else if (!user.emailVerified && user.providerData.some(p => p.providerId === 'password')) {
-        // If logged in via password but not verified, send back to login
-        router.push('/login');
+      } else {
+        // Enforce verification for password users
+        const isPasswordUser = user.providerData.some(p => p.providerId === 'password');
+        if (isPasswordUser && !user.emailVerified) {
+          router.push('/login');
+        }
       }
     }
   }, [user, isUserLoading, router]);
@@ -131,6 +135,7 @@ export default function Home() {
   const pinnedNotes = allFilteredNotes.filter(n => n.isPinned);
   const otherNotes = allFilteredNotes.filter(n => !n.isPinned);
 
+  // Loading state or verification redirect check
   if (isUserLoading || !user || (!user.emailVerified && user.providerData.some(p => p.providerId === 'password'))) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

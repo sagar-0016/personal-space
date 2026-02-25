@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -61,9 +62,11 @@ export default function LoginPage() {
   }, [auth, router, toast]);
 
   useEffect(() => {
-    // Only redirect if the user is authenticated AND email is verified (or if it's a provider like Google which is usually pre-verified)
+    // Only redirect if the user is authenticated AND email is verified
+    // Google users are typically verified by default
     if (!isUserLoading && authUser) {
-      if (authUser.emailVerified || authUser.providerData.some(p => p.providerId !== 'password')) {
+      const isPasswordUser = authUser.providerData.some(p => p.providerId === 'password');
+      if (!isPasswordUser || authUser.emailVerified) {
         router.push('/');
       }
     }
@@ -90,25 +93,27 @@ export default function LoginPage() {
         // Update the user's profile with the display name
         await updateProfile(user, { displayName });
         
-        // Send verification email
+        // Send initial verification email
         await sendEmailVerification(user);
         
         syncUserProfile(user);
         
         toast({
           title: "Verification Email Sent",
-          description: `A verification link has been sent to ${email}. Please check your inbox.`,
+          description: `A verification link has been sent to ${email}. Please verify your email before signing in.`,
         });
         
-        // Force sign out so they have to log in again after verification
+        // Force sign out to prevent session entry without verification
         await signOut(auth!);
         setIsSignUp(false);
+        setEmail('');
+        setPassword('');
       } else {
         const userCredential = await signInWithEmailAndPassword(auth!, email, password);
         const user = userCredential.user;
         
         if (!user.emailVerified) {
-          // Send another verification link as requested
+          // Re-send verification link if they try to log in unverified
           await sendEmailVerification(user);
           toast({
             variant: "destructive",
