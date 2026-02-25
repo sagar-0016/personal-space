@@ -20,9 +20,7 @@ import {
   Zap,
   Code,
   Database,
-  Book,
-  ChevronDown,
-  ChevronUp
+  Book
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
@@ -189,7 +187,8 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
       
       const isPortal = target.closest('[data-radix-popper-content-wrapper]') || 
                        target.closest('[role="dialog"]') || 
-                       target.closest('[role="menu"]');
+                       target.closest('[role="menu"]') ||
+                       target.closest('[data-radix-portal]');
       if (isPortal) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
@@ -212,7 +211,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     } else {
       setTimeout(() => {
         isInteracting.current = false;
-      }, 100);
+      }, 150);
     }
   };
 
@@ -358,7 +357,13 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                             className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-full placeholder:text-muted-foreground/30" 
                             value={tagInput} 
                             onChange={(e) => setTagInput(e.target.value)} 
-                            onKeyDown={(e) => e.key === 'Enter' && addTag()} 
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                addTag();
+                              }
+                            }} 
                           />
                         </div>
                       </div>

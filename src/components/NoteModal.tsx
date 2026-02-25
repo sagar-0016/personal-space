@@ -22,17 +22,7 @@ import {
   Trash2, 
   Briefcase, 
   Loader2, 
-  Hash,
-  Star,
-  Heart,
-  Target,
-  Compass,
-  Zap,
-  Code,
-  Database,
-  Book,
-  ChevronDown,
-  ChevronUp
+  Hash
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -63,15 +53,15 @@ import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
 const lowlight = createLowlight(common);
 
 const SAMPLE_ICONS = [
-  { name: 'Briefcase', icon: Briefcase },
-  { name: 'Code', icon: Code },
-  { name: 'Database', icon: Database },
-  { name: 'Book', icon: Book },
-  { name: 'Zap', icon: Zap },
-  { name: 'Star', icon: Star },
-  { name: 'Heart', icon: Heart },
-  { name: 'Target', icon: Target },
-  { name: 'Compass', icon: Compass },
+  { name: 'Briefcase', icon: LucideIcons.Briefcase },
+  { name: 'Code', icon: LucideIcons.Code },
+  { name: 'Database', icon: LucideIcons.Database },
+  { name: 'Book', icon: LucideIcons.Book },
+  { name: 'Zap', icon: LucideIcons.Zap },
+  { name: 'Star', icon: LucideIcons.Star },
+  { name: 'Heart', icon: LucideIcons.Heart },
+  { name: 'Target', icon: LucideIcons.Target },
+  { name: 'Compass', icon: LucideIcons.Compass },
 ];
 
 interface NoteModalProps {
@@ -161,7 +151,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     } else {
       setTimeout(() => {
         isInteracting.current = false;
-      }, 100);
+      }, 150);
     }
   };
 
@@ -285,7 +275,13 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                         className="bg-transparent border-none text-xs font-bold uppercase tracking-widest outline-none w-full placeholder:text-muted-foreground/30" 
                         value={tagInput} 
                         onChange={(e) => setTagInput(e.target.value)} 
-                        onKeyDown={(e) => e.key === 'Enter' && addTag()} 
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addTag();
+                          }
+                        }} 
                       />
                     </div>
                   </div>
