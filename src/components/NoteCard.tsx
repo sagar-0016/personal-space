@@ -1,7 +1,6 @@
-
 "use client"
 
-import React from 'react';
+import React, { useRef } from 'react';
 import * as LucideIcons from 'lucide-react';
 import { Note, Project } from '@/lib/types';
 import { Card } from '@/components/ui/card';
@@ -51,113 +50,140 @@ export function NoteCard({
   onPermanentDelete,
   projects = []
 }: NoteCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
   
   const currentProject = projects.find(p => p.id === note.projectId);
   const ProjectIcon = (LucideIcons as any)[currentProject?.iconName || 'Briefcase'] || Briefcase;
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    cardRef.current.style.setProperty('--mouse-x', `${x}px`);
+    cardRef.current.style.setProperty('--mouse-y', `${y}px`);
+  };
+
   return (
-    <Card 
-      onClick={() => !isTrash && onEdit(note)}
+    <div 
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
       className={cn(
-        "group relative flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card google-shadow-hover note-fade-in rounded-xl overflow-hidden h-fit",
-        "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-primary/40 before:opacity-0 group-hover:before:opacity-100 transition-all",
-        note.isPinned && "border-primary/30 ring-1 ring-primary/10"
+        "group relative rounded-xl overflow-hidden note-card-glow h-fit",
+        note.isPinned && "ring-2 ring-primary/20"
       )}
     >
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex flex-col gap-1 pr-8">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center gap-1.5 text-[9px] font-black text-primary/60 uppercase tracking-widest cursor-pointer hover:text-primary transition-colors">
-                <ProjectIcon className="h-2.5 w-2.5" />
-                {currentProject?.name || "Uncategorized"}
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="min-w-[150px]">
-              <DropdownMenuItem onClick={() => onUpdate({ ...note, projectId: null, labelId: null })}>None</DropdownMenuItem>
-              {projects.map(p => (
-                <DropdownMenuItem key={p.id} onClick={() => onUpdate({ ...note, projectId: p.id })}>
-                  <div className="flex items-center gap-2">
-                    {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
-                    {p.name}
-                  </div>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {note.title && (
-            <h3 className="text-lg font-bold line-clamp-2 text-foreground/90 tracking-tight">
-              {note.title}
-            </h3>
-          )}
-        </div>
-        {!isTrash && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "h-8 w-8 rounded-full absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300",
-              note.isPinned ? "opacity-100 text-primary bg-primary/10" : "text-muted-foreground hover:bg-muted"
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              onTogglePin();
-            }}
-          >
-            <Pin className={cn("h-4 w-4", note.isPinned ? "fill-current" : "rotate-45")} />
-          </Button>
+      <Card 
+        onClick={() => !isTrash && onEdit(note)}
+        className={cn(
+          "relative z-10 flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card/95 google-shadow-hover rounded-xl overflow-hidden h-fit",
+          "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-primary/40 before:opacity-0 group-hover:before:opacity-100 transition-all",
+          note.isPinned && "border-primary/30"
         )}
-      </div>
-      
-      <div className="flex-1 overflow-hidden">
-        <div className="text-sm text-foreground/70">
-          <MarkdownRenderer 
-            content={note.content} 
-            className="prose-sm line-clamp-[12]" 
-          />
-        </div>
-      </div>
+      >
+        {/* Subtle interior spotlight */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0"
+          style={{
+            background: `radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), hsl(var(--primary) / 0.05), transparent 60%)`
+          }}
+        />
 
-      {note.tags && note.tags.length > 0 && (
-        <div className="mt-5 flex flex-wrap gap-1.5">
-          {note.tags.map(tag => (
-            <Badge key={tag} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1 hover:bg-primary/20 transition-colors uppercase tracking-wider">
-              <Tag className="h-2 w-2" />
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      )}
-      
-      <div className="mt-6 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-all duration-300 space-x-1.5 translate-y-2 group-hover:translate-y-0">
-        {isTrash ? (
-          <>
+        <div className="relative z-10 flex justify-between items-start mb-3">
+          <div className="flex flex-col gap-1 pr-8">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1.5 text-[9px] font-black text-primary/60 uppercase tracking-widest cursor-pointer hover:text-primary transition-colors">
+                  <ProjectIcon className="h-2.5 w-2.5" />
+                  {currentProject?.name || "Uncategorized"}
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="min-w-[150px]">
+                <DropdownMenuItem onClick={() => onUpdate({ ...note, projectId: null, labelId: null })}>None</DropdownMenuItem>
+                {projects.map(p => (
+                  <DropdownMenuItem key={p.id} onClick={() => onUpdate({ ...note, projectId: p.id })}>
+                    <div className="flex items-center gap-2">
+                      {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
+                      {p.name}
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {note.title && (
+              <h3 className="text-lg font-bold line-clamp-2 text-foreground/90 tracking-tight">
+                {note.title}
+              </h3>
+            )}
+          </div>
+          {!isTrash && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-full"
-              title="Restore"
-              onClick={(e) => { e.stopPropagation(); onDelete(note.id); }}
+              className={cn(
+                "h-8 w-8 rounded-full absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300",
+                note.isPinned ? "opacity-100 text-primary bg-primary/10" : "text-muted-foreground hover:bg-muted"
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                onTogglePin();
+              }}
             >
-              <RotateCcw className="h-4 w-4" />
+              <Pin className={cn("h-4 w-4", note.isPinned ? "fill-current" : "rotate-45")} />
             </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                <AlertDialogHeader><AlertDialogTitle>Delete note permanently?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
-                <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={(e) => { e.stopPropagation(); onPermanentDelete?.(); }} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction></AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </>
-        ) : (
-          <>
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full" onClick={(e) => { e.stopPropagation(); onEdit(note); }}><Edit3 className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className={cn("h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full", note.isArchived && "text-primary bg-primary/10 opacity-100")} onClick={(e) => { e.stopPropagation(); onArchive(); }}><Archive className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full" onClick={(e) => { e.stopPropagation(); onDelete(note.id); }}><Trash2 className="h-4 w-4" /></Button>
-          </>
+          )}
+        </div>
+        
+        <div className="relative z-10 flex-1 overflow-hidden">
+          <div className="text-sm text-foreground/70">
+            <MarkdownRenderer 
+              content={note.content} 
+              className="prose-sm line-clamp-[12]" 
+            />
+          </div>
+        </div>
+
+        {note.tags && note.tags.length > 0 && (
+          <div className="relative z-10 mt-5 flex flex-wrap gap-1.5">
+            {note.tags.map(tag => (
+              <Badge key={tag} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1 hover:bg-primary/20 transition-colors uppercase tracking-wider">
+                <Tag className="h-2 w-2" />
+                {tag}
+              </Badge>
+            ))}
+          </div>
         )}
-      </div>
-    </Card>
+        
+        <div className="relative z-10 mt-6 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-all duration-300 space-x-1.5 translate-y-2 group-hover:translate-y-0">
+          {isTrash ? (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-full"
+                title="Restore"
+                onClick={(e) => { e.stopPropagation(); onDelete(note.id); }}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                  <AlertDialogHeader><AlertDialogTitle>Delete note permanently?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
+                  <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={(e) => { e.stopPropagation(); onPermanentDelete?.(); }} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction></AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full" onClick={(e) => { e.stopPropagation(); onEdit(note); }}><Edit3 className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" className={cn("h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full", note.isArchived && "text-primary bg-primary/10 opacity-100")} onClick={(e) => { e.stopPropagation(); onArchive(); }}><Archive className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full" onClick={(e) => { e.stopPropagation(); onDelete(note.id); }}><Trash2 className="h-4 w-4" /></Button>
+            </>
+          )}
+        </div>
+      </Card>
+    </div>
   );
 }

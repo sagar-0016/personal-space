@@ -168,6 +168,32 @@
   transform: translateY(-1px);
 }
 
+/* Note Card Hover Interaction Layer */
+.note-card-glow {
+  --mouse-x: 0px;
+  --mouse-y: 0px;
+}
+
+.note-card-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  border-radius: inherit;
+  background: radial-gradient(
+    300px circle at var(--mouse-x) var(--mouse-y),
+    hsl(var(--primary) / 0.8),
+    transparent 40%
+  );
+  pointer-events: none;
+}
+
+.note-card-glow:hover::before {
+  opacity: 1;
+}
+
 /* Premium Task List Styling */
 .ProseMirror ul[data-type="taskList"],
 .prose ul.task-list {
