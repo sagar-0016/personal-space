@@ -117,26 +117,35 @@ export function ThemeSync() {
 
     const root = document.documentElement;
     const isDark = resolvedTheme === 'dark';
+    const primaryColor = activeTheme?.primary || '199 89% 48%';
 
     if (activeTheme) {
-      // Always apply primary and accent
-      root.style.setProperty('--primary', activeTheme.primary || '199 89% 48%');
+      root.style.setProperty('--primary', primaryColor);
       
       if (isDark) {
-        // In dark mode, we use a semi-transparent version of the primary as accent
         root.style.setProperty('--accent', `var(--primary) / 0.15`);
-        // Remove manual background override so the CSS .dark class variables take over
         root.style.removeProperty('--background');
       } else {
-        // In light mode, apply the theme's background and accent
         root.style.setProperty('--background', activeTheme.background || '0 0% 98%');
         root.style.setProperty('--accent', activeTheme.accent || '199 89% 95%');
       }
     } else {
-      // If no custom theme is active, ensure properties are cleared to use defaults
       root.style.removeProperty('--primary');
       root.style.removeProperty('--background');
       root.style.removeProperty('--accent');
+    }
+
+    // Dynamic Favicon Update
+    try {
+      const svgColor = `hsl(${primaryColor.split(' ').join(',')})`;
+      const svgContent = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='${svgColor}'/><path d='M50 25c-11.05 0-20 8.95-20 20 0 6.13 2.76 11.62 7.12 15.34.8.69 1.28 1.71 1.28 2.77V70h23.2v-6.89c0-1.06.48-2.08 1.28-2.77C67.24 56.62 70 51.13 70 45c0-11.05-8.95-20-20-20zm-8 50h16v3.2H42V75zm2.4 6.4h11.2V83H44.4v-1.6z' fill='white'/></svg>`;
+      const dataUri = `data:image/svg+xml;base64,${btoa(svgContent)}`;
+      const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
+      if (link) {
+        link.href = dataUri;
+      }
+    } catch (e) {
+      // Fail silently if SVG encoding issues occur
     }
   }, [profile?.preferredThemeId, dbTheme, resolvedTheme]);
 

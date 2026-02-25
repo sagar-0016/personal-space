@@ -1,3 +1,4 @@
+
 /**
  * Simplified metadata parser that extracts project hierarchy and indexing fields 
  * from a YAML metadata block.
