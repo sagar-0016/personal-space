@@ -29,7 +29,9 @@ import {
   Zap,
   Code,
   Database,
-  Book
+  Book,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -88,7 +90,8 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
   const [labelId, setLabelId] = useState<string>('none');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
-  const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('visual');
+  const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
+  const [isMetaExpanded, setIsMetaExpanded] = useState(false);
   
   // Dialog States
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
@@ -147,7 +150,8 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       setTags(note.tags || []);
       lastSavedRef.current = JSON.stringify({ t: note.title, c: note.content, m: note.metadata, p: note.projectId, l: note.labelId, tags: note.tags });
       if (editor) editor.commands.setContent(note.content, false);
-      setEditMode('visual');
+      setEditMode('preview');
+      setIsMetaExpanded(false);
     }
   }, [note?.id, isOpen, editor]);
 
@@ -203,6 +207,8 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     setNewLabelName('');
   };
 
+  const activeProject = projects?.find(p => p.id === projectId);
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && performSave(true)}>
@@ -222,57 +228,93 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             </div>
           </div>
 
+          <div className="border-b bg-muted/10">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full flex items-center justify-between px-10 py-2 h-auto hover:bg-muted/20 rounded-none transition-all group"
+              onClick={() => setIsMetaExpanded(!isMetaExpanded)}
+            >
+              <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 group-hover:text-primary transition-colors">
+                <div className="flex items-center gap-2">
+                  <Database className="h-3 w-3" />
+                  <span>Note Details</span>
+                </div>
+                {!isMetaExpanded && (
+                  <div className="flex items-center gap-3 lowercase font-medium tracking-normal text-muted-foreground/40">
+                    {activeProject && (
+                      <Badge variant="outline" className="text-[9px] h-4 border-primary/20 bg-primary/5 text-primary">
+                        {activeProject.name}
+                      </Badge>
+                    )}
+                    {tags.length > 0 && <span>• {tags.length} tags</span>}
+                  </div>
+                )}
+              </div>
+              {isMetaExpanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground/30" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/30" />}
+            </Button>
+            
+            <div className={cn(
+              "grid transition-all duration-300 ease-in-out",
+              isMetaExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+            )}>
+              <div className="overflow-hidden">
+                <div className="px-10 py-8 space-y-6 border-t border-border/10 bg-background/40">
+                  <div className="flex items-center gap-4">
+                    <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)}>
+                      <SelectTrigger className="w-[200px] h-9 text-[11px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                        <div className="flex items-center gap-2">
+                          {projectId !== 'none' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3.5 w-3.5 text-primary" })}
+                          <SelectValue placeholder="Project" />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent className="z-[200]">
+                        <SelectItem value="none">No Project</SelectItem>
+                        {projects?.map(p => (
+                          <SelectItem key={p.id} value={p.id}>
+                            <div className="flex items-center gap-2">
+                              {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
+                              {p.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="new" className="text-primary font-bold">+ Create New Project</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {projectId !== 'none' && (
+                      <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)}>
+                        <SelectTrigger className="w-[180px] h-9 text-[11px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                          <div className="flex items-center gap-2"><Tag className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
+                        </SelectTrigger>
+                        <SelectContent className="z-[200]">
+                          {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
+                           labels?.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+                          <SelectItem value="new" className="text-primary font-bold">+ Create New Label</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center bg-primary/5 rounded-full px-3 py-1 border border-primary/10 group focus-within:border-primary/30 transition-all">
+                      <Hash className="h-3.5 w-3.5 text-primary/40 mr-2" />
+                      <input placeholder="Add tag..." className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-24 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && tagInput.trim() && (setTags([...tags, tagInput.trim()]), setTagInput(''))} />
+                    </div>
+                    {tags.map(t => <Badge key={t} variant="secondary" className="flex items-center gap-2 rounded-lg px-3 py-1 bg-primary/10 text-primary border-none text-[11px] font-bold">{t}<X className="h-3 w-3 cursor-pointer" onClick={() => setTags(tags.filter(tg => tg !== t))} /></Badge>)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {editMode !== 'preview' && (
             <EditorToolbar editor={editMode === 'visual' ? editor : null} textareaRef={textareaRef} metadata={metadata} onMetadataChange={setMetadata} onContentChange={setContent} />
           )}
 
           <div className="flex-1 overflow-y-auto pt-6 pb-20 scroll-smooth">
             <div className="px-10 space-y-6">
-              <div className="flex items-center gap-4">
-                <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)}>
-                  <SelectTrigger className="w-[200px] h-9 text-[11px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                    <div className="flex items-center gap-2">
-                      {projectId !== 'none' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3.5 w-3.5 text-primary" })}
-                      <SelectValue placeholder="Project" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent className="z-[200]">
-                    <SelectItem value="none">No Project</SelectItem>
-                    {projects?.map(p => (
-                      <SelectItem key={p.id} value={p.id}>
-                        <div className="flex items-center gap-2">
-                          {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
-                          {p.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="new" className="text-primary font-bold">+ Create New Project</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {projectId !== 'none' && (
-                  <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)}>
-                    <SelectTrigger className="w-[180px] h-9 text-[11px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                      <div className="flex items-center gap-2"><Tag className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
-                    </SelectTrigger>
-                    <SelectContent className="z-[200]">
-                      {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
-                       labels?.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
-                      <SelectItem value="new" className="text-primary font-bold">+ Create New Label</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-
               <Input placeholder="Note Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-3xl font-bold px-0 bg-transparent h-auto placeholder:opacity-30" />
-              
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center bg-primary/5 rounded-full px-3 py-1 border border-primary/10 group focus-within:border-primary/30 transition-all">
-                  <Hash className="h-3.5 w-3.5 text-primary/40 mr-2" />
-                  <input placeholder="Add tag..." className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-24 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && tagInput.trim() && (setTags([...tags, tagInput.trim()]), setTagInput(''))} />
-                </div>
-                {tags.map(t => <Badge key={t} variant="secondary" className="flex items-center gap-2 rounded-lg px-3 py-1 bg-primary/10 text-primary border-none text-[11px] font-bold">{t}<X className="h-3 w-3 cursor-pointer" onClick={() => setTags(tags.filter(tg => tg !== t))} /></Badge>)}
-              </div>
             </div>
             
             <div className="mt-6 px-10">

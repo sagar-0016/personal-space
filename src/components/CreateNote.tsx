@@ -19,7 +19,9 @@ import {
   Zap,
   Code,
   Database,
-  Book
+  Book,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor } from './RichEditor';
@@ -89,6 +91,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   const [metadata, setMetadata] = useState('');
   const [isPinned, setIsPinned] = useState(false);
   const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('visual');
+  const [isMetaExpanded, setIsMetaExpanded] = useState(false);
   
   const [selectedProjectId, setSelectedProjectId] = useState<string>(defaultProjectId || 'none');
   const [selectedLabelId, setSelectedLabelId] = useState<string>('none');
@@ -249,6 +252,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     setTagInput('');
     setSelectedProjectId(defaultProjectId || 'none');
     setSelectedLabelId('none');
+    setIsMetaExpanded(false);
   };
 
   const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -289,6 +293,8 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     setNewLabelName('');
   };
 
+  const activeProject = projects?.find(p => p.id === selectedProjectId);
+
   return (
     <div className="w-full max-w-2xl mx-auto mb-12 px-4" ref={containerRef}>
       <Card className={cn(
@@ -308,50 +314,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
           <div className="flex flex-col note-fade-in">
             <div className="flex flex-col px-6 pt-5 pb-2">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <Select 
-                    value={selectedProjectId} 
-                    onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setSelectedProjectId(val)}
-                    onOpenChange={setInteracting}
-                  >
-                    <SelectTrigger className="w-[180px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                      <div className="flex items-center gap-2">
-                        <Briefcase className="h-3 w-3 text-primary" />
-                        <SelectValue placeholder="Select Project" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="project-select-dropdown">
-                      <SelectItem value="none">No Project</SelectItem>
-                      {projects?.map(p => (
-                        p.id ? <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem> : null
-                      ))}
-                      <SelectItem value="new" className="text-primary font-bold">+ Create New Project</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  {selectedProjectId !== 'none' && (
-                    <Select 
-                      value={selectedLabelId} 
-                      onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setSelectedLabelId(val)}
-                      onOpenChange={setInteracting}
-                    >
-                      <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                        <div className="flex items-center gap-2">
-                          <Tag className="h-3 w-3 text-primary" />
-                          <SelectValue placeholder="Select Label" />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
-                         labels?.map(l => (
-                          l.id ? <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem> : null
-                        ))}
-                        <SelectItem value="new" className="text-primary font-bold">+ Create New Label</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-                
                 <div className="flex items-center space-x-1">
                   <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
                     <Button variant="ghost" size="sm" onClick={() => setEditMode('preview')} className={cn("h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Preview</Button>
@@ -365,17 +327,97 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
               </div>
 
               <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" autoFocus />
-              
-              <div className="flex flex-wrap items-center gap-2 mt-3">
-                <div className="flex items-center bg-primary/5 rounded-full px-2 py-0.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
-                  <Hash className="h-3 w-3 text-primary/40 mr-2" />
-                  <input placeholder="Add tag..." className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none w-20 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTag()} />
+            </div>
+
+            <div className="border-y border-border/5 bg-muted/5">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full flex items-center justify-between px-6 py-2 h-auto hover:bg-muted/10 rounded-none group"
+                onClick={() => setIsMetaExpanded(!isMetaExpanded)}
+              >
+                <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 group-hover:text-primary transition-colors">
+                  <div className="flex items-center gap-2">
+                    <Database className="h-3 w-3" />
+                    <span>Note Details</span>
+                  </div>
+                  {!isMetaExpanded && (
+                    <div className="flex items-center gap-3 lowercase font-medium tracking-normal">
+                      {activeProject && (
+                        <Badge variant="outline" className="text-[9px] h-4 border-primary/20 bg-primary/5 text-primary">
+                          {activeProject.name}
+                        </Badge>
+                      )}
+                      {tags.length > 0 && <span>• {tags.length} tags</span>}
+                    </div>
+                  )}
                 </div>
-                {tags.map(t => (
-                  <Badge key={t} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1">
-                    {t} <X className="h-2 w-2 cursor-pointer hover:text-destructive" onClick={() => removeTag(t)} />
-                  </Badge>
-                ))}
+                {isMetaExpanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground/30" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/30" />}
+              </Button>
+              
+              <div className={cn(
+                "grid transition-all duration-300 ease-in-out",
+                isMetaExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+              )}>
+                <div className="overflow-hidden">
+                  <div className="px-6 py-6 space-y-4 border-t border-border/10 bg-background/20">
+                    <div className="flex items-center gap-3">
+                      <Select 
+                        value={selectedProjectId} 
+                        onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setSelectedProjectId(val)}
+                        onOpenChange={setInteracting}
+                      >
+                        <SelectTrigger className="w-[180px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="h-3 w-3 text-primary" />
+                            <SelectValue placeholder="Select Project" />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent className="project-select-dropdown">
+                          <SelectItem value="none">No Project</SelectItem>
+                          {projects?.map(p => (
+                            p.id ? <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem> : null
+                          ))}
+                          <SelectItem value="new" className="text-primary font-bold">+ Create New Project</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      {selectedProjectId !== 'none' && (
+                        <Select 
+                          value={selectedLabelId} 
+                          onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setSelectedLabelId(val)}
+                          onOpenChange={setInteracting}
+                        >
+                          <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                            <div className="flex items-center gap-2">
+                              <Tag className="h-3 w-3 text-primary" />
+                              <SelectValue placeholder="Select Label" />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
+                             labels?.map(l => (
+                              l.id ? <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem> : null
+                            ))}
+                            <SelectItem value="new" className="text-primary font-bold">+ Create New Label</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center bg-primary/5 rounded-full px-2 py-0.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
+                        <Hash className="h-3 w-3 text-primary/40 mr-2" />
+                        <input placeholder="Add tag..." className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none w-20 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTag()} />
+                      </div>
+                      {tags.map(t => (
+                        <Badge key={t} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1">
+                          {t} <X className="h-2 w-2 cursor-pointer hover:text-destructive" onClick={() => removeTag(t)} />
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
