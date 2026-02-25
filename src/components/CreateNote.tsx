@@ -9,7 +9,7 @@ import {
   Plus, 
   Pin, 
   Briefcase, 
-  Tag, 
+  Tag as TagIcon, 
   X, 
   Loader2, 
   Hash,
@@ -59,6 +59,11 @@ import {
   DialogTitle, 
   DialogFooter 
 } from '@/components/ui/dialog';
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
@@ -92,7 +97,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   const [metadata, setMetadata] = useState('');
   const [isPinned, setIsPinned] = useState(false);
   const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('visual');
-  const [isMetaExpanded, setIsMetaExpanded] = useState(false);
   
   const [selectedProjectId, setSelectedProjectId] = useState<string>(defaultProjectId || 'none');
   const [selectedLabelId, setSelectedLabelId] = useState<string>('none');
@@ -249,7 +253,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     setTagInput('');
     setSelectedProjectId(defaultProjectId || 'none');
     setSelectedLabelId('none');
-    setIsMetaExpanded(false);
   };
 
   const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -316,15 +319,61 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                 </div>
 
                 <div className="flex items-center gap-2 ml-auto">
+                  {/* Experimental Tag Capsule Window */}
+                  <Popover onOpenChange={setInteracting}>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" className="h-7 px-2.5 bg-primary/5 hover:bg-primary/10 border-none rounded-full flex items-center gap-1.5 transition-all">
+                        <Hash className="h-3 w-3 text-primary" />
+                        <div className="flex items-center gap-1 max-w-[100px] overflow-hidden">
+                          {tags.length > 0 ? (
+                            <>
+                              {tags.slice(0, 1).map(t => (
+                                <span key={t} className="text-[8px] font-bold text-primary/70 truncate lowercase">#{t}</span>
+                              ))}
+                              {tags.length > 1 && <span className="text-[8px] font-bold text-primary/40">+{tags.length - 1}</span>}
+                            </>
+                          ) : (
+                            <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest">Tags</span>
+                          )}
+                        </div>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-4 z-[200] rounded-xl shadow-2xl border-primary/10 bg-card/95 backdrop-blur-md">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-primary">Manage Tags</span>
+                          <Hash className="h-3 w-3 text-primary/40" />
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 max-h-[150px] overflow-y-auto pr-1">
+                          {tags.map(t => (
+                            <Badge key={t} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1">
+                              {t} <X className="h-2 w-2 cursor-pointer hover:text-destructive" onClick={() => removeTag(t)} />
+                            </Badge>
+                          ))}
+                          {tags.length === 0 && <p className="text-[10px] italic text-muted-foreground/50 w-full text-center py-2">No tags yet</p>}
+                        </div>
+                        <div className="flex items-center bg-primary/5 rounded-lg px-3 py-1.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
+                          <input 
+                            placeholder="Add tag..." 
+                            className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-full placeholder:text-muted-foreground/30" 
+                            value={tagInput} 
+                            onChange={(e) => setTagInput(e.target.value)} 
+                            onKeyDown={(e) => e.key === 'Enter' && addTag()} 
+                          />
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
                   {selectedProjectId !== 'none' && (
                     <Select 
                       value={selectedLabelId} 
                       onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setSelectedLabelId(val)}
                       onOpenChange={setInteracting}
                     >
-                      <SelectTrigger className="w-[120px] h-7 text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                      <SelectTrigger className="w-[110px] h-7 text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                         <div className="flex items-center gap-1.5">
-                          <Tag className="h-3 w-3 text-primary" />
+                          <TagIcon className="h-3 w-3 text-primary" />
                           <SelectValue placeholder="Label" />
                         </div>
                       </SelectTrigger>
@@ -343,13 +392,13 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                     onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setSelectedProjectId(val)}
                     onOpenChange={setInteracting}
                   >
-                    <SelectTrigger className="w-[140px] h-7 text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                    <SelectTrigger className="w-[130px] h-7 text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                       <div className="flex items-center gap-1.5">
                         <Briefcase className="h-3 w-3 text-primary" />
                         <SelectValue placeholder="Project" />
                       </div>
                     </SelectTrigger>
-                    <SelectContent className="project-select-dropdown">
+                    <SelectContent>
                       <SelectItem value="none">No Project</SelectItem>
                       {projects?.map(p => (
                         p.id ? <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem> : null
@@ -365,55 +414,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
               </div>
 
               <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" autoFocus />
-            </div>
-
-            <div className="border-y border-border/5 bg-muted/5">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full flex items-center justify-between px-6 py-2 h-auto hover:bg-muted/10 rounded-none group"
-                onClick={() => setIsMetaExpanded(!isMetaExpanded)}
-              >
-                <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 group-hover:text-primary transition-colors">
-                  <div className="flex items-center gap-2">
-                    <Database className="h-3 w-3" />
-                    <span>Note Details</span>
-                  </div>
-                  {!isMetaExpanded && (
-                    <div className="flex items-center gap-2 overflow-hidden max-w-[300px]">
-                      {tags.slice(0, 3).map(t => (
-                        <Badge key={t} variant="secondary" className="text-[8px] h-4 font-bold px-1.5 bg-primary/5 text-primary/60 border-none lowercase tracking-normal">
-                          #{t}
-                        </Badge>
-                      ))}
-                      {tags.length > 3 && <span className="text-[8px] text-muted-foreground/40 font-bold">+{tags.length - 3}</span>}
-                      {tags.length === 0 && <span className="text-[8px] text-muted-foreground/20 italic font-medium lowercase tracking-normal">No tags added</span>}
-                    </div>
-                  )}
-                </div>
-                {isMetaExpanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground/30" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/30" />}
-              </Button>
-              
-              <div className={cn(
-                "grid transition-all duration-300 ease-in-out",
-                isMetaExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-              )}>
-                <div className="overflow-hidden">
-                  <div className="px-6 py-6 space-y-4 border-t border-border/10 bg-background/20">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="flex items-center bg-primary/5 rounded-full px-2 py-0.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
-                        <Hash className="h-3 w-3 text-primary/40 mr-2" />
-                        <input placeholder="Add tag..." className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none w-20 placeholder:text-muted-foreground/30" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTag()} />
-                      </div>
-                      {tags.map(t => (
-                        <Badge key={t} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1">
-                          {t} <X className="h-2 w-2 cursor-pointer hover:text-destructive" onClick={() => removeTag(t)} />
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <EditorToolbar 
