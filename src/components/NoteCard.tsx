@@ -77,7 +77,6 @@ export function NoteCard({
         onClick={() => !isTrash && onEdit(note)}
         className={cn(
           "relative z-10 flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card/95 google-shadow-hover rounded-xl overflow-hidden h-fit",
-          "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-primary/40 before:opacity-0 group-hover:before:opacity-100 transition-all",
           note.isPinned && "border-primary/30"
         )}
       >
