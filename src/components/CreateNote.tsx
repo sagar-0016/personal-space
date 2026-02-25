@@ -95,6 +95,9 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
 
+  // STABILITY FIX: Use a ref to track if any dropdown or dialog is open
+  const isInteracting = useRef(false);
+
   // Dialog States
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
   const [isLabelDialogOpen, setIsLabelDialogOpen] = useState(false);
@@ -177,17 +180,12 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
       
-      // CRITICAL FIX: Robust portal detection.
-      // We check for any Radix UI portal common attributes/roles.
-      const isPortalInteraction = 
-        target.closest('[role="listbox"]') || 
-        target.closest('[role="dialog"]') || 
-        target.closest('[role="menu"]') ||
-        target.closest('[data-radix-popper-content-wrapper]') ||
-        target.closest('.project-select-dropdown') ||
-        target.closest('[data-metadata-popover="true"]');
+      // STABILITY FIX: If we are interacting with a portal, don't collapse.
+      if (isInteracting.current) return;
 
-      if (isPortalInteraction) return;
+      // Radix Portals often don't trigger the ref check correctly
+      const isPortal = target.closest('[data-radix-popper-content-wrapper]') || target.closest('[role="dialog"]');
+      if (isPortal) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
         if (isExpanded) {
@@ -201,7 +199,18 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isExpanded, title, content, isPinned, metadata, selectedProjectId, selectedLabelId, tags, isProjectDialogOpen, isLabelDialogOpen]);
+  }, [isExpanded, title, content, isPinned, metadata, selectedProjectId, selectedLabelId, tags]);
+
+  const setInteracting = (open: boolean) => {
+    if (open) {
+      isInteracting.current = true;
+    } else {
+      // Small delay to ensure the click that closed the menu doesn't trigger collapse
+      setTimeout(() => {
+        isInteracting.current = false;
+      }, 100);
+    }
+  };
 
   const handleSave = () => {
     if (title.trim() || content.trim()) {
@@ -300,10 +309,11 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
             <div className="flex flex-col px-6 pt-5 pb-2">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <Select value={selectedProjectId} onValueChange={(val) => {
-                    if (val === 'new') setIsProjectDialogOpen(true);
-                    else setSelectedProjectId(val);
-                  }}>
+                  <Select 
+                    value={selectedProjectId} 
+                    onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setSelectedProjectId(val)}
+                    onOpenChange={setInteracting}
+                  >
                     <SelectTrigger className="w-[180px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                       <div className="flex items-center gap-2">
                         <Briefcase className="h-3 w-3 text-primary" />
@@ -320,10 +330,11 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                   </Select>
 
                   {selectedProjectId !== 'none' && (
-                    <Select value={selectedLabelId} onValueChange={(val) => {
-                      if (val === 'new') setIsLabelDialogOpen(true);
-                      else setSelectedLabelId(val);
-                    }}>
+                    <Select 
+                      value={selectedLabelId} 
+                      onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setSelectedLabelId(val)}
+                      onOpenChange={setInteracting}
+                    >
                       <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                         <div className="flex items-center gap-2">
                           <Tag className="h-3 w-3 text-primary" />
@@ -368,9 +379,13 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
               </div>
             </div>
 
-            {editMode !== 'preview' && (
-              <EditorToolbar editor={editMode === 'visual' ? editor : null} textareaRef={textareaRef} metadata={metadata} onMetadataChange={setMetadata} onContentChange={setContent} />
-            )}
+            <EditorToolbar 
+              editor={editMode === 'visual' ? editor : null} 
+              textareaRef={textareaRef} 
+              metadata={metadata} 
+              onMetadataChange={setMetadata} 
+              onContentChange={setContent} 
+            />
 
             <div className="px-6 py-2">
               {editMode === 'preview' ? (
@@ -390,7 +405,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
       </Card>
 
       {/* Project Creation Dialog */}
-      <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
+      <Dialog open={isProjectDialogOpen} onOpenChange={(open) => { setIsProjectDialogOpen(open); setInteracting(open); }}>
         <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
@@ -433,7 +448,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
       </Dialog>
 
       {/* Label Creation Dialog */}
-      <Dialog open={isLabelDialogOpen} onOpenChange={setIsLabelDialogOpen}>
+      <Dialog open={isLabelDialogOpen} onOpenChange={(open) => { setIsLabelDialogOpen(open); setInteracting(open); }}>
         <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
             <DialogTitle>Create New Label</DialogTitle>

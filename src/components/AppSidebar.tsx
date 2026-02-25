@@ -37,7 +37,6 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   SidebarRail,
-  SidebarMenuAction,
 } from "@/components/ui/sidebar";
 import { Note, Project, Label } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -127,17 +126,17 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
       <Collapsible defaultOpen={isActiveProject} className="group/project">
         <SidebarMenuItem>
           {/* 
-              CENTRAL FIX: This relative container with h-8 ensures the SidebarMenuAction 
-              stays perfectly centered on the project row, even when sub-labels are visible.
+              FIXED VERTICAL CENTERING: 
+              Isolated row with fixed height and absolute centered actions 
           */}
-          <div className="relative h-8 flex items-center mb-0.5">
+          <div className="relative flex items-center h-8 mb-0.5 w-full group/row">
             <CollapsibleTrigger asChild>
               <SidebarMenuButton 
                 asChild
                 tooltip={project.name}
                 isActive={isActiveProject}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all duration-300 h-full relative pr-16",
+                  "rounded-r-full mr-2 transition-all duration-300 h-full relative pr-16 w-full",
                   isActiveProject && "bg-primary/10 text-primary font-bold"
                 )}
               >
@@ -149,42 +148,49 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
                 >
                   <IconComponent className={cn("h-4 w-4 mr-2 shrink-0", isActiveProject && "text-primary")} />
                   <span className="flex-1 truncate text-sm">{project.name}</span>
-                  
-                  {!isLoading && labels && labels.length > 0 && (
-                    <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 absolute right-2 !top-1/2 !-translate-y-1/2" />
-                  )}
-                  {isLoading && (
-                    <Loader2 className="h-3 w-3 animate-spin opacity-40 absolute right-2 !top-1/2 !-translate-y-1/2" />
-                  )}
                 </div>
               </SidebarMenuButton>
             </CollapsibleTrigger>
             
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <SidebarMenuAction 
-                  showOnHover 
-                  className="right-9 !top-1/2 !-translate-y-1/2 h-6 w-6 rounded-md hover:bg-primary/10 transition-colors" 
-                >
-                  <MoreHorizontal className="h-3.5 w-3.5" />
-                  <span className="sr-only">Project actions</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="start" className="z-[100]">
-                <DropdownMenuItem onClick={() => {
-                  setNewName(project.name);
-                  setSelectedIcon(project.iconName || 'Briefcase');
-                  setIsEditOpen(true);
-                }}>
-                  <Edit2 className="mr-2 h-4 w-4" />
-                  <span>Edit</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive focus:text-destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  <span>Delete</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* 
+                Absolute Actions: Anchored to the center of the h-8 row.
+                Locked with style transforms to avoid CSS overriding issues.
+            */}
+            <div 
+              className="absolute right-3 flex items-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity pointer-events-none"
+              style={{ top: '50%', transform: 'translateY(-50%)' }}
+            >
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 rounded-md hover:bg-primary/10 transition-colors pointer-events-auto"
+                  >
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                    <span className="sr-only">Project actions</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="right" align="start" className="z-[100]">
+                  <DropdownMenuItem onClick={() => {
+                    setNewName(project.name);
+                    setSelectedIcon(project.iconName || 'Briefcase');
+                    setIsEditOpen(true);
+                  }}>
+                    <Edit2 className="mr-2 h-4 w-4" />
+                    <span>Edit</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive focus:text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Delete</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              {!isLoading && labels && labels.length > 0 && (
+                <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 text-muted-foreground/40" />
+              )}
+            </div>
           </div>
 
           {!isLoading && labels && labels.length > 0 && (
