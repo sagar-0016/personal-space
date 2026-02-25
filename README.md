@@ -1,1 +1,1 @@
-A replica of Google Keep but better
+A cheap copy of Google Keep
