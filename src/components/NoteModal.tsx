@@ -259,38 +259,36 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                   </Button>
                   
                   <div className="relative flex flex-col items-center">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setEditMode('visual')} 
-                      className={cn(
-                        "h-6 sm:h-7 px-2 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-tight transition-all", 
-                        editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
-                      )}
-                    >
-                      Visual
-                    </Button>
-                    <div className="absolute -bottom-3 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-1 duration-300">
-                      <div className="h-[2px] w-1/2 bg-primary rounded-full shadow-[0_0_8px_hsl(var(--primary))]" />
-                      <span className="text-[6px] font-black text-primary uppercase mt-0.5 tracking-tighter">EDIT</span>
-                    </div>
-                  </div>
+                    <div className="flex items-center">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setEditMode('visual')} 
+                        className={cn(
+                          "h-6 sm:h-7 px-2 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-tight transition-all", 
+                          editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                        )}
+                      >
+                        Visual
+                      </Button>
 
-                  <div className="relative flex flex-col items-center">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setEditMode('markdown')} 
-                      className={cn(
-                        "h-6 sm:h-7 px-2 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-tight transition-all", 
-                        editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
-                      )}
-                    >
-                      .MD
-                    </Button>
-                    <div className="absolute -bottom-3 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-1 duration-300">
-                      <div className="h-[2px] w-1/2 bg-primary rounded-full shadow-[0_0_8px_hsl(var(--primary))]" />
-                      <span className="text-[6px] font-black text-primary uppercase mt-0.5 tracking-tighter">EDIT</span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setEditMode('markdown')} 
+                        className={cn(
+                          "h-6 sm:h-7 px-2 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-tight transition-all", 
+                          editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                        )}
+                      >
+                        .MD
+                      </Button>
+                    </div>
+
+                    <div className="absolute -bottom-3.5 flex items-center justify-center w-full gap-2 px-2 animate-in fade-in slide-in-from-top-1 duration-300">
+                      <div className="h-[1px] flex-1 bg-primary/40 rounded-full shadow-[0_0_4px_hsl(var(--primary)/0.3)]" />
+                      <span className="text-[7px] font-black text-primary uppercase tracking-[0.2em] whitespace-nowrap">EDIT</span>
+                      <div className="h-[1px] flex-1 bg-primary/40 rounded-full shadow-[0_0_4px_hsl(var(--primary)/0.3)]" />
                     </div>
                   </div>
                 </div>
