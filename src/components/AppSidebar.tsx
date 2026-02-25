@@ -159,7 +159,7 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <SidebarMenuAction 
                 showOnHover 
-                className="right-9 !top-1/2 !-translate-y-1/2" 
+                className="right-9 top-4 !-translate-y-1/2" 
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
                 <span className="sr-only">Project actions</span>
