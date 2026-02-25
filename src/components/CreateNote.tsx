@@ -181,7 +181,10 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
       if (isInteracting.current) return;
-      const isPortal = target.closest('[data-radix-popper-content-wrapper]') || target.closest('[role="dialog"]');
+      
+      const isPortal = target.closest('[data-radix-popper-content-wrapper]') || 
+                       target.closest('[role="dialog"]') || 
+                       target.closest('[role="menu"]');
       if (isPortal) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
@@ -286,8 +289,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     setNewLabelName('');
   };
 
-  const activeProject = projects?.find(p => p.id === selectedProjectId);
-
   return (
     <div className="w-full max-w-2xl mx-auto mb-12 px-4" ref={containerRef}>
       <Card className={cn(
@@ -314,26 +315,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                 </div>
 
                 <div className="flex items-center gap-2 ml-auto">
-                  <Select 
-                    value={selectedProjectId} 
-                    onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setSelectedProjectId(val)}
-                    onOpenChange={setInteracting}
-                  >
-                    <SelectTrigger className="w-[140px] h-7 text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                      <div className="flex items-center gap-1.5">
-                        <Briefcase className="h-3 w-3 text-primary" />
-                        <SelectValue placeholder="Project" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="project-select-dropdown">
-                      <SelectItem value="none">No Project</SelectItem>
-                      {projects?.map(p => (
-                        p.id ? <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem> : null
-                      ))}
-                      <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
-                    </SelectContent>
-                  </Select>
-
                   {selectedProjectId !== 'none' && (
                     <Select 
                       value={selectedLabelId} 
@@ -355,6 +336,26 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                       </SelectContent>
                     </Select>
                   )}
+
+                  <Select 
+                    value={selectedProjectId} 
+                    onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setSelectedProjectId(val)}
+                    onOpenChange={setInteracting}
+                  >
+                    <SelectTrigger className="w-[140px] h-7 text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                      <div className="flex items-center gap-1.5">
+                        <Briefcase className="h-3 w-3 text-primary" />
+                        <SelectValue placeholder="Project" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="project-select-dropdown">
+                      <SelectItem value="none">No Project</SelectItem>
+                      {projects?.map(p => (
+                        p.id ? <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem> : null
+                      ))}
+                      <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                    </SelectContent>
+                  </Select>
 
                   <Button variant="ghost" size="icon" onClick={() => setIsPinned(!isPinned)} className={cn("h-7 w-7 rounded-full transition-all", isPinned ? "text-primary bg-primary/5" : "text-muted-foreground/40")}>
                     <Pin className={cn("h-4 w-4", isPinned && "fill-current")} />

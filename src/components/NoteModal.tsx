@@ -206,8 +206,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     setNewLabelName('');
   };
 
-  const activeProject = projects?.find(p => p.id === projectId);
-
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && performSave(true)}>
@@ -224,6 +222,19 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             </div>
 
             <div className="flex items-center gap-3">
+              {projectId !== 'none' && (
+                <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)}>
+                  <SelectTrigger className="w-[140px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                    <div className="flex items-center gap-2"><Tag className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
+                  </SelectTrigger>
+                  <SelectContent className="z-[200]">
+                    {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
+                     labels?.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+                    <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+
               <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)}>
                 <SelectTrigger className="w-[160px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                   <div className="flex items-center gap-2">
@@ -244,19 +255,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                   <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
                 </SelectContent>
               </Select>
-
-              {projectId !== 'none' && (
-                <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)}>
-                  <SelectTrigger className="w-[140px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                    <div className="flex items-center gap-2"><Tag className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
-                  </SelectTrigger>
-                  <SelectContent className="z-[200]">
-                    {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
-                     labels?.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
-                    <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
 
               <Button variant="ghost" size="icon" onClick={() => performSave(true)} className="rounded-full h-9 w-9"><X className="h-4 w-4" /></Button>
             </div>
