@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -62,8 +61,6 @@ export default function LoginPage() {
   }, [auth, router, toast]);
 
   useEffect(() => {
-    // Only redirect if the user is authenticated AND email is verified
-    // Google users are typically verified by default
     if (!isUserLoading && authUser) {
       const isPasswordUser = authUser.providerData.some(p => p.providerId === 'password');
       if (!isPasswordUser || authUser.emailVerified) {
@@ -90,20 +87,16 @@ export default function LoginPage() {
         const userCredential = await createUserWithEmailAndPassword(auth!, email, password);
         const user = userCredential.user;
         
-        // Update the user's profile with the display name
         await updateProfile(user, { displayName });
-        
-        // Send initial verification email
         await sendEmailVerification(user);
         
         syncUserProfile(user);
         
         toast({
           title: "Verification Email Sent",
-          description: `A verification link has been sent to ${email}. Please verify your email before signing in.`,
+          description: `A verification link has been sent to ${email}. Please check your inbox (and spam folder) to verify your account.`,
         });
         
-        // Force sign out to prevent session entry without verification
         await signOut(auth!);
         setIsSignUp(false);
         setEmail('');
@@ -113,12 +106,11 @@ export default function LoginPage() {
         const user = userCredential.user;
         
         if (!user.emailVerified) {
-          // Re-send verification link if they try to log in unverified
           await sendEmailVerification(user);
           toast({
             variant: "destructive",
             title: "Email Not Verified",
-            description: "A new verification link has been sent to your email. Please verify it before signing in.",
+            description: "A new verification link has been sent. Please check your inbox and spam folder before signing in.",
           });
           await signOut(auth!);
           return;

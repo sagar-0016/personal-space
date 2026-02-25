@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -253,7 +252,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap justify-end">
+              <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap justify-end max-w-full">
                 <Button 
                   variant="ghost" 
                   onClick={() => setIsTagsExpanded(!isTagsExpanded)}
@@ -263,7 +262,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                   )}
                 >
                   <Hash className={cn("h-3.5 w-3.5", isTagsExpanded ? "text-primary-foreground" : "text-primary")} />
-                  <div className="flex items-center gap-1 max-w-[80px] sm:max-w-[150px] overflow-hidden">
+                  <div className="flex items-center gap-1 max-w-[60px] sm:max-w-[120px] overflow-hidden">
                     {tags.length > 0 ? (
                       <span className={cn("text-[8px] sm:text-[9px] font-black truncate lowercase", isTagsExpanded ? "text-primary-foreground/90" : "text-primary/70")}>#{tags[0]}</span>
                     ) : (
@@ -273,30 +272,33 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 </Button>
 
                 <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)} onOpenChange={setInteracting}>
-                  <SelectTrigger className="w-[100px] sm:w-[130px] h-7 sm:h-8 text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                    <div className="flex items-center gap-1 sm:gap-2 shrink-0"><TagIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
+                  <SelectTrigger className="w-[85px] sm:w-[130px] h-7 sm:h-8 text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                    <div className="flex items-center gap-1 sm:gap-2 truncate max-w-full">
+                      <TagIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary shrink-0" />
+                      <SelectValue placeholder="Label" className="truncate" />
+                    </div>
                   </SelectTrigger>
                   <SelectContent className="z-[200]">
                     {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
-                     labels?.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+                     labels?.map(l => <SelectItem key={l.id} value={l.id} className="truncate">{l.name}</SelectItem>)}
                     <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)} onOpenChange={setInteracting}>
-                  <SelectTrigger className="w-[110px] sm:w-[150px] h-7 sm:h-8 text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                      {projectId !== 'none' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" })}
-                      <SelectValue placeholder="Project" />
+                  <SelectTrigger className="w-[95px] sm:w-[150px] h-7 sm:h-8 text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                    <div className="flex items-center gap-1 sm:gap-2 truncate max-w-full">
+                      {projectId !== 'none' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary shrink-0" })}
+                      <SelectValue placeholder="Project" className="truncate" />
                     </div>
                   </SelectTrigger>
                   <SelectContent className="z-[200]">
                     <SelectItem value="none">No Project</SelectItem>
                     {projects?.map(p => (
-                      <SelectItem key={p.id} value={p.id}>
-                        <div className="flex items-center gap-2">
-                          {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
-                          {p.name}
+                      <SelectItem key={p.id} value={p.id} className="truncate">
+                        <div className="flex items-center gap-2 truncate">
+                          {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5 shrink-0" })}
+                          <span className="truncate">{p.name}</span>
                         </div>
                       </SelectItem>
                     ))}
@@ -304,11 +306,10 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                   </SelectContent>
                 </Select>
 
-                <Button variant="ghost" size="icon" onClick={() => performSave(true)} className="rounded-full h-8 w-8 sm:h-9 sm:w-9"><X className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => performSave(true)} className="rounded-full h-8 w-8 sm:h-9 sm:w-9 hidden sm:flex"><X className="h-4 w-4" /></Button>
               </div>
             </div>
 
-            {/* Expanded Tag Tray */}
             {isTagsExpanded && (
               <div className="px-3 sm:px-6 pb-4 pt-0 animate-in slide-in-from-top-2 duration-300">
                 <div className="bg-primary/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-primary/10 space-y-3">
@@ -369,7 +370,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             </div>
           </div>
 
-          <div className="p-4 bg-card border-t flex flex-col sm:flex-row gap-4 sm:justify-between items-center px-6 sm:px-10">
+          <div className="p-4 sm:p-6 bg-card border-t flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-between items-center px-6 sm:px-10">
             <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
               <div className="flex flex-col space-y-0.5 text-[9px] sm:text-[10px] text-muted-foreground/60 font-medium uppercase tracking-tight flex-1">
                 {note && (
@@ -381,7 +382,22 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               </div>
               <Button variant="ghost" size="icon" onClick={() => { if (note) { onDelete(note); onClose(); } }} className="rounded-full h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"><Trash2 className="h-4 w-4" /></Button>
             </div>
-            <Button onClick={() => performSave(true)} className="rounded-xl px-8 sm:px-10 h-10 sm:h-11 font-black text-xs uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 w-full sm:w-auto">Save Note</Button>
+            
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button 
+                variant="ghost" 
+                onClick={() => performSave(true)} 
+                className="sm:hidden font-black text-[10px] uppercase tracking-widest h-10 w-full hover:bg-secondary/50"
+              >
+                Close Without Saving
+              </Button>
+              <Button 
+                onClick={() => performSave(true)} 
+                className="rounded-xl px-8 sm:px-10 h-10 sm:h-11 font-black text-[10px] sm:text-xs uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 w-full sm:w-auto"
+              >
+                Save Note
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
