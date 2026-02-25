@@ -177,11 +177,12 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
+      
       // Don't close if clicking metadata popover or any project/label select menu
       if (target.closest('[data-metadata-popover="true"]')) return;
+      if (target.closest('[role="listbox"]')) return; // Handle Radix Select portals
+      if (target.closest('[role="dialog"]')) return; // Don't close if a dialog is currently open
       if (target.closest('.project-select-dropdown')) return;
-      // Don't close if a dialog is currently open
-      if (target.closest('[role="dialog"]')) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
         if (title.trim() || content.trim()) {
@@ -294,7 +295,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                     if (val === 'new') setIsProjectDialogOpen(true);
                     else setSelectedProjectId(val);
                   }}>
-                    <SelectTrigger className="w-[180px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0 project-select-dropdown">
+                    <SelectTrigger className="w-[180px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                       <div className="flex items-center gap-2">
                         <Briefcase className="h-3 w-3 text-primary" />
                         <SelectValue placeholder="Select Project" />
