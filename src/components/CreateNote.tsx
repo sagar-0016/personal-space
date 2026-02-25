@@ -178,6 +178,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
       
+      // Critical check for portaled elements to prevent premature collapse
       if (target.closest('[data-metadata-popover="true"]')) return;
       if (target.closest('[role="listbox"]')) return; 
       if (target.closest('[role="dialog"]')) return; 
