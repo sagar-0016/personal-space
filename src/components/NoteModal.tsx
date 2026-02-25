@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { updateMetadataWithInfo } from '@/lib/note-parser';
+import { updateMetadataWithInfo, generateDefaultMetadata } from '@/lib/note-parser';
 import { EditorToolbar } from './EditorToolbar';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -102,6 +102,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedRef = useRef<string>('');
+  const isInteracting = useRef(false);
 
   const projectsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -154,13 +155,23 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     }
   }, [note?.id, isOpen, editor]);
 
+  const setInteracting = (open: boolean) => {
+    if (open) {
+      isInteracting.current = true;
+    } else {
+      setTimeout(() => {
+        isInteracting.current = false;
+      }, 100);
+    }
+  };
+
   const performSave = (isClosing: boolean = false) => {
-    if (!note) return;
+    if (!note || isInteracting.current) return;
     
     const projectName = projects?.find(p => p.id === projectId)?.name || '';
     const labelName = labels?.find(l => l.id === labelId)?.name || '';
 
-    const updatedMetadata = updateMetadataWithInfo(metadata, {
+    const updatedMetadata = updateMetadataWithInfo(metadata || generateDefaultMetadata(title), {
       title,
       project: projectName,
       labels: [labelName],
@@ -186,6 +197,17 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     if (isClosing) onClose();
   };
 
+  const addTag = () => {
+    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(t => t !== tagToRemove));
+  };
+
   const handleCreateProjectAction = async () => {
     if (!newProjectName.trim() || !db || !user) return;
     const id = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim(), selectedIcon);
@@ -208,7 +230,9 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => !open && performSave(true)}>
+      <Dialog open={isOpen} onOpenChange={(open) => {
+        if (!open) performSave(true);
+      }}>
         <DialogContent className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl">
           <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
           <div className="flex flex-wrap items-center justify-between p-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-[50] gap-4">
@@ -223,7 +247,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
             <div className="flex items-center gap-3">
               {/* Experimental Tag Capsule Window */}
-              <Popover>
+              <Popover onOpenChange={setInteracting}>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" className="h-8 px-3 bg-primary/5 hover:bg-primary/10 border-none rounded-full flex items-center gap-2 transition-all">
                     <Hash className="h-4 w-4 text-primary" />
@@ -250,7 +274,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                     <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                       {tags.map(t => (
                         <Badge key={t} variant="secondary" className="text-[10px] font-bold px-3 py-1 bg-primary/10 text-primary border-none flex items-center gap-2 rounded-lg">
-                          {t} <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => setTags(tags.filter(tg => tg !== t))} />
+                          {t} <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => removeTag(t)} />
                         </Badge>
                       ))}
                       {tags.length === 0 && <p className="text-xs italic text-muted-foreground/40 w-full text-center py-4">No categories assigned</p>}
@@ -261,7 +285,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                         className="bg-transparent border-none text-xs font-bold uppercase tracking-widest outline-none w-full placeholder:text-muted-foreground/30" 
                         value={tagInput} 
                         onChange={(e) => setTagInput(e.target.value)} 
-                        onKeyDown={(e) => e.key === 'Enter' && tagInput.trim() && (setTags([...tags, tagInput.trim()]), setTagInput(''))} 
+                        onKeyDown={(e) => e.key === 'Enter' && addTag()} 
                       />
                     </div>
                   </div>
@@ -269,7 +293,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               </Popover>
 
               {projectId !== 'none' && (
-                <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)}>
+                <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)} onOpenChange={setInteracting}>
                   <SelectTrigger className="w-[130px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                     <div className="flex items-center gap-2"><TagIcon className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
                   </SelectTrigger>
@@ -281,7 +305,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 </Select>
               )}
 
-              <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)}>
+              <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)} onOpenChange={setInteracting}>
                 <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                   <div className="flex items-center gap-2">
                     {projectId !== 'none' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3.5 w-3.5 text-primary" })}
@@ -319,7 +343,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 readOnly={editMode === 'preview'}
                 className={cn(
                   "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-4xl font-black px-0 bg-transparent h-auto placeholder:opacity-20 transition-all",
-                  editMode === 'preview' ? "cursor-default" : "cursor-text"
+                  editMode === 'preview' ? "cursor-default select-none" : "cursor-text"
                 )} 
               />
             </div>
@@ -353,7 +377,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       </Dialog>
 
       {/* Project Creation Dialog */}
-      <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
+      <Dialog open={isProjectDialogOpen} onOpenChange={(open) => { setIsProjectDialogOpen(open); setInteracting(open); }}>
         <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
@@ -396,7 +420,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       </Dialog>
 
       {/* Label Creation Dialog */}
-      <Dialog open={isLabelDialogOpen} onOpenChange={setIsLabelDialogOpen}>
+      <Dialog open={isLabelDialogOpen} onOpenChange={(open) => { setIsLabelDialogOpen(open); setInteracting(open); }}>
         <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
             <DialogTitle>Create New Label</DialogTitle>
