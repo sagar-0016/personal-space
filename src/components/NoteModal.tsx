@@ -305,7 +305,16 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
           <div className="flex-1 overflow-y-auto pt-6 pb-20 scroll-smooth">
             <div className="px-10 space-y-6">
-              <Input placeholder="Note Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-3xl font-bold px-0 bg-transparent h-auto placeholder:opacity-30" />
+              <Input 
+                placeholder="Note Title" 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)} 
+                readOnly={editMode === 'preview'}
+                className={cn(
+                  "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-4xl font-bold px-0 bg-transparent h-auto placeholder:opacity-30",
+                  editMode === 'preview' ? "cursor-default" : "cursor-text"
+                )} 
+              />
             </div>
             
             <div className="mt-6 px-10">
