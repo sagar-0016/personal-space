@@ -177,8 +177,8 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
       
-      // CRITICAL FIX: Explicitly check for Radix Portals. 
-      // Select, Popover, and Dialog content is rendered outside the container's DOM hierarchy in a Portal.
+      // CRITICAL FIX: Robust portal detection.
+      // We check for any Radix UI portal common attributes/roles.
       const isPortalInteraction = 
         target.closest('[role="listbox"]') || 
         target.closest('[role="dialog"]') || 
