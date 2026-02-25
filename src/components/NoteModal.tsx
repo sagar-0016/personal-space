@@ -270,12 +270,10 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                     >
                       Visual
                     </Button>
-                    {editMode === 'visual' && (
-                      <div className="absolute -bottom-3 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-1 duration-300">
-                        <div className="h-[2px] w-1/2 bg-primary rounded-full shadow-[0_0_8px_hsl(var(--primary))]" />
-                        <span className="text-[6px] font-black text-primary uppercase mt-0.5 tracking-tighter">EDIT</span>
-                      </div>
-                    )}
+                    <div className="absolute -bottom-3 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-1 duration-300">
+                      <div className="h-[2px] w-1/2 bg-primary rounded-full shadow-[0_0_8px_hsl(var(--primary))]" />
+                      <span className="text-[6px] font-black text-primary uppercase mt-0.5 tracking-tighter">EDIT</span>
+                    </div>
                   </div>
 
                   <div className="relative flex flex-col items-center">
@@ -290,12 +288,10 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                     >
                       .MD
                     </Button>
-                    {editMode === 'markdown' && (
-                      <div className="absolute -bottom-3 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-1 duration-300">
-                        <div className="h-[2px] w-1/2 bg-primary rounded-full shadow-[0_0_8px_hsl(var(--primary))]" />
-                        <span className="text-[6px] font-black text-primary uppercase mt-0.5 tracking-tighter">EDIT</span>
-                      </div>
-                    )}
+                    <div className="absolute -bottom-3 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-1 duration-300">
+                      <div className="h-[2px] w-1/2 bg-primary rounded-full shadow-[0_0_8px_hsl(var(--primary))]" />
+                      <span className="text-[6px] font-black text-primary uppercase mt-0.5 tracking-tighter">EDIT</span>
+                    </div>
                   </div>
                 </div>
               </div>
