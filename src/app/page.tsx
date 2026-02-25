@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -34,8 +33,13 @@ export default function Home() {
   const [sortByRecent, setSortByRecent] = useState(false);
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
+    if (!isUserLoading) {
+      if (!user) {
+        router.push('/login');
+      } else if (!user.emailVerified && user.providerData.some(p => p.providerId === 'password')) {
+        // If logged in via password but not verified, send back to login
+        router.push('/login');
+      }
     }
   }, [user, isUserLoading, router]);
 
@@ -127,7 +131,13 @@ export default function Home() {
   const pinnedNotes = allFilteredNotes.filter(n => n.isPinned);
   const otherNotes = allFilteredNotes.filter(n => !n.isPinned);
 
-  if (isUserLoading || !user) return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (isUserLoading || !user || (!user.emailVerified && user.providerData.some(p => p.providerId === 'password'))) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const currentProjectId = currentView.startsWith('project:') ? currentView.split(':')[1] : null;
 
