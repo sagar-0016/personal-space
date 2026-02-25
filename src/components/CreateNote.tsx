@@ -202,7 +202,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isExpanded, title, content, isPinned, metadata, selectedProjectId, selectedLabelId, tags]);
+  }, [isExpanded, title, content, isPinned, metadata, selectedProjectId, selectedLabelId, tags, isProjectDialogOpen, isLabelDialogOpen]);
 
   const handleSave = () => {
     if (title.trim() || content.trim()) {
