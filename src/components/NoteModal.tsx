@@ -21,7 +21,8 @@ import {
   Trash2, 
   Briefcase, 
   Loader2, 
-  Hash
+  Hash,
+  Plus
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -44,7 +45,6 @@ import { Markdown } from 'tiptap-markdown';
 import { format } from 'date-fns';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
@@ -82,6 +82,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [editMode, setEditMode] = useState<'preview' | 'visual' | 'markdown'>('preview');
+  const [isTagsExpanded, setIsTagsExpanded] = useState(false);
   
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
   const [isLabelDialogOpen, setIsLabelDialogOpen] = useState(false);
@@ -141,6 +142,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       lastSavedRef.current = JSON.stringify({ t: note.title, c: note.content, m: note.metadata, p: note.projectId, l: note.labelId, tags: note.tags });
       if (editor) editor.commands.setContent(note.content, false);
       setEditMode('preview');
+      setIsTagsExpanded(false);
     }
   }, [note?.id, isOpen, editor]);
 
@@ -199,6 +201,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   const handleCreateProjectAction = async () => {
     if (!newProjectName.trim() || !db || !user) return;
+    setInteracting(true);
     const id = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim(), selectedIcon);
     if (id) {
       setProjectId(id);
@@ -206,15 +209,18 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     setIsProjectDialogOpen(false);
     setNewProjectName('');
     setSelectedIcon('Briefcase');
+    setInteracting(false);
   };
 
   const handleCreateLabelAction = async () => {
     if (projectId === 'none' || !newLabelName.trim() || !db || !user) return;
+    setInteracting(true);
     const labelsRef = collection(db, 'users', user.uid, 'projects', projectId, 'labels');
     const docRef = await addDoc(labelsRef, { name: newLabelName.trim(), isDefault: false });
     setLabelId(docRef.id);
     setIsLabelDialogOpen(false);
     setNewLabelName('');
+    setInteracting(false);
   };
 
   return (
@@ -232,108 +238,114 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
           }}
         >
           <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
-          <div className="flex flex-wrap items-center justify-between p-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-[50] gap-4">
-            <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center"><Layers className="h-4 w-4 text-primary" /></div>
-              <div className="flex items-center bg-secondary/30 rounded-lg p-1">
-                <Button variant="ghost" size="sm" onClick={() => setEditMode('preview')} className={cn("h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all", editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Preview</Button>
-                <Button variant="ghost" size="sm" onClick={() => setEditMode('visual')} className={cn("h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all", editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Visual</Button>
-                <Button variant="ghost" size="sm" onClick={() => setEditMode('markdown')} className={cn("h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all", editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Markdown</Button>
+          
+          <div className="flex flex-col border-b bg-card/50 backdrop-blur-md sticky top-0 z-[50]">
+            <div className="flex flex-wrap items-center justify-between p-4 gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center"><Layers className="h-4 w-4 text-primary" /></div>
+                <div className="flex items-center bg-secondary/30 rounded-lg p-1">
+                  <Button variant="ghost" size="sm" onClick={() => setEditMode('preview')} className={cn("h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all", editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Preview</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditMode('visual')} className={cn("h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all", editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Visual</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditMode('markdown')} className={cn("h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all", editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Markdown</Button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setIsTagsExpanded(!isTagsExpanded)}
+                  className={cn(
+                    "h-8 px-3 border-none rounded-full flex items-center gap-2 transition-all",
+                    isTagsExpanded ? "bg-primary text-primary-foreground shadow-lg scale-105" : "bg-primary/5 hover:bg-primary/10"
+                  )}
+                >
+                  <Hash className={cn("h-4 w-4", isTagsExpanded ? "text-primary-foreground" : "text-primary")} />
+                  <div className="flex items-center gap-1.5 max-w-[150px] overflow-hidden">
+                    {tags.length > 0 ? (
+                      <>
+                        {tags.slice(0, 2).map(t => (
+                          <span key={t} className={cn("text-[9px] font-black truncate lowercase", isTagsExpanded ? "text-primary-foreground/90" : "text-primary/70")}>#{t}</span>
+                        ))}
+                        {tags.length > 2 && <span className={cn("text-[9px] font-black", isTagsExpanded ? "text-primary-foreground/50" : "text-primary/40")}>+{tags.length - 2}</span>}
+                      </>
+                    ) : (
+                      <span className={cn("text-[9px] font-black uppercase tracking-widest", isTagsExpanded ? "text-primary-foreground/50" : "text-muted-foreground/40")}>Tags</span>
+                    )}
+                  </div>
+                </Button>
+
+                {projectId !== 'none' && (
+                  <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)} onOpenChange={setInteracting}>
+                    <SelectTrigger className="w-[130px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                      <div className="flex items-center gap-2"><TagIcon className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
+                    </SelectTrigger>
+                    <SelectContent className="z-[200]">
+                      {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
+                       labels?.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+                      <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+
+                <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)} onOpenChange={setInteracting}>
+                  <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                    <div className="flex items-center gap-2">
+                      {projectId !== 'none' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3.5 w-3.5 text-primary" })}
+                      <SelectValue placeholder="Project" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="z-[200]">
+                    <SelectItem value="none">No Project</SelectItem>
+                    {projects?.map(p => (
+                      <SelectItem key={p.id} value={p.id}>
+                        <div className="flex items-center gap-2">
+                          {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
+                          {p.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button variant="ghost" size="icon" onClick={() => performSave(true)} className="rounded-full h-9 w-9"><X className="h-4 w-4" /></Button>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Popover onOpenChange={setInteracting}>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" className="h-8 px-3 bg-primary/5 hover:bg-primary/10 border-none rounded-full flex items-center gap-2 transition-all">
-                    <Hash className="h-4 w-4 text-primary" />
-                    <div className="flex items-center gap-1.5 max-w-[150px] overflow-hidden">
-                      {tags.length > 0 ? (
-                        <>
-                          {tags.slice(0, 2).map(t => (
-                            <span key={t} className="text-[9px] font-black text-primary/70 truncate lowercase">#{t}</span>
-                          ))}
-                          {tags.length > 2 && <span className="text-[9px] font-black text-primary/40">+{tags.length - 2}</span>}
-                        </>
-                      ) : (
-                        <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">Tags</span>
-                      )}
-                    </div>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="w-80 p-6 z-[200] rounded-2xl shadow-3xl border-primary/5 bg-card/95 backdrop-blur-xl"
-                  onPointerDownOutside={(e) => e.stopPropagation()}
-                >
-                  <div className="space-y-5" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Categorization Tags</span>
-                      <Hash className="h-4 w-4 text-primary/30" />
-                    </div>
-                    <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                      {tags.map(t => (
-                        <Badge key={t} variant="secondary" className="text-[10px] font-bold px-3 py-1 bg-primary/10 text-primary border-none flex items-center gap-2 rounded-lg">
-                          {t} <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={(e) => { e.stopPropagation(); removeTag(t); }} />
-                        </Badge>
-                      ))}
-                      {tags.length === 0 && <p className="text-xs italic text-muted-foreground/40 w-full text-center py-4">No categories assigned</p>}
-                    </div>
-                    <div className="flex items-center bg-primary/5 rounded-xl px-4 py-2 border border-primary/10 group focus-within:border-primary/30 transition-all">
+            {/* Expanded Tag Tray */}
+            {isTagsExpanded && (
+              <div className="px-6 pb-4 pt-0 animate-in slide-in-from-top-2 duration-300">
+                <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Manage Note Categories</span>
+                    <Hash className="h-3 w-3 text-primary/30" />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map(t => (
+                      <Badge key={t} variant="secondary" className="text-[10px] font-bold px-3 py-1 bg-background text-primary border-primary/10 flex items-center gap-2 rounded-lg shadow-sm">
+                        {t} <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => removeTag(t)} />
+                      </Badge>
+                    ))}
+                    <div className="flex items-center bg-background rounded-lg px-3 py-1 border border-primary/20 shadow-sm focus-within:border-primary transition-all">
                       <input 
                         autoFocus
-                        placeholder="Add dynamic tag..." 
-                        className="bg-transparent border-none text-xs font-bold uppercase tracking-widest outline-none w-full placeholder:text-muted-foreground/30" 
+                        placeholder="Add tag..." 
+                        className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-32 placeholder:text-muted-foreground/30" 
                         value={tagInput} 
                         onChange={(e) => setTagInput(e.target.value)} 
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
-                            e.stopPropagation();
                             addTag();
                           }
                         }} 
                       />
+                      <Button variant="ghost" size="icon" className="h-4 w-4 rounded-full p-0" onClick={addTag}><Plus className="h-3 w-3" /></Button>
                     </div>
                   </div>
-                </PopoverContent>
-              </Popover>
-
-              {projectId !== 'none' && (
-                <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)} onOpenChange={setInteracting}>
-                  <SelectTrigger className="w-[130px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                    <div className="flex items-center gap-2"><TagIcon className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
-                  </SelectTrigger>
-                  <SelectContent className="z-[200]">
-                    {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
-                     labels?.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
-                    <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-
-              <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)} onOpenChange={setInteracting}>
-                <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                  <div className="flex items-center gap-2">
-                    {projectId !== 'none' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3.5 w-3.5 text-primary" })}
-                    <SelectValue placeholder="Project" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="z-[200]">
-                  <SelectItem value="none">No Project</SelectItem>
-                  {projects?.map(p => (
-                    <SelectItem key={p.id} value={p.id}>
-                      <div className="flex items-center gap-2">
-                        {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
-                        {p.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button variant="ghost" size="icon" onClick={() => performSave(true)} className="rounded-full h-9 w-9"><X className="h-4 w-4" /></Button>
-            </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {editMode !== 'preview' && (
@@ -382,6 +394,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         </DialogContent>
       </Dialog>
 
+      {/* Project & Label Dialogs */}
       <Dialog open={isProjectDialogOpen} onOpenChange={(open) => { setIsProjectDialogOpen(open); setInteracting(open); }}>
         <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
