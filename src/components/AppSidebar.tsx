@@ -127,6 +127,10 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
     <>
       <Collapsible defaultOpen={isActiveProject} className="group/project">
         <SidebarMenuItem>
+          {/* 
+              CENTRAL FIX: This relative container with h-8 ensures the SidebarMenuAction 
+              stays perfectly centered on the project row, even when sub-labels are visible.
+          */}
           <div className="relative h-8 flex items-center mb-0.5">
             <CollapsibleTrigger asChild>
               <SidebarMenuButton 

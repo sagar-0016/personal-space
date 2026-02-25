@@ -178,10 +178,8 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
       
-      // If clicking inside the container, don't close.
-      if (containerRef.current?.contains(target)) return;
-
-      // Check if clicking inside a portal-based element (Dialog, Select, Popover)
+      // CRITICAL FIX: Explicitly check for Radix Portals. 
+      // Select, Popover, and Dialog content is rendered outside the ref in a Portal.
       const isPortalInteraction = 
         target.closest('[role="listbox"]') || 
         target.closest('[role="dialog"]') || 
@@ -192,11 +190,13 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
 
       if (isPortalInteraction) return;
 
-      if (isExpanded) {
-        if (title.trim() || content.trim()) {
-          handleSave();
-        } else {
-          setIsExpanded(false);
+      if (containerRef.current && !containerRef.current.contains(target)) {
+        if (isExpanded) {
+          if (title.trim() || content.trim()) {
+            handleSave();
+          } else {
+            setIsExpanded(false);
+          }
         }
       }
     }
