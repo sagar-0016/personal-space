@@ -235,7 +235,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                       <SelectValue placeholder="Project" />
                     </div>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[200]">
                     <SelectItem value="none">No Project</SelectItem>
                     {projects?.map(p => (
                       <SelectItem key={p.id} value={p.id}>
@@ -254,7 +254,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                     <SelectTrigger className="w-[180px] h-9 text-[11px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                       <div className="flex items-center gap-2"><Tag className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[200]">
                       {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
                        labels?.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
                       <SelectItem value="new" className="text-primary font-bold">+ Create New Label</SelectItem>

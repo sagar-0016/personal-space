@@ -178,10 +178,9 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
       
-      // Don't close if clicking metadata popover or any project/label select menu
       if (target.closest('[data-metadata-popover="true"]')) return;
-      if (target.closest('[role="listbox"]')) return; // Handle Radix Select portals
-      if (target.closest('[role="dialog"]')) return; // Don't close if a dialog is currently open
+      if (target.closest('[role="listbox"]')) return; 
+      if (target.closest('[role="dialog"]')) return; 
       if (target.closest('.project-select-dropdown')) return;
 
       if (containerRef.current && !containerRef.current.contains(target)) {
@@ -382,7 +381,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
 
       {/* Project Creation Dialog */}
       <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
           </DialogHeader>
@@ -425,7 +424,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
 
       {/* Label Creation Dialog */}
       <Dialog open={isLabelDialogOpen} onOpenChange={setIsLabelDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
             <DialogTitle>Create New Label</DialogTitle>
           </DialogHeader>

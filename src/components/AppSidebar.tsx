@@ -115,9 +115,9 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
 
   const handleDelete = async () => {
     if (!db || deleteConfirm !== project.name) return;
+    setIsDeleteOpen(false);
     await deleteProjectAndLabels(db, userId, project.id);
     if (isActiveProject) onViewChange('all');
-    setIsDeleteOpen(false);
     setDeleteConfirm('');
   };
 
@@ -127,30 +127,31 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
     <>
       <Collapsible defaultOpen={isActiveProject} className="group/project">
         <SidebarMenuItem>
-          <div className="relative flex items-center">
+          <div className="relative h-8 flex items-center mb-0.5">
             <CollapsibleTrigger asChild>
               <SidebarMenuButton 
                 asChild
                 tooltip={project.name}
                 isActive={isActiveProject}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all duration-300 relative pr-16",
+                  "rounded-r-full mr-2 transition-all duration-300 h-full relative pr-16",
                   isActiveProject && "bg-primary/10 text-primary font-bold"
                 )}
               >
                 <div 
-                  className="flex items-center w-full px-2 py-1 cursor-pointer"
+                  className="flex items-center w-full h-full px-2 py-1 cursor-pointer"
                   onClick={(e) => {
                     onViewChange(`project:${project.id}`);
                   }}
                 >
                   <IconComponent className={cn("h-4 w-4 mr-2 shrink-0", isActiveProject && "text-primary")} />
-                  <span className="flex-1 truncate">{project.name}</span>
+                  <span className="flex-1 truncate text-sm">{project.name}</span>
                   
-                  {isLoading ? (
-                    <Loader2 className="h-3 w-3 animate-spin opacity-40 ml-2" />
-                  ) : (labels && labels.length > 0) && (
-                    <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 absolute right-2 top-1/2 -translate-y-1/2" />
+                  {!isLoading && labels && labels.length > 0 && (
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 absolute right-2 !top-1/2 !-translate-y-1/2" />
+                  )}
+                  {isLoading && (
+                    <Loader2 className="h-3 w-3 animate-spin opacity-40 absolute right-2 !top-1/2 !-translate-y-1/2" />
                   )}
                 </div>
               </SidebarMenuButton>
@@ -160,13 +161,13 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                 <SidebarMenuAction 
                   showOnHover 
-                  className="right-9 top-1/2 -translate-y-1/2" 
+                  className="right-9 !top-1/2 !-translate-y-1/2 h-6 w-6 rounded-md hover:bg-primary/10 transition-colors" 
                 >
                   <MoreHorizontal className="h-3.5 w-3.5" />
                   <span className="sr-only">Project actions</span>
                 </SidebarMenuAction>
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="start">
+              <DropdownMenuContent side="right" align="start" className="z-[100]">
                 <DropdownMenuItem onClick={() => {
                   setNewName(project.name);
                   setSelectedIcon(project.iconName || 'Briefcase');
@@ -203,7 +204,7 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
                       >
                         <div className="flex items-center gap-2">
                           <Tag className={cn("h-3 w-3", isLabelActive ? "text-primary" : "text-muted-foreground/60")} />
-                          <span className="truncate">{label.name}</span>
+                          <span className="truncate text-xs">{label.name}</span>
                         </div>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
@@ -217,7 +218,7 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
           </DialogHeader>
@@ -260,7 +261,7 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent>
+        <DialogContent className="z-[1000]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />
@@ -355,7 +356,7 @@ export function AppSidebar({
                   <Plus className="h-3 w-3 text-primary" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[425px] z-[1000]">
                 <DialogHeader>
                   <DialogTitle>Create New Project</DialogTitle>
                 </DialogHeader>
