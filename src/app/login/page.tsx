@@ -84,7 +84,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       if (isSignUp) {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth!, email, password);
         const user = userCredential.user;
         
         // Update the user's profile with the display name
@@ -101,19 +101,21 @@ export default function LoginPage() {
         });
         
         // Force sign out so they have to log in again after verification
-        await signOut(auth);
+        await signOut(auth!);
         setIsSignUp(false);
       } else {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth!, email, password);
         const user = userCredential.user;
         
         if (!user.emailVerified) {
+          // Send another verification link as requested
+          await sendEmailVerification(user);
           toast({
             variant: "destructive",
             title: "Email Not Verified",
-            description: "Please verify your email address before signing in. Check your inbox for the link.",
+            description: "A new verification link has been sent to your email. Please verify it before signing in.",
           });
-          await signOut(auth);
+          await signOut(auth!);
           return;
         }
         
@@ -138,9 +140,9 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       if (useRedirect) {
-        await signInWithRedirect(auth, provider);
+        await signInWithRedirect(auth!, provider);
       } else {
-        const result = await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth!, provider);
         if (result.user) {
           syncUserProfile(result.user);
           router.push('/');
