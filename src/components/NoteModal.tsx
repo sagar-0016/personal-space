@@ -354,7 +354,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 onChange={(e) => setTitle(e.target.value)} 
                 readOnly={editMode === 'preview'}
                 className={cn(
-                  "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-7xl font-black px-0 bg-transparent h-auto placeholder:opacity-20 transition-all",
+                  "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-3xl sm:text-5xl md:text-7xl font-black px-0 bg-transparent h-auto placeholder:opacity-20 transition-all",
                   editMode === 'preview' ? "cursor-default select-none" : "cursor-text"
                 )} 
               />
