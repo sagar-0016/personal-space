@@ -168,7 +168,7 @@
   transform: translateY(-1px);
 }
 
-/* Note Card Hover Interaction Layer */
+/* Precise 1px Glowing Boundary Hover Effect */
 .note-card-glow {
   --mouse-x: 0px;
   --mouse-y: 0px;
@@ -177,17 +177,23 @@
 .note-card-glow::before {
   content: "";
   position: absolute;
-  inset: -1.5px;
-  z-index: 0;
-  opacity: 0;
-  transition: opacity 0.4s ease;
+  inset: 0;
+  padding: 1px; /* The 1px thin boundary */
   border-radius: inherit;
   background: radial-gradient(
-    300px circle at var(--mouse-x) var(--mouse-y),
-    hsl(var(--primary) / 0.8),
-    transparent 40%
+    150px circle at var(--mouse-x) var(--mouse-y),
+    hsl(var(--primary)),
+    transparent 60%
   );
+  -webkit-mask: 
+     linear-gradient(#fff 0 0) content-box, 
+     linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
   pointer-events: none;
+  opacity: 0;
+  z-index: 20;
+  transition: opacity 0.3s ease;
 }
 
 .note-card-glow:hover::before {
