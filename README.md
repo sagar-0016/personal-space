@@ -1,1 +1,1 @@
-A cheap copy of Google Keep
+A CHEAP COPY OF GOOGLE KEEP
