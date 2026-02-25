@@ -274,18 +274,16 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                   </div>
                 </Button>
 
-                {projectId !== 'none' && (
-                  <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)} onOpenChange={setInteracting}>
-                    <SelectTrigger className="w-[130px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                      <div className="flex items-center gap-2"><TagIcon className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
-                    </SelectTrigger>
-                    <SelectContent className="z-[200]">
-                      {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
-                       labels?.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
-                      <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
+                <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)} onOpenChange={setInteracting}>
+                  <SelectTrigger className="w-[130px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                    <div className="flex items-center gap-2"><TagIcon className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
+                  </SelectTrigger>
+                  <SelectContent className="z-[200]">
+                    {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
+                     labels?.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+                    <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                  </SelectContent>
+                </Select>
 
                 <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)} onOpenChange={setInteracting}>
                   <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
@@ -316,10 +314,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             {isTagsExpanded && (
               <div className="px-6 pb-4 pt-0 animate-in slide-in-from-top-2 duration-300">
                 <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Manage Note Categories</span>
-                    <Hash className="h-3 w-3 text-primary/30" />
-                  </div>
                   <div className="flex flex-wrap gap-2">
                     {tags.map(t => (
                       <Badge key={t} variant="secondary" className="text-[10px] font-bold px-3 py-1 bg-background text-primary border-primary/10 flex items-center gap-2 rounded-lg shadow-sm">
@@ -360,7 +354,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 onChange={(e) => setTitle(e.target.value)} 
                 readOnly={editMode === 'preview'}
                 className={cn(
-                  "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-4xl font-black px-0 bg-transparent h-auto placeholder:opacity-20 transition-all",
+                  "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-5xl font-black px-0 bg-transparent h-auto placeholder:opacity-20 transition-all",
                   editMode === 'preview' ? "cursor-default select-none" : "cursor-text"
                 )} 
               />

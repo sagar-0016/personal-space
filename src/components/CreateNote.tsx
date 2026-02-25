@@ -317,7 +317,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                 </div>
 
                 <div className="flex items-center gap-2 ml-auto">
-                  {/* Experimental Tag Capsule Window */}
                   <Popover onOpenChange={setInteracting}>
                     <PopoverTrigger asChild>
                       <Button variant="ghost" className="h-7 px-2.5 bg-primary/5 hover:bg-primary/10 border-none rounded-full flex items-center gap-1.5 transition-all">
@@ -338,19 +337,15 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                     </PopoverTrigger>
                     <PopoverContent className="w-64 p-4 z-[200] rounded-xl shadow-2xl border-primary/10 bg-card/95 backdrop-blur-md">
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-primary">Manage Tags</span>
-                          <Hash className="h-3 w-3 text-primary/40" />
-                        </div>
                         <div className="flex flex-wrap gap-1.5 max-h-[150px] overflow-y-auto pr-1">
                           {tags.map(t => (
                             <Badge key={t} variant="secondary" className="text-[9px] font-bold px-2 py-0.5 bg-primary/10 text-primary border-none flex items-center gap-1">
                               {t} <X className="h-2 w-2 cursor-pointer hover:text-destructive" onClick={() => removeTag(t)} />
                             </Badge>
                           ))}
-                          {tags.length === 0 && <p className="text-[10px] italic text-muted-foreground/50 w-full text-center py-2">No tags yet</p>}
                         </div>
                         <div className="flex items-center bg-primary/5 rounded-lg px-3 py-1.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
+                          <Hash className="h-3 w-3 text-primary/30 mr-2" />
                           <input 
                             autoFocus
                             placeholder="Add tag..." 
@@ -416,7 +411,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                 </div>
               </div>
 
-              <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" autoFocus />
+              <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-2xl sm:text-3xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" autoFocus />
             </div>
 
             <EditorToolbar 
