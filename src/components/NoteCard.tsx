@@ -76,8 +76,13 @@ export function NoteCard({
       <Card 
         onClick={() => !isTrash && onEdit(note)}
         className={cn(
-          "relative z-10 flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card/95 google-shadow-hover rounded-xl overflow-hidden h-fit",
-          note.isPinned && "border-primary/30"
+          "relative z-10 flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card/95 rounded-xl overflow-hidden h-fit",
+          // shadow color source (defaults to your normal border token)
+          "[--shadow-color:var(--border)] hover:-translate-y-1 hover:shadow-[0_6px_18px_hsl(var(--shadow-color)/0.18)]",
+          // keep pinned border rule as-is
+          note.isPinned && "border-primary/30",
+          // when pinned, only swap the shadow color token (subtle)
+          note.isPinned && "[--shadow-color:var(--primary)]"
         )}
       >
         {/* Subtle interior spotlight */}
