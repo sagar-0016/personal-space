@@ -178,13 +178,21 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
       
-      // Critical check for portaled elements to prevent premature collapse
-      if (target.closest('[data-metadata-popover="true"]')) return;
-      if (target.closest('[role="listbox"]')) return; 
-      if (target.closest('[role="dialog"]')) return; 
-      if (target.closest('.project-select-dropdown')) return;
+      // If clicking inside the container, don't close.
+      if (containerRef.current?.contains(target)) return;
 
-      if (containerRef.current && !containerRef.current.contains(target)) {
+      // Check if clicking inside a portal-based element (Dialog, Select, Popover)
+      const isPortalInteraction = 
+        target.closest('[role="listbox"]') || 
+        target.closest('[role="dialog"]') || 
+        target.closest('[role="menu"]') ||
+        target.closest('[data-radix-popper-content-wrapper]') ||
+        target.closest('.project-select-dropdown') ||
+        target.closest('[data-metadata-popover="true"]');
+
+      if (isPortalInteraction) return;
+
+      if (isExpanded) {
         if (title.trim() || content.trim()) {
           handleSave();
         } else {
@@ -194,7 +202,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [title, content, isPinned, metadata, selectedProjectId, selectedLabelId, tags, isProjectDialogOpen, isLabelDialogOpen]);
+  }, [isExpanded, title, content, isPinned, metadata, selectedProjectId, selectedLabelId, tags]);
 
   const handleSave = () => {
     if (title.trim() || content.trim()) {
@@ -255,19 +263,21 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
 
   const handleCreateProjectAction = async () => {
     if (!newProjectName.trim() || !db || !user) return;
-    setIsProjectDialogOpen(false);
     const id = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim(), selectedIcon);
-    if (id) setSelectedProjectId(id);
+    if (id) {
+      setSelectedProjectId(id);
+    }
+    setIsProjectDialogOpen(false);
     setNewProjectName('');
     setSelectedIcon('Briefcase');
   };
 
   const handleCreateLabelAction = async () => {
     if (selectedProjectId === 'none' || !newLabelName.trim() || !db || !user) return;
-    setIsLabelDialogOpen(false);
     const labelsRef = collection(db, 'users', user.uid, 'projects', selectedProjectId, 'labels');
     const docRef = await addDoc(labelsRef, { name: newLabelName.trim(), isDefault: false });
     setSelectedLabelId(docRef.id);
+    setIsLabelDialogOpen(false);
     setNewLabelName('');
   };
 

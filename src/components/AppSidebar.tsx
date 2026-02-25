@@ -318,9 +318,9 @@ export function AppSidebar({
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !db || !user) return;
-    setIsDialogOpen(false);
     const projectId = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim(), selectedIcon);
     if (projectId) onViewChange(`project:${projectId}`);
+    setIsDialogOpen(false);
     setNewProjectName('');
     setSelectedIcon('Briefcase');
   };

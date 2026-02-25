@@ -186,19 +186,21 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   const handleCreateProjectAction = async () => {
     if (!newProjectName.trim() || !db || !user) return;
-    setIsProjectDialogOpen(false);
     const id = await createProjectWithDefaultLabel(db, user.uid, newProjectName.trim(), selectedIcon);
-    if (id) setProjectId(id);
+    if (id) {
+      setProjectId(id);
+    }
+    setIsProjectDialogOpen(false);
     setNewProjectName('');
     setSelectedIcon('Briefcase');
   };
 
   const handleCreateLabelAction = async () => {
     if (projectId === 'none' || !newLabelName.trim() || !db || !user) return;
-    setIsLabelDialogOpen(false);
     const labelsRef = collection(db, 'users', user.uid, 'projects', projectId, 'labels');
     const docRef = await addDoc(labelsRef, { name: newLabelName.trim(), isDefault: false });
     setLabelId(docRef.id);
+    setIsLabelDialogOpen(false);
     setNewLabelName('');
   };
 
