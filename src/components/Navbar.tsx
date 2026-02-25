@@ -36,43 +36,45 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md px-4 h-16 flex items-center justify-between">
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" size="icon" className="rounded-full" onClick={toggleSidebar}>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md px-2 sm:px-4 h-16 flex items-center justify-between gap-2">
+      <div className="flex items-center space-x-1 sm:space-x-4">
+        <Button variant="ghost" size="icon" className="rounded-full h-9 w-9" onClick={toggleSidebar}>
           <Menu className="h-5 w-5" />
         </Button>
-        <div className="flex items-center space-x-2">
-          <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-            <Lightbulb className="h-5 w-5 text-primary-foreground" />
+        <div className="flex items-center space-x-2 shrink-0">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 bg-primary rounded-lg flex items-center justify-center">
+            <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-headline font-semibold hidden sm:inline-block">Personal Space</span>
+          <span className="text-lg sm:text-xl font-headline font-semibold hidden md:inline-block truncate">Personal Space</span>
         </div>
       </div>
 
-      <div className="flex-1 max-w-2xl mx-4">
+      <div className="flex-1 max-w-xl mx-1 sm:mx-4">
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
           </div>
           <Input 
-            className="w-full bg-secondary border-none h-11 pl-10 focus-visible:ring-0 focus-visible:bg-background focus-visible:google-shadow transition-all rounded-lg"
-            placeholder="Search notes..."
+            className="w-full bg-secondary border-none h-10 sm:h-11 pl-10 focus-visible:ring-0 focus-visible:bg-background focus-visible:google-shadow transition-all rounded-lg text-sm"
+            placeholder="Search..."
             onChange={(e) => onSearch(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-1 sm:space-x-2">
         <TooltipProvider>
-          <ModeToggle />
-          <ThemeSelector />
+          <div className="hidden sm:flex items-center space-x-1 sm:space-x-2">
+            <ModeToggle />
+            <ThemeSelector />
+          </div>
           
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-full hidden sm:flex" 
+                className="rounded-full h-9 w-9 hidden sm:flex" 
                 onClick={onViewModeToggle}
               >
                 {viewMode === 'grid' ? <List className="h-5 w-5" /> : <LayoutGrid className="h-5 w-5" />}
@@ -88,7 +90,7 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-full"
+                className="rounded-full h-9 w-9"
                 onClick={onOpenSettings}
               >
                 <Settings className="h-5 w-5" />
@@ -103,18 +105,23 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full ml-2">
+              <Button variant="ghost" size="icon" className="rounded-full ml-1 sm:ml-2 h-9 w-9 overflow-hidden">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user.photoURL || undefined} />
                   <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem className="text-xs text-muted-foreground truncate max-w-[200px]">
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem className="text-xs text-muted-foreground truncate font-medium">
                 {user.email}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+              <div className="sm:hidden border-t my-1">
+                <DropdownMenuItem asChild>
+                  <div className="flex items-center py-2"><ModeToggle /><span className="ml-2">Mode</span></div>
+                </DropdownMenuItem>
+              </div>
+              <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive mt-1 border-t">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
               </DropdownMenuItem>

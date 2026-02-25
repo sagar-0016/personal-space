@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -229,7 +230,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         if (!open && !isInteracting.current) performSave(true);
       }}>
         <DialogContent 
-          className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
+          className="sm:max-w-[950px] w-[98vw] sm:w-[95vw] max-h-[98vh] sm:max-h-[95vh] flex flex-col p-0 border-none rounded-xl sm:rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
           onPointerDownOutside={(e) => {
             if (isInteracting.current) e.preventDefault();
           }}
@@ -240,43 +241,40 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
           <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
           
           <div className="flex flex-col border-b bg-card/50 backdrop-blur-md sticky top-0 z-[50]">
-            <div className="flex flex-wrap items-center justify-between p-4 gap-4">
-              <div className="flex items-center space-x-3">
-                <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center"><Layers className="h-4 w-4 text-primary" /></div>
-                <div className="flex items-center bg-secondary/30 rounded-lg p-1">
-                  <Button variant="ghost" size="sm" onClick={() => setEditMode('preview')} className={cn("h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all", editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Preview</Button>
-                  <Button variant="ghost" size="sm" onClick={() => setEditMode('visual')} className={cn("h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all", editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Visual</Button>
-                  <Button variant="ghost" size="sm" onClick={() => setEditMode('markdown')} className={cn("h-7 px-4 text-xs font-bold uppercase tracking-tight transition-all", editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Markdown</Button>
+            <div className="flex flex-wrap items-center justify-between p-3 sm:p-4 gap-2 sm:gap-4">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="h-7 w-7 sm:h-8 sm:w-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                  <Layers className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                </div>
+                <div className="flex items-center bg-secondary/30 rounded-lg p-0.5 sm:p-1">
+                  <Button variant="ghost" size="sm" onClick={() => setEditMode('preview')} className={cn("h-6 sm:h-7 px-2 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-tight transition-all", editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Preview</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditMode('visual')} className={cn("h-6 sm:h-7 px-2 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-tight transition-all", editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Visual</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditMode('markdown')} className={cn("h-6 sm:h-7 px-2 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-tight transition-all", editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>MD</Button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap justify-end">
                 <Button 
                   variant="ghost" 
                   onClick={() => setIsTagsExpanded(!isTagsExpanded)}
                   className={cn(
-                    "h-8 px-3 border-none rounded-full flex items-center gap-2 transition-all",
+                    "h-7 sm:h-8 px-2 sm:px-3 border-none rounded-full flex items-center gap-1.5 sm:gap-2 transition-all",
                     isTagsExpanded ? "bg-primary text-primary-foreground shadow-lg scale-105" : "bg-primary/5 hover:bg-primary/10"
                   )}
                 >
-                  <Hash className={cn("h-4 w-4", isTagsExpanded ? "text-primary-foreground" : "text-primary")} />
-                  <div className="flex items-center gap-1.5 max-w-[150px] overflow-hidden">
+                  <Hash className={cn("h-3.5 w-3.5", isTagsExpanded ? "text-primary-foreground" : "text-primary")} />
+                  <div className="flex items-center gap-1 max-w-[80px] sm:max-w-[150px] overflow-hidden">
                     {tags.length > 0 ? (
-                      <>
-                        {tags.slice(0, 2).map(t => (
-                          <span key={t} className={cn("text-[9px] font-black truncate lowercase", isTagsExpanded ? "text-primary-foreground/90" : "text-primary/70")}>#{t}</span>
-                        ))}
-                        {tags.length > 2 && <span className={cn("text-[9px] font-black", isTagsExpanded ? "text-primary-foreground/50" : "text-primary/40")}>+{tags.length - 2}</span>}
-                      </>
+                      <span className={cn("text-[8px] sm:text-[9px] font-black truncate lowercase", isTagsExpanded ? "text-primary-foreground/90" : "text-primary/70")}>#{tags[0]}</span>
                     ) : (
-                      <span className={cn("text-[9px] font-black uppercase tracking-widest", isTagsExpanded ? "text-primary-foreground/50" : "text-muted-foreground/40")}>Tags</span>
+                      <span className={cn("text-[8px] sm:text-[9px] font-black uppercase tracking-widest", isTagsExpanded ? "text-primary-foreground/50" : "text-muted-foreground/40")}>Tags</span>
                     )}
                   </div>
                 </Button>
 
                 <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)} onOpenChange={setInteracting}>
-                  <SelectTrigger className="w-[130px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                    <div className="flex items-center gap-2"><TagIcon className="h-3.5 w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
+                  <SelectTrigger className="w-[100px] sm:w-[130px] h-7 sm:h-8 text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                    <div className="flex items-center gap-1 sm:gap-2 shrink-0"><TagIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" /><SelectValue placeholder="Label" /></div>
                   </SelectTrigger>
                   <SelectContent className="z-[200]">
                     {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
@@ -286,9 +284,9 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 </Select>
 
                 <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)} onOpenChange={setInteracting}>
-                  <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                    <div className="flex items-center gap-2">
-                      {projectId !== 'none' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3.5 w-3.5 text-primary" })}
+                  <SelectTrigger className="w-[110px] sm:w-[150px] h-7 sm:h-8 text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                      {projectId !== 'none' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" })}
                       <SelectValue placeholder="Project" />
                     </div>
                   </SelectTrigger>
@@ -306,25 +304,25 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                   </SelectContent>
                 </Select>
 
-                <Button variant="ghost" size="icon" onClick={() => performSave(true)} className="rounded-full h-9 w-9"><X className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => performSave(true)} className="rounded-full h-8 w-8 sm:h-9 sm:w-9"><X className="h-4 w-4" /></Button>
               </div>
             </div>
 
             {/* Expanded Tag Tray */}
             {isTagsExpanded && (
-              <div className="px-6 pb-4 pt-0 animate-in slide-in-from-top-2 duration-300">
-                <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10 space-y-3">
-                  <div className="flex flex-wrap gap-2">
+              <div className="px-3 sm:px-6 pb-4 pt-0 animate-in slide-in-from-top-2 duration-300">
+                <div className="bg-primary/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-primary/10 space-y-3">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {tags.map(t => (
-                      <Badge key={t} variant="secondary" className="text-[10px] font-bold px-3 py-1 bg-background text-primary border-primary/10 flex items-center gap-2 rounded-lg shadow-sm">
+                      <Badge key={t} variant="secondary" className="text-[9px] sm:text-[10px] font-bold px-2 sm:px-3 py-1 bg-background text-primary border-primary/10 flex items-center gap-1 sm:gap-2 rounded-lg shadow-sm">
                         {t} <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => removeTag(t)} />
                       </Badge>
                     ))}
-                    <div className="flex items-center bg-background rounded-lg px-3 py-1 border border-primary/20 shadow-sm focus-within:border-primary transition-all">
+                    <div className="flex items-center bg-background rounded-lg px-2 sm:px-3 py-0.5 sm:py-1 border border-primary/20 shadow-sm focus-within:border-primary transition-all">
                       <input 
                         autoFocus
                         placeholder="Add tag..." 
-                        className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-32 placeholder:text-muted-foreground/30" 
+                        className="bg-transparent border-none text-[10px] sm:text-[11px] font-bold uppercase tracking-widest outline-none w-24 sm:w-32 placeholder:text-muted-foreground/30" 
                         value={tagInput} 
                         onChange={(e) => setTagInput(e.target.value)} 
                         onKeyDown={(e) => {
@@ -346,8 +344,8 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             <EditorToolbar editor={editMode === 'visual' ? editor : null} textareaRef={textareaRef} metadata={metadata} onMetadataChange={setMetadata} onContentChange={setContent} />
           )}
 
-          <div className="flex-1 overflow-y-auto pt-8 pb-20 scroll-smooth">
-            <div className="px-10 space-y-6">
+          <div className="flex-1 overflow-y-auto pt-6 sm:pt-8 pb-20 scroll-smooth">
+            <div className="px-6 sm:px-10 space-y-6">
               <Input 
                 placeholder="Note Title" 
                 value={title} 
@@ -360,7 +358,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               />
             </div>
             
-            <div className="mt-8 px-10">
+            <div className="mt-4 sm:mt-8 px-6 sm:px-10">
               {editMode === 'preview' ? (
                 <div className="min-h-[500px] py-4"><MarkdownRenderer content={content || "_No content to preview_"} /></div>
               ) : editMode === 'visual' ? (
@@ -371,26 +369,26 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             </div>
           </div>
 
-          <div className="p-4 bg-card border-t flex justify-between items-center px-10">
-            <div className="flex items-center gap-6">
-              <div className="flex flex-col space-y-0.5 text-[10px] text-muted-foreground/60 font-medium uppercase tracking-tight">
+          <div className="p-4 bg-card border-t flex flex-col sm:flex-row gap-4 sm:justify-between items-center px-6 sm:px-10">
+            <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
+              <div className="flex flex-col space-y-0.5 text-[9px] sm:text-[10px] text-muted-foreground/60 font-medium uppercase tracking-tight flex-1">
                 {note && (
                   <>
-                    <div className="flex items-center gap-1.5"><span className="font-bold text-primary/40">Created:</span><span>{format(note.createdAt, 'MMM d, yyyy · HH:mm')}</span></div>
-                    <div className="flex items-center gap-1.5"><span className="font-bold text-primary/40">Edited:</span><span>{format(note.updatedAt, 'MMM d, yyyy · HH:mm')}</span></div>
+                    <div className="flex items-center gap-1.5"><span className="font-bold text-primary/40">Created:</span><span>{format(note.createdAt, 'MMM d, yy · HH:mm')}</span></div>
+                    <div className="flex items-center gap-1.5"><span className="font-bold text-primary/40">Edited:</span><span>{format(note.updatedAt, 'MMM d, yy · HH:mm')}</span></div>
                   </>
                 )}
               </div>
-              <Button variant="ghost" size="icon" onClick={() => { if (note) { onDelete(note); onClose(); } }} className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => { if (note) { onDelete(note); onClose(); } }} className="rounded-full h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"><Trash2 className="h-4 w-4" /></Button>
             </div>
-            <Button onClick={() => performSave(true)} className="rounded-xl px-10 font-black text-xs uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">Save Note</Button>
+            <Button onClick={() => performSave(true)} className="rounded-xl px-8 sm:px-10 h-10 sm:h-11 font-black text-xs uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 w-full sm:w-auto">Save Note</Button>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Project & Label Dialogs */}
       <Dialog open={isProjectDialogOpen} onOpenChange={(open) => { setIsProjectDialogOpen(open); setInteracting(open); }}>
-        <DialogContent className="sm:max-w-[425px] z-[1000]">
+        <DialogContent className="sm:max-w-[425px] w-[95vw] z-[1000]">
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
           </DialogHeader>
@@ -426,13 +424,13 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleCreateProjectAction}>Create Project</Button>
+            <Button onClick={handleCreateProjectAction} className="w-full sm:w-auto">Create Project</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isLabelDialogOpen} onOpenChange={(open) => { setIsLabelDialogOpen(open); setInteracting(open); }}>
-        <DialogContent className="sm:max-w-[425px] z-[1000]">
+        <DialogContent className="sm:max-w-[425px] w-[95vw] z-[1000]">
           <DialogHeader>
             <DialogTitle>Create New Label</DialogTitle>
           </DialogHeader>
@@ -449,7 +447,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleCreateLabelAction}>Create Label</Button>
+            <Button onClick={handleCreateLabelAction} className="w-full sm:w-auto">Create Label</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
