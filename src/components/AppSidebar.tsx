@@ -126,60 +126,62 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
   return (
     <>
       <Collapsible defaultOpen={isActiveProject} className="group/project">
-        <SidebarMenuItem className="relative">
-          <CollapsibleTrigger asChild>
-            <SidebarMenuButton 
-              asChild
-              tooltip={project.name}
-              isActive={isActiveProject}
-              className={cn(
-                "rounded-r-full mr-2 transition-all duration-300 relative pr-16",
-                isActiveProject && "bg-primary/10 text-primary font-bold"
-              )}
-            >
-              <div 
-                className="flex items-center w-full px-2 py-1 cursor-pointer"
-                onClick={(e) => {
-                  onViewChange(`project:${project.id}`);
-                }}
-              >
-                <IconComponent className={cn("h-4 w-4 mr-2 shrink-0", isActiveProject && "text-primary")} />
-                <span className="flex-1 truncate">{project.name}</span>
-                
-                {isLoading ? (
-                  <Loader2 className="h-3 w-3 animate-spin opacity-40 ml-2" />
-                ) : (labels && labels.length > 0) && (
-                  <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 absolute right-2 top-1/2 -translate-y-1/2" />
+        <SidebarMenuItem>
+          <div className="relative flex items-center">
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton 
+                asChild
+                tooltip={project.name}
+                isActive={isActiveProject}
+                className={cn(
+                  "rounded-r-full mr-2 transition-all duration-300 relative pr-16",
+                  isActiveProject && "bg-primary/10 text-primary font-bold"
                 )}
-              </div>
-            </SidebarMenuButton>
-          </CollapsibleTrigger>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <SidebarMenuAction 
-                showOnHover 
-                className="right-9 top-4 !-translate-y-1/2" 
               >
-                <MoreHorizontal className="h-3.5 w-3.5" />
-                <span className="sr-only">Project actions</span>
-              </SidebarMenuAction>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start">
-              <DropdownMenuItem onClick={() => {
-                setNewName(project.name);
-                setSelectedIcon(project.iconName || 'Briefcase');
-                setIsEditOpen(true);
-              }}>
-                <Edit2 className="mr-2 h-4 w-4" />
-                <span>Edit</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive focus:text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                <span>Delete</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <div 
+                  className="flex items-center w-full px-2 py-1 cursor-pointer"
+                  onClick={(e) => {
+                    onViewChange(`project:${project.id}`);
+                  }}
+                >
+                  <IconComponent className={cn("h-4 w-4 mr-2 shrink-0", isActiveProject && "text-primary")} />
+                  <span className="flex-1 truncate">{project.name}</span>
+                  
+                  {isLoading ? (
+                    <Loader2 className="h-3 w-3 animate-spin opacity-40 ml-2" />
+                  ) : (labels && labels.length > 0) && (
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 absolute right-2 top-1/2 -translate-y-1/2" />
+                  )}
+                </div>
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <SidebarMenuAction 
+                  showOnHover 
+                  className="right-9 top-1/2 -translate-y-1/2" 
+                >
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                  <span className="sr-only">Project actions</span>
+                </SidebarMenuAction>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="right" align="start">
+                <DropdownMenuItem onClick={() => {
+                  setNewName(project.name);
+                  setSelectedIcon(project.iconName || 'Briefcase');
+                  setIsEditOpen(true);
+                }}>
+                  <Edit2 className="mr-2 h-4 w-4" />
+                  <span>Edit</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive focus:text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  <span>Delete</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           {!isLoading && labels && labels.length > 0 && (
             <CollapsibleContent>
