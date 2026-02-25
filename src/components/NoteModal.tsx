@@ -288,18 +288,20 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)} onOpenChange={setInteracting}>
                   <SelectTrigger className="w-[95px] sm:w-[150px] h-7 sm:h-8 text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
                     <div className="flex items-center gap-1 sm:gap-2 truncate max-w-full">
-                      {projectId !== 'none' && projects?.find(p => p.id === projectId) && React.createElement((LucideIcons as any)[projects?.find(p => p.id === projectId)?.iconName || 'Briefcase'], { className: "h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary shrink-0" })}
+                      <Briefcase className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary shrink-0" />
                       <SelectValue placeholder="Project" className="truncate" />
                     </div>
                   </SelectTrigger>
                   <SelectContent className="z-[200]">
                     <SelectItem value="none">No Project</SelectItem>
                     {projects?.map(p => (
-                      <SelectItem key={p.id} value={p.id} className="truncate">
-                        <div className="flex items-center gap-2 truncate">
-                          {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5 shrink-0" })}
-                          <span className="truncate">{p.name}</span>
-                        </div>
+                      <SelectItem 
+                        key={p.id} 
+                        value={p.id} 
+                        className="truncate"
+                        icon={(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
+                      >
+                        {p.name}
                       </SelectItem>
                     ))}
                     <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
@@ -353,7 +355,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 onChange={(e) => setTitle(e.target.value)} 
                 readOnly={editMode === 'preview'}
                 className={cn(
-                  "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl md:text-3xl font-black px-0 bg-transparent h-auto placeholder:opacity-20 transition-all",
+                  "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-2xl sm:text-3xl font-black px-0 bg-transparent h-auto placeholder:opacity-20 transition-all",
                   editMode === 'preview' ? "cursor-default select-none" : "cursor-text"
                 )} 
               />

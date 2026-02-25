@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -66,6 +65,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, addDoc } from 'firebase/firestore';
 import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
 import { Project, Label } from '@/lib/types';
+import * as LucideIcons from 'lucide-react';
 
 const lowlight = createLowlight(common);
 
@@ -395,7 +395,13 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
                       {projects?.map(p => (
-                        p.id ? <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem> : null
+                        p.id ? <SelectItem 
+                                  key={p.id} 
+                                  value={p.id}
+                                  icon={(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
+                                >
+                                  {p.name}
+                                </SelectItem> : null
                       ))}
                       <SelectItem value="new" className="text-primary font-bold">+ New</SelectItem>
                     </SelectContent>
@@ -407,7 +413,13 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                 </div>
               </div>
 
-              <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-lg sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" autoFocus />
+              <Input 
+                placeholder="Title" 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)} 
+                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" 
+                autoFocus 
+              />
             </div>
 
             <EditorToolbar 

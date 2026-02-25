@@ -94,7 +94,7 @@ export default function LoginPage() {
         
         toast({
           title: "Verification Email Sent",
-          description: `A verification link has been sent to ${email}. Please check your inbox (and spam folder) to verify your account.`,
+          description: `A verification link has been sent to ${email}. Please check your inbox and spam folder to verify your account.`,
         });
         
         await signOut(auth!);
@@ -110,7 +110,7 @@ export default function LoginPage() {
           toast({
             variant: "destructive",
             title: "Email Not Verified",
-            description: "A new verification link has been sent. Please check your inbox and spam folder before signing in.",
+            description: "A fresh verification link has been sent. Please check your inbox and spam folder before signing in.",
           });
           await signOut(auth!);
           return;
