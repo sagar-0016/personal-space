@@ -151,7 +151,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
     } else {
       setTimeout(() => {
         isInteracting.current = false;
-      }, 150);
+      }, 200);
     }
   };
 
@@ -221,9 +221,17 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => {
-        if (!open) performSave(true);
+        if (!open && !isInteracting.current) performSave(true);
       }}>
-        <DialogContent className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl">
+        <DialogContent 
+          className="sm:max-w-[950px] w-[95vw] max-h-[95vh] flex flex-col p-0 border-none rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
+          onPointerDownOutside={(e) => {
+            if (isInteracting.current) e.preventDefault();
+          }}
+          onFocusOutside={(e) => {
+            if (isInteracting.current) e.preventDefault();
+          }}
+        >
           <DialogTitle className="sr-only">Edit Note: {title}</DialogTitle>
           <div className="flex flex-wrap items-center justify-between p-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-[50] gap-4">
             <div className="flex items-center space-x-3">
@@ -236,7 +244,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Experimental Tag Capsule Window */}
               <Popover onOpenChange={setInteracting}>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" className="h-8 px-3 bg-primary/5 hover:bg-primary/10 border-none rounded-full flex items-center gap-2 transition-all">
@@ -255,8 +262,11 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                     </div>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-6 z-[200] rounded-2xl shadow-3xl border-primary/5 bg-card/95 backdrop-blur-xl">
-                  <div className="space-y-5">
+                <PopoverContent 
+                  className="w-80 p-6 z-[200] rounded-2xl shadow-3xl border-primary/5 bg-card/95 backdrop-blur-xl"
+                  onPointerDownOutside={(e) => e.stopPropagation()}
+                >
+                  <div className="space-y-5" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Categorization Tags</span>
                       <Hash className="h-4 w-4 text-primary/30" />
@@ -264,7 +274,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                     <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                       {tags.map(t => (
                         <Badge key={t} variant="secondary" className="text-[10px] font-bold px-3 py-1 bg-primary/10 text-primary border-none flex items-center gap-2 rounded-lg">
-                          {t} <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => removeTag(t)} />
+                          {t} <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={(e) => { e.stopPropagation(); removeTag(t); }} />
                         </Badge>
                       ))}
                       {tags.length === 0 && <p className="text-xs italic text-muted-foreground/40 w-full text-center py-4">No categories assigned</p>}
@@ -372,7 +382,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         </DialogContent>
       </Dialog>
 
-      {/* Project Creation Dialog */}
       <Dialog open={isProjectDialogOpen} onOpenChange={(open) => { setIsProjectDialogOpen(open); setInteracting(open); }}>
         <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
@@ -415,7 +424,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         </DialogContent>
       </Dialog>
 
-      {/* Label Creation Dialog */}
       <Dialog open={isLabelDialogOpen} onOpenChange={(open) => { setIsLabelDialogOpen(open); setInteracting(open); }}>
         <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
