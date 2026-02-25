@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -281,6 +280,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                     </div>
                     <div className="flex items-center bg-primary/5 rounded-xl px-4 py-2 border border-primary/10 group focus-within:border-primary/30 transition-all">
                       <input 
+                        autoFocus
                         placeholder="Add dynamic tag..." 
                         className="bg-transparent border-none text-xs font-bold uppercase tracking-widest outline-none w-full placeholder:text-muted-foreground/30" 
                         value={tagInput} 

@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -353,6 +352,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                         </div>
                         <div className="flex items-center bg-primary/5 rounded-lg px-3 py-1.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
                           <input 
+                            autoFocus
                             placeholder="Add tag..." 
                             className="bg-transparent border-none text-[11px] font-bold uppercase tracking-widest outline-none w-full placeholder:text-muted-foreground/30" 
                             value={tagInput} 
@@ -370,27 +370,25 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                     </PopoverContent>
                   </Popover>
 
-                  {selectedProjectId !== 'none' && (
-                    <Select 
-                      value={selectedLabelId} 
-                      onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setSelectedLabelId(val)}
-                      onOpenChange={setInteracting}
-                    >
-                      <SelectTrigger className="w-[110px] h-7 text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                        <div className="flex items-center gap-1.5">
-                          <TagIcon className="h-3 w-3 text-primary" />
-                          <SelectValue placeholder="Label" />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
-                         labels?.map(l => (
-                          l.id ? <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem> : null
-                        ))}
-                        <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
+                  <Select 
+                    value={selectedLabelId} 
+                    onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setSelectedLabelId(val)}
+                    onOpenChange={setInteracting}
+                  >
+                    <SelectTrigger className="w-[110px] h-7 text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                      <div className="flex items-center gap-1.5">
+                        <TagIcon className="h-3 w-3 text-primary" />
+                        <SelectValue placeholder="Label" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
+                       labels?.map(l => (
+                        l.id ? <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem> : null
+                      ))}
+                      <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                    </SelectContent>
+                  </Select>
 
                   <Select 
                     value={selectedProjectId} 
