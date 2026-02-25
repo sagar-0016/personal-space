@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -379,8 +380,14 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                     <span>Note Details</span>
                   </div>
                   {!isMetaExpanded && (
-                    <div className="flex items-center gap-3 lowercase font-medium tracking-normal">
-                      {tags.length > 0 && <span>• {tags.length} tags</span>}
+                    <div className="flex items-center gap-2 overflow-hidden max-w-[300px]">
+                      {tags.slice(0, 3).map(t => (
+                        <Badge key={t} variant="secondary" className="text-[8px] h-4 font-bold px-1.5 bg-primary/5 text-primary/60 border-none lowercase tracking-normal">
+                          #{t}
+                        </Badge>
+                      ))}
+                      {tags.length > 3 && <span className="text-[8px] text-muted-foreground/40 font-bold">+{tags.length - 3}</span>}
+                      {tags.length === 0 && <span className="text-[8px] text-muted-foreground/20 italic font-medium lowercase tracking-normal">No tags added</span>}
                     </div>
                   )}
                 </div>
