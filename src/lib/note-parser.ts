@@ -25,16 +25,29 @@ export function extractMetadataInfo(metadata: string | undefined): NoteMetadataI
   };
 
   const getListMatch = (key: string) => {
-    // Matches key: ["a", "b"]
-    const regex = new RegExp(`^${key}:\\s*\\[(.*)\\]`, 'm');
-    const match = metadata.match(regex);
-    if (!match) return [];
-    const raw = match[1];
-    if (!raw) return [];
-    // Split by comma, then trim and remove quotes
-    return raw.split(',')
-      .map(t => t.trim().replace(/^["']|["']$/g, ''))
-      .filter(Boolean);
+    // Matches key: ["a", "b"] or key: a, b
+    const bracketRegex = new RegExp(`^${key}:\\s*\\[(.*)\\]`, 'm');
+    const simpleRegex = new RegExp(`^${key}:\\s*([^\\n\\r\\[]*)`, 'm');
+    
+    const bracketMatch = metadata.match(bracketRegex);
+    if (bracketMatch) {
+      const raw = bracketMatch[1];
+      if (!raw) return [];
+      return raw.split(',')
+        .map(t => t.trim().replace(/^["']|["']$/g, ''))
+        .filter(Boolean);
+    }
+
+    const simpleMatch = metadata.match(simpleRegex);
+    if (simpleMatch) {
+      const raw = simpleMatch[1];
+      if (!raw) return [];
+      return raw.split(',')
+        .map(t => t.trim().replace(/^["']|["']$/g, ''))
+        .filter(Boolean);
+    }
+
+    return [];
   };
 
   return {

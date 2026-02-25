@@ -173,7 +173,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
   const handleMetadataChange = (newMetadata: string) => {
     setMetadata(newMetadata);
     const info = extractMetadataInfo(newMetadata);
-    if (info.tags && info.tags.length > 0) setTags(info.tags);
+    if (info.tags) setTags(info.tags);
     if (info.title) setTitle(info.title);
   };
 
@@ -430,7 +430,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               />
             </div>
             
-            <div className="mt-4 sm:mt-8 px-6 sm:px-10">
+            <div className="mt-4 sm:mt-8 px-6 sm:px-10 h-full flex flex-col">
               {editMode === 'preview' ? (
                 <div className="min-h-[500px] py-4"><MarkdownRenderer content={content || "_No content to preview_"} /></div>
               ) : editMode === 'visual' ? (
@@ -441,8 +441,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                   value={content} 
                   onChange={(e) => {
                     setContent(e.target.value);
-                    e.target.style.height = 'auto';
-                    e.target.style.height = `${e.target.scrollHeight}px`;
+                    adjustTextareaHeight();
                   }} 
                   placeholder="Edit Markdown..." 
                   className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[500px] resize-none overflow-hidden" 
