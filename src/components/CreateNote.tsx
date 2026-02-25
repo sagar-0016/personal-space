@@ -411,7 +411,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                 </div>
               </div>
 
-              <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-2xl sm:text-4xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" autoFocus />
+              <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" autoFocus />
             </div>
 
             <EditorToolbar 
