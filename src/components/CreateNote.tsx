@@ -98,10 +98,8 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
 
-  // STABILITY FIX: Use a ref to track if any dropdown or dialog is open
   const isInteracting = useRef(false);
 
-  // Dialog States
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
   const [isLabelDialogOpen, setIsLabelDialogOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
@@ -182,11 +180,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      
-      // STABILITY FIX: If we are interacting with a portal, don't collapse.
       if (isInteracting.current) return;
-
-      // Radix Portals often don't trigger the ref check correctly
       const isPortal = target.closest('[data-radix-popper-content-wrapper]') || target.closest('[role="dialog"]');
       if (isPortal) return;
 
@@ -208,7 +202,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
     if (open) {
       isInteracting.current = true;
     } else {
-      // Small delay to ensure the click that closed the menu doesn't trigger collapse
       setTimeout(() => {
         isInteracting.current = false;
       }, 100);
@@ -313,15 +306,58 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
         ) : (
           <div className="flex flex-col note-fade-in">
             <div className="flex flex-col px-6 pt-5 pb-2">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-1">
-                  <div className="flex items-center bg-secondary/30 rounded-lg p-1 mr-2">
-                    <Button variant="ghost" size="sm" onClick={() => setEditMode('preview')} className={cn("h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Preview</Button>
-                    <Button variant="ghost" size="sm" onClick={() => setEditMode('visual')} className={cn("h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Visual</Button>
-                    <Button variant="ghost" size="sm" onClick={() => setEditMode('markdown')} className={cn("h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Markdown</Button>
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => setIsPinned(!isPinned)} className={cn("h-10 w-10 rounded-full transition-all", isPinned ? "text-primary bg-primary/5" : "text-muted-foreground/40")}>
-                    <Pin className={cn("h-5 w-5", isPinned && "fill-current")} />
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <div className="flex items-center bg-secondary/30 rounded-lg p-1">
+                  <Button variant="ghost" size="sm" onClick={() => setEditMode('preview')} className={cn("h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Preview</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditMode('visual')} className={cn("h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Visual</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditMode('markdown')} className={cn("h-7 px-3 text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Markdown</Button>
+                </div>
+
+                <div className="flex items-center gap-2 ml-auto">
+                  <Select 
+                    value={selectedProjectId} 
+                    onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setSelectedProjectId(val)}
+                    onOpenChange={setInteracting}
+                  >
+                    <SelectTrigger className="w-[140px] h-7 text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                      <div className="flex items-center gap-1.5">
+                        <Briefcase className="h-3 w-3 text-primary" />
+                        <SelectValue placeholder="Project" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="project-select-dropdown">
+                      <SelectItem value="none">No Project</SelectItem>
+                      {projects?.map(p => (
+                        p.id ? <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem> : null
+                      ))}
+                      <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {selectedProjectId !== 'none' && (
+                    <Select 
+                      value={selectedLabelId} 
+                      onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setSelectedLabelId(val)}
+                      onOpenChange={setInteracting}
+                    >
+                      <SelectTrigger className="w-[120px] h-7 text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
+                        <div className="flex items-center gap-1.5">
+                          <Tag className="h-3 w-3 text-primary" />
+                          <SelectValue placeholder="Label" />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
+                         labels?.map(l => (
+                          l.id ? <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem> : null
+                        ))}
+                        <SelectItem value="new" className="text-primary font-bold">+ Create New</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  <Button variant="ghost" size="icon" onClick={() => setIsPinned(!isPinned)} className={cn("h-7 w-7 rounded-full transition-all", isPinned ? "text-primary bg-primary/5" : "text-muted-foreground/40")}>
+                    <Pin className={cn("h-4 w-4", isPinned && "fill-current")} />
                   </Button>
                 </div>
               </div>
@@ -343,11 +379,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                   </div>
                   {!isMetaExpanded && (
                     <div className="flex items-center gap-3 lowercase font-medium tracking-normal">
-                      {activeProject && (
-                        <Badge variant="outline" className="text-[9px] h-4 border-primary/20 bg-primary/5 text-primary">
-                          {activeProject.name}
-                        </Badge>
-                      )}
                       {tags.length > 0 && <span>• {tags.length} tags</span>}
                     </div>
                   )}
@@ -361,50 +392,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
               )}>
                 <div className="overflow-hidden">
                   <div className="px-6 py-6 space-y-4 border-t border-border/10 bg-background/20">
-                    <div className="flex items-center gap-3">
-                      <Select 
-                        value={selectedProjectId} 
-                        onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setSelectedProjectId(val)}
-                        onOpenChange={setInteracting}
-                      >
-                        <SelectTrigger className="w-[180px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                          <div className="flex items-center gap-2">
-                            <Briefcase className="h-3 w-3 text-primary" />
-                            <SelectValue placeholder="Select Project" />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent className="project-select-dropdown">
-                          <SelectItem value="none">No Project</SelectItem>
-                          {projects?.map(p => (
-                            p.id ? <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem> : null
-                          ))}
-                          <SelectItem value="new" className="text-primary font-bold">+ Create New Project</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      {selectedProjectId !== 'none' && (
-                        <Select 
-                          value={selectedLabelId} 
-                          onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setSelectedLabelId(val)}
-                          onOpenChange={setInteracting}
-                        >
-                          <SelectTrigger className="w-[150px] h-8 text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                            <div className="flex items-center gap-2">
-                              <Tag className="h-3 w-3 text-primary" />
-                              <SelectValue placeholder="Select Label" />
-                            </div>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {labelsLoading ? <div className="p-2"><Loader2 className="h-3 w-3 animate-spin mx-auto" /></div> : 
-                             labels?.map(l => (
-                              l.id ? <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem> : null
-                            ))}
-                            <SelectItem value="new" className="text-primary font-bold">+ Create New Label</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-
                     <div className="flex flex-wrap items-center gap-2">
                       <div className="flex items-center bg-primary/5 rounded-full px-2 py-0.5 border border-primary/10 group focus-within:border-primary/30 transition-all">
                         <Hash className="h-3 w-3 text-primary/40 mr-2" />
