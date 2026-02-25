@@ -311,10 +311,58 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
           <div className="flex flex-col note-fade-in">
             <div className="flex flex-col px-4 sm:px-6 pt-4 sm:pt-5 pb-2">
               <div className="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
-                <div className="flex items-center bg-secondary/30 rounded-lg p-0.5 sm:p-1">
-                  <Button variant="ghost" size="sm" onClick={() => setEditMode('preview')} className={cn("h-6 sm:h-7 px-2 sm:px-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Preview</Button>
-                  <Button variant="ghost" size="sm" onClick={() => setEditMode('visual')} className={cn("h-6 sm:h-7 px-2 sm:px-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>Visual</Button>
-                  <Button variant="ghost" size="sm" onClick={() => setEditMode('markdown')} className={cn("h-6 sm:h-7 px-2 sm:px-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-tighter transition-all", editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary")}>MD</Button>
+                <div className="flex items-center bg-secondary/30 rounded-lg p-0.5 sm:p-1 pb-1.5">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setEditMode('preview')} 
+                    className={cn(
+                      "h-6 sm:h-7 px-2 sm:px-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-tighter transition-all", 
+                      editMode === 'preview' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    Preview
+                  </Button>
+                  
+                  <div className="relative flex flex-col items-center">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setEditMode('visual')} 
+                      className={cn(
+                        "h-6 sm:h-7 px-2 sm:px-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-tighter transition-all", 
+                        editMode === 'visual' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                      )}
+                    >
+                      Visual
+                    </Button>
+                    {editMode === 'visual' && (
+                      <div className="absolute -bottom-3 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-1 duration-300">
+                        <div className="h-[2px] w-1/2 bg-primary rounded-full shadow-[0_0_8px_hsl(var(--primary))]" />
+                        <span className="text-[6px] font-black text-primary uppercase mt-0.5 tracking-tighter">EDIT</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative flex flex-col items-center">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setEditMode('markdown')} 
+                      className={cn(
+                        "h-6 sm:h-7 px-2 sm:px-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-tighter transition-all", 
+                        editMode === 'markdown' ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-primary/10 hover:text-primary"
+                      )}
+                    >
+                      .MD
+                    </Button>
+                    {editMode === 'markdown' && (
+                      <div className="absolute -bottom-3 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-1 duration-300">
+                        <div className="h-[2px] w-1/2 bg-primary rounded-full shadow-[0_0_8px_hsl(var(--primary))]" />
+                        <span className="text-[6px] font-black text-primary uppercase mt-0.5 tracking-tighter">EDIT</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 ml-auto">
@@ -417,7 +465,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                 placeholder="Title" 
                 value={title} 
                 onChange={(e) => setTitle(e.target.value)} 
-                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" 
+                className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-lg sm:text-xl font-bold px-0 bg-transparent placeholder:text-muted-foreground/30 transition-all" 
                 autoFocus 
               />
             </div>
