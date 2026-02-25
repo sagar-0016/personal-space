@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -179,7 +178,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
       const target = event.target as HTMLElement;
       
       // CRITICAL FIX: Explicitly check for Radix Portals. 
-      // Select, Popover, and Dialog content is rendered outside the ref in a Portal.
+      // Select, Popover, and Dialog content is rendered outside the container's DOM hierarchy in a Portal.
       const isPortalInteraction = 
         target.closest('[role="listbox"]') || 
         target.closest('[role="dialog"]') || 
