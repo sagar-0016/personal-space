@@ -252,7 +252,11 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         <DialogContent 
           className="sm:max-w-[950px] w-full sm:w-[95vw] h-[100svh] sm:h-auto sm:max-h-[95vh] flex flex-col p-0 border-none rounded-none sm:rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
           onPointerDownOutside={(e) => {
-            if (isInteracting.current) e.preventDefault();
+            const target = e.target as HTMLElement;
+            // Robust check: if the target is gone from DOM or if we are interacting with tools
+            if (!document.body.contains(target) || isInteracting.current) {
+              e.preventDefault();
+            }
           }}
           onFocusOutside={(e) => {
             if (isInteracting.current) e.preventDefault();

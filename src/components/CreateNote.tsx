@@ -183,11 +183,17 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
+      
+      // If target is no longer in the document, it was likely removed during a React/Tiptap re-render.
+      // We ignore these to prevent accidental collapsing.
+      if (!document.body.contains(target)) return;
+
       if (isInteracting.current) return;
       
       const isPortal = target.closest('[data-radix-popper-content-wrapper]') || 
                        target.closest('[role="dialog"]') || 
                        target.closest('[role="menu"]') ||
+                       target.closest('[role="tooltip"]') ||
                        target.closest('[data-radix-portal]');
       if (isPortal) return;
 
