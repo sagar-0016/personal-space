@@ -131,6 +131,9 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
       TaskList,
       TaskItem.configure({ nested: true }),
       Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Markdown.configure({ html: true, tightLists: true }),
     ],
     content: '',
@@ -179,7 +182,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      // Critical check: if target is no longer in body (e.g. was removed during re-render), skip reset
       if (!document.body.contains(target)) return;
       if (isInteracting.current) return;
       
