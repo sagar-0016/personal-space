@@ -131,10 +131,6 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
       TaskList,
       TaskItem.configure({ nested: true }),
       Table.configure({ resizable: true }),
-      TableRow, TableHeader, TableCell,
-      Image,
-      CodeBlockLowlight.configure({ lowlight }),
-      Link.configure({ openOnClick: false }),
       Markdown.configure({ html: true, tightLists: true }),
     ],
     content: '',
@@ -176,18 +172,15 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
       }
     }
     if (editMode === 'markdown') {
-      setTimeout(adjustTextareaHeight, 0);
+      setTimeout(adjustTextareaHeight, 10);
     }
   }, [editMode, content, editor, adjustTextareaHeight]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      
-      // If target is no longer in the document, it was likely removed during a React/Tiptap re-render.
-      // We ignore these to prevent accidental collapsing.
+      // Critical check: if target is no longer in body (e.g. was removed during re-render), skip reset
       if (!document.body.contains(target)) return;
-
       if (isInteracting.current) return;
       
       const isPortal = target.closest('[data-radix-popper-content-wrapper]') || 

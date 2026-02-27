@@ -34,7 +34,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
+import TableRow from '@radix-ui/react-table';
 import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
 import Image from '@tiptap/extension-image';
@@ -113,10 +113,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       TaskList,
       TaskItem.configure({ nested: true }),
       Table.configure({ resizable: true }),
-      TableRow, TableHeader, TableCell,
-      Image,
-      CodeBlockLowlight.configure({ lowlight }),
-      Link.configure({ openOnClick: false }),
       Markdown.configure({ html: true, tightLists: true }),
     ],
     content: '',
@@ -156,7 +152,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
   useEffect(() => {
     if (editMode === 'markdown' && isOpen) {
-      setTimeout(adjustTextareaHeight, 10);
+      setTimeout(adjustTextareaHeight, 50);
     }
   }, [editMode, content, isOpen, adjustTextareaHeight]);
 
@@ -253,7 +249,6 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
           className="sm:max-w-[950px] w-full sm:w-[95vw] h-[100svh] sm:h-auto sm:max-h-[95vh] flex flex-col p-0 border-none rounded-none sm:rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
           onPointerDownOutside={(e) => {
             const target = e.target as HTMLElement;
-            // Robust check: if the target is gone from DOM or if we are interacting with tools
             if (!document.body.contains(target) || isInteracting.current) {
               e.preventDefault();
             }
@@ -434,7 +429,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               />
             </div>
             
-            <div className="mt-4 sm:mt-8 px-6 sm:px-10 h-full flex flex-col">
+            <div className="mt-4 sm:mt-8 px-6 sm:px-10">
               {editMode === 'preview' ? (
                 <div className="min-h-[400px] py-4"><MarkdownRenderer content={content || "_No content to preview_"} /></div>
               ) : editMode === 'visual' ? (
