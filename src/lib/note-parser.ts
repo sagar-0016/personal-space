@@ -1,4 +1,3 @@
-
 /**
  * Simplified metadata parser that extracts project hierarchy and indexing fields 
  * from a YAML metadata block.
@@ -13,6 +12,7 @@ export interface NoteMetadataInfo {
 
 /**
  * Extracts key fields from a raw YAML metadata string.
+ * Improved to handle standard YAML list syntax and robust tag extraction.
  */
 export function extractMetadataInfo(metadata: string | undefined): NoteMetadataInfo {
   if (!metadata) return { title: null, project: null, labels: [], tags: [] };
@@ -43,6 +43,7 @@ export function extractMetadataInfo(metadata: string | undefined): NoteMetadataI
     if (simpleMatch) {
       const raw = simpleMatch[1];
       if (!raw) return [];
+      // Handle comma-separated list or just one value
       return raw.split(',')
         .map(t => t.trim().replace(/^["']|["']$/g, ''))
         .filter(Boolean);
@@ -70,6 +71,7 @@ export function updateMetadataWithInfo(currentMetadata: string, updates: Partial
     let formattedValue = '';
     
     if (Array.isArray(value)) {
+      // Always store as a clean YAML bracketed list for predictability
       formattedValue = `[${value.map(v => `"${v}"`).join(', ')}]`;
     } else {
       formattedValue = `"${value || ''}"`;

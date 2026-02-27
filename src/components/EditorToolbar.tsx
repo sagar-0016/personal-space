@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from 'react';
@@ -33,6 +32,10 @@ interface EditorToolbarProps {
   onContentChange?: (content: string) => void;
 }
 
+/**
+ * EditorToolbar - High-performance formatting toolbar.
+ * Optimized with onMouseDown to prevent editor focus loss during interaction.
+ */
 export function EditorToolbar({ 
   editor, 
   textareaRef, 
@@ -70,7 +73,7 @@ export function EditorToolbar({
             size="icon"
             className={cn("h-8 w-8", active ? "bg-primary/10 text-primary" : "text-muted-foreground")}
             onMouseDown={(e) => {
-              // Using onMouseDown + preventDefault is critical to avoid focus loss in the editor
+              // Critical: onMouseDown + preventDefault prevents focus loss in Tiptap/textarea
               e.preventDefault();
               onClick();
             }}
@@ -78,7 +81,7 @@ export function EditorToolbar({
             <Icon className="h-4 w-4" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="top" className="text-xs">{tooltip}</TooltipContent>
+        <TooltipContent side="top" className="text-[10px] font-bold uppercase tracking-widest">{tooltip}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

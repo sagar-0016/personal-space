@@ -51,6 +51,10 @@ interface RichEditorProps {
   className?: string;
 }
 
+/**
+ * RichEditor - Optimized for consolidated scrolling.
+ * Removed internal overflow-y-auto to prevent "double scroll" issues when used in modals.
+ */
 export function RichEditor({ 
   editor, 
   className 
@@ -64,7 +68,7 @@ export function RichEditor({
   if (!mounted || !editor) return null;
 
   return (
-    <div className={cn("flex-1 overflow-y-auto", className)}>
+    <div className={cn("relative w-full", className)}>
       <EditorContent editor={editor} />
     </div>
   );

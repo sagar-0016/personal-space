@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -251,7 +250,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         if (!open && !isInteracting.current) performSave(true);
       }}>
         <DialogContent 
-          className="sm:max-w-[950px] w-full sm:w-[95vw] h-full sm:h-auto max-h-[100svh] sm:max-h-[95vh] flex flex-col p-0 border-none rounded-none sm:rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
+          className="sm:max-w-[950px] w-full sm:w-[95vw] h-[100svh] sm:h-auto sm:max-h-[95vh] flex flex-col p-0 border-none rounded-none sm:rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
           onPointerDownOutside={(e) => {
             if (isInteracting.current) e.preventDefault();
           }}
@@ -337,7 +336,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
                 <Select value={labelId} onValueChange={(val) => val === 'new' ? setIsLabelDialogOpen(true) : setLabelId(val)} onOpenChange={setInteracting}>
                   <SelectTrigger className="w-[85px] sm:w-[130px] h-7 sm:h-8 text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                    <div className="flex items-center gap-1 sm:gap-2 truncate max-w-full">
+                    <div className="flex items-center gap-1 sm:gap-2 truncate max-w-[60px] sm:max-w-full">
                       <TagIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary shrink-0" />
                       <SelectValue placeholder="Label" className="truncate" />
                     </div>
@@ -351,7 +350,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
 
                 <Select value={projectId} onValueChange={(val) => val === 'new' ? setIsProjectDialogOpen(true) : setProjectId(val)} onOpenChange={setInteracting}>
                   <SelectTrigger className="w-[95px] sm:w-[150px] h-7 sm:h-8 text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-primary/5 border-none shadow-none focus:ring-0">
-                    <div className="flex items-center gap-1 sm:gap-2 truncate max-w-full">
+                    <div className="flex items-center gap-1 sm:gap-2 truncate max-w-[70px] sm:max-w-full">
                       <Briefcase className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary shrink-0" />
                       <SelectValue placeholder="Project" className="truncate" />
                     </div>
@@ -425,7 +424,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                 onChange={(e) => setTitle(e.target.value)} 
                 readOnly={editMode === 'preview'}
                 className={cn(
-                  "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-2xl font-black px-0 bg-transparent h-auto placeholder:opacity-20 transition-all",
+                  "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none text-xl sm:text-3xl font-black px-0 bg-transparent h-auto placeholder:opacity-20 transition-all",
                   editMode === 'preview' ? "cursor-default select-none" : "cursor-text"
                 )} 
               />
@@ -433,9 +432,9 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             
             <div className="mt-4 sm:mt-8 px-6 sm:px-10 h-full flex flex-col">
               {editMode === 'preview' ? (
-                <div className="min-h-[500px] py-4"><MarkdownRenderer content={content || "_No content to preview_"} /></div>
+                <div className="min-h-[400px] py-4"><MarkdownRenderer content={content || "_No content to preview_"} /></div>
               ) : editMode === 'visual' ? (
-                <RichEditor editor={editor} className="min-h-[500px]" />
+                <RichEditor editor={editor} className="min-h-[400px]" />
               ) : (
                 <Textarea 
                   ref={textareaRef} 
@@ -445,7 +444,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                     adjustTextareaHeight();
                   }} 
                   placeholder="Edit Markdown..." 
-                  className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[500px] resize-none overflow-hidden" 
+                  className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[400px] resize-none overflow-hidden" 
                 />
               )}
             </div>
@@ -468,7 +467,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               <Button 
                 variant="ghost" 
                 onClick={() => performSave(true)} 
-                className="sm:hidden font-black text-[10px] uppercase tracking-widest h-9 w-full hover:bg-secondary/50"
+                className="sm:hidden font-black text-[10px] uppercase tracking-widest h-9 w-full hover:bg-secondary/50 border border-border/40 rounded-xl"
               >
                 Close
               </Button>
