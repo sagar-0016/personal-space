@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from 'react';
@@ -64,7 +63,7 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
 
       <div className="flex items-center space-x-1 sm:space-x-2">
         <TooltipProvider>
-          <div className="hidden sm:flex items-center space-x-1 sm:space-x-2">
+          <div className="flex items-center space-x-0.5 sm:space-x-2">
             <ModeToggle />
             <ThemeSelector />
           </div>
@@ -113,15 +112,10 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="text-xs text-muted-foreground truncate font-medium">
+              <DropdownMenuItem className="text-xs text-muted-foreground truncate font-medium border-b pb-2 mb-1">
                 {user.email}
               </DropdownMenuItem>
-              <div className="sm:hidden border-t my-1">
-                <DropdownMenuItem asChild>
-                  <div className="flex items-center py-2"><ModeToggle /><span className="ml-2">Mode</span></div>
-                </DropdownMenuItem>
-              </div>
-              <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive mt-1 border-t">
+              <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
               </DropdownMenuItem>

@@ -249,7 +249,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         if (!open && !isInteracting.current) performSave(true);
       }}>
         <DialogContent 
-          className="sm:max-w-[950px] w-full sm:w-[95vw] h-[100svh] sm:h-auto sm:max-h-[95vh] flex flex-col p-0 border-none rounded-none sm:rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
+          className="sm:max-w-[950px] w-full sm:w-[95vw] h-[100svh] sm:h-auto sm:max-h-[95vh] flex flex-col p-0 border-none rounded-none sm:rounded-2xl overflow-y-auto overflow-x-hidden z-[100] bg-background shadow-2xl"
           onPointerDownOutside={(e) => {
             const target = e.target as HTMLElement;
             if (!document.body.contains(target) || isInteracting.current) {
@@ -418,7 +418,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             />
           )}
 
-          <div className="flex-1 overflow-y-auto pt-4 sm:pt-8 pb-32 scroll-smooth">
+          <div className="pt-4 sm:pt-8 pb-32">
             <div className="px-6 sm:px-10 space-y-4 sm:space-y-6">
               <Input 
                 placeholder="Note Title" 

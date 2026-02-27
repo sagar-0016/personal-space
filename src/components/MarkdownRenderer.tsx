@@ -86,7 +86,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             
             if (inline) {
               return (
-                <code className="bg-[#0d0d0d] text-[#39ff14] px-1.5 py-0.5 rounded-md border border-border/30 font-mono text-[0.85em] shadow-sm shadow-black/20 mx-1">
+                <code className="bg-[#0d0d0d] text-white/90 px-1.5 py-0.5 rounded-md border border-border/30 font-mono text-[0.85em] shadow-sm shadow-black/20 mx-1">
                   {codeString}
                 </code>
               );
