@@ -37,10 +37,6 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
-import Image from '@tiptap/extension-image';
-import Link from '@tiptap/extension-link';
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
-import { common, createLowlight } from 'lowlight';
 import { Markdown } from 'tiptap-markdown';
 import { format } from 'date-fns';
 import { MarkdownRenderer } from './MarkdownRenderer';
@@ -48,8 +44,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
-
-const lowlight = createLowlight(common);
 
 const SAMPLE_ICONS = [
   { name: 'Briefcase', icon: LucideIcons.Briefcase },
@@ -265,9 +259,15 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
           <div className="flex flex-col border-b bg-card/50 backdrop-blur-md sticky top-0 z-[50]">
             <div className="flex flex-wrap items-center justify-between p-3 sm:p-4 gap-2 sm:gap-4">
               <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="h-7 w-7 sm:h-8 sm:w-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => performSave(true)}
+                  className="h-7 w-7 sm:h-8 sm:w-8 bg-primary/10 hover:bg-primary/20 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-95"
+                  title="Save and Close"
+                >
                   <Layers className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                </div>
+                </Button>
                 <div className="flex items-center bg-secondary/30 rounded-lg p-0.5 sm:p-1 pb-1.5">
                   <Button 
                     variant="ghost" 
