@@ -86,31 +86,9 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             
             if (inline) {
               return (
-                <span className="inline-block align-middle mx-1 my-0.5 max-w-full">
-                  <span className="flex flex-col bg-[#0d0d0d] dark:bg-[#0a0a0b] border border-border/50 rounded-md overflow-hidden shadow-lg group/inline-code">
-                    <span className="flex items-center justify-between px-2 py-0.5 bg-[#1a1a1b] border-b border-border/30">
-                      <span className="flex items-center gap-1.5">
-                        <Terminal className="h-2 w-2 text-primary" />
-                        <span className="text-[7px] font-bold uppercase tracking-tighter text-muted-foreground/80">SRC</span>
-                      </span>
-                      <CopyButton 
-                        text={codeString} 
-                        className="h-3 w-3 opacity-0 group-hover/inline-code:opacity-100 transition-opacity p-0 bg-transparent border-none" 
-                      />
-                    </span>
-                    <span className="px-2 py-1 overflow-x-auto max-w-[400px] block scrollbar-hide">
-                      <SyntaxHighlighter
-                        language={lang}
-                        style={neonTheme}
-                        PreTag="div"
-                        CodeTag="code"
-                        customStyle={{ fontSize: '0.75rem', lineHeight: '1.2', padding: 0 }}
-                      >
-                        {codeString}
-                      </SyntaxHighlighter>
-                    </span>
-                  </span>
-                </span>
+                <code className="bg-[#0d0d0d] text-[#39ff14] px-1.5 py-0.5 rounded-md border border-border/30 font-mono text-[0.85em] shadow-sm shadow-black/20 mx-1">
+                  {codeString}
+                </code>
               );
             }
 

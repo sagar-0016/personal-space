@@ -458,7 +458,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                   </Select>
 
                   <Button variant="ghost" size="icon" onClick={() => setIsPinned(!isPinned)} className={cn("h-6 w-6 sm:h-7 sm:w-7 rounded-full transition-all shrink-0", isPinned ? "text-primary bg-primary/5" : "text-muted-foreground/40")}>
-                    <Pin className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", isPinned && "fill-current")} />
+                    <Pin className={cn("h-3.5 w-3.5 sm:h-4 w-4", isPinned && "fill-current")} />
                   </Button>
                 </div>
               </div>
@@ -486,7 +486,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
               ) : editMode === 'visual' ? (
                 <RichEditor editor={editor} className="min-h-[120px]" />
               ) : (
-                <Textarea ref={textareaRef} value={content} onChange={handleMarkdownChange} placeholder="Write Markdown..." className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-xs sm:text-sm leading-relaxed resize-none overflow-hidden" />
+                <Textarea ref={textareaRef} value={content} onChange={handleMarkdownChange} placeholder="Write Markdown..." className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-xs sm:text-sm leading-relaxed resize-none overflow-hidden h-auto" />
               )}
             </div>
 

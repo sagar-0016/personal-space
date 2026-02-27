@@ -446,7 +446,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
                     adjustTextareaHeight();
                   }} 
                   placeholder="Edit Markdown..." 
-                  className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[400px] resize-none overflow-hidden" 
+                  className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[400px] h-auto resize-none overflow-hidden" 
                 />
               )}
             </div>
