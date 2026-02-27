@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect } from 'react';
@@ -135,7 +134,7 @@ export function ThemeSync() {
       root.style.removeProperty('--accent');
     }
 
-    // Dynamic Favicon Update
+    // Dynamic Favicon Update matching theme color
     try {
       const svgColor = `hsl(${primaryColor.split(' ').join(',')})`;
       const svgContent = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='${svgColor}'/><path d='M50 25c-11.05 0-20 8.95-20 20 0 6.13 2.76 11.62 7.12 15.34.8.69 1.28 1.71 1.28 2.77V70h23.2v-6.89c0-1.06.48-2.08 1.28-2.77C67.24 56.62 70 51.13 70 45c0-11.05-8.95-20-20-20zm-8 50h16v3.2H42V75zm2.4 6.4h11.2V83H44.4v-1.6z' fill='white'/></svg>`;

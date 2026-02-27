@@ -275,6 +275,11 @@
   transition: all 0.3s ease;
 }
 
+/* Premium Visual Editor - Inline Code Styling */
+.ProseMirror code:not(pre code) {
+  @apply bg-[#0d0d0d] text-[#39ff14] px-1.5 py-0.5 rounded-md border border-border/30 font-mono text-[0.9em] shadow-sm shadow-black/20;
+}
+
 /* Syntax Highlighting overrides */
 .token.keyword { color: hsl(var(--code-keyword)) !important; font-weight: bold; }
 .token.string { color: hsl(var(--code-string)) !important; }
