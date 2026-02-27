@@ -62,12 +62,12 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
       </div>
 
       <div className="flex items-center space-x-1 sm:space-x-2">
+        <div className="flex items-center space-x-1 sm:space-x-2">
+          <ModeToggle />
+          <ThemeSelector />
+        </div>
+        
         <TooltipProvider>
-          <div className="flex items-center space-x-0.5 sm:space-x-2">
-            <ModeToggle />
-            <ThemeSelector />
-          </div>
-          
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
@@ -89,7 +89,7 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-full h-9 w-9"
+                className="rounded-full h-9 w-9 hidden sm:flex"
                 onClick={onOpenSettings}
               >
                 <Settings className="h-5 w-5" />

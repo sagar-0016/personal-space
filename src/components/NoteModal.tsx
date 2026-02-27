@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Note, Project, Label } from '@/lib/types';
-import { RichEditor } from './RichEditor';
+import { RichEditor, CodeBlockComponent } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   X, 
@@ -28,7 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { updateMetadataWithInfo, generateDefaultMetadata, extractMetadataInfo } from '@/lib/note-parser';
 import { EditorToolbar } from './EditorToolbar';
-import { useEditor } from '@tiptap/react';
+import { useEditor, ReactNodeViewRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
@@ -37,6 +37,8 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { common, createLowlight } from 'lowlight';
 import { Markdown } from 'tiptap-markdown';
 import { format } from 'date-fns';
 import { MarkdownRenderer } from './MarkdownRenderer';
@@ -44,6 +46,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
+
+const lowlight = createLowlight(common);
 
 const SAMPLE_ICONS = [
   { name: 'Briefcase', icon: LucideIcons.Briefcase },
@@ -110,6 +114,11 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
       TableRow,
       TableHeader,
       TableCell,
+      CodeBlockLowlight.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(CodeBlockComponent);
+        },
+      }).configure({ lowlight }),
       Markdown.configure({ html: true, tightLists: true }),
     ],
     content: '',

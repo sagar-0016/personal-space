@@ -53,7 +53,6 @@ interface RichEditorProps {
 
 /**
  * RichEditor - Optimized for consolidated scrolling.
- * Removed internal overflow-y-auto to prevent "double scroll" issues when used in modals.
  */
 export function RichEditor({ 
   editor, 
@@ -69,6 +68,18 @@ export function RichEditor({
 
   return (
     <div className={cn("relative w-full", className)}>
+      <style jsx global>{`
+        .ProseMirror code:not(pre code) {
+          background-color: #0d0d0d !important;
+          color: rgba(255, 255, 255, 0.9) !important;
+          padding: 0.125rem 0.375rem !important;
+          border-radius: 0.375rem !important;
+          border: 1px solid rgba(var(--border), 0.3) !important;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+          font-size: 0.85em !important;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+        }
+      `}</style>
       <EditorContent editor={editor} />
     </div>
   );

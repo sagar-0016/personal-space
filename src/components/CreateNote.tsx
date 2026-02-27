@@ -22,11 +22,11 @@ import {
   Book
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { RichEditor } from './RichEditor';
+import { RichEditor, CodeBlockComponent } from './RichEditor';
 import { Textarea } from '@/components/ui/textarea';
 import { generateDefaultMetadata, updateMetadataWithInfo, extractMetadataInfo } from '@/lib/note-parser';
 import { EditorToolbar } from './EditorToolbar';
-import { useEditor } from '@tiptap/react';
+import { useEditor, ReactNodeViewRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
@@ -134,6 +134,11 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
       TableRow,
       TableHeader,
       TableCell,
+      CodeBlockLowlight.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(CodeBlockComponent);
+        },
+      }).configure({ lowlight }),
       Markdown.configure({ html: true, tightLists: true }),
     ],
     content: '',
