@@ -138,7 +138,7 @@ export default function Home() {
   // Loading state or verification redirect check
   if (isUserLoading || !user || (!user.emailVerified && user.providerData.some(p => p.providerId === 'password'))) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-[100svh] flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -148,46 +148,46 @@ export default function Home() {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="h-screen flex flex-col w-full bg-background transition-colors duration-700 relative overflow-hidden">
+      <div className="h-[100svh] flex flex-col w-full bg-background transition-colors duration-700 relative overflow-hidden">
         <Navbar onSearch={setSearchQuery} viewMode={viewMode} onViewModeToggle={() => setViewMode(prev => prev === 'grid' ? 'list' : 'grid')} onOpenSettings={() => setIsSettingsOpen(true)} />
         <div className="flex flex-1 overflow-hidden">
           <AppSidebar currentView={currentView} onViewChange={setCurrentView} notes={notes || []} />
           <SidebarInset className="flex-1 overflow-y-auto bg-transparent">
-            <main className="container mx-auto pt-6 sm:pt-8 pb-32">
+            <main className="container mx-auto pt-4 sm:pt-8 pb-32">
               {(currentView === 'all' || currentView.startsWith('project:')) && <CreateNote onSave={handleCreateNote} defaultProjectId={currentProjectId} />}
               
               {isNotesLoading ? (
                 <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
               ) : allFilteredNotes.length > 0 ? (
-                <div className="space-y-8 sm:space-y-12">
+                <div className="space-y-6 sm:space-y-12">
                   {pinnedNotes.length > 0 && (
-                    <div className="space-y-4 sm:space-y-6">
+                    <div className="space-y-3 sm:space-y-6">
                       <div className="flex items-center space-x-2 px-4 sm:px-8 max-w-7xl mx-auto">
-                        <Pin className="h-3.5 w-3.5 text-primary fill-current" />
-                        <h2 className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Pinned</h2>
+                        <Pin className="h-3 w-3 text-primary fill-current" />
+                        <h2 className="text-[9px] font-bold text-primary uppercase tracking-[0.3em]">Pinned</h2>
                       </div>
-                      <div className={cn("gap-3 sm:gap-4 max-w-7xl mx-auto px-4 sm:px-4", viewMode === 'grid' ? "columns-1 sm:columns-2 lg:columns-3 xl:columns-4" : "flex flex-col")}>
-                        {pinnedNotes.map((note) => <div key={note.id} className="break-inside-avoid-column mb-3 sm:mb-4"><NoteCard note={note} onEdit={(n) => { setEditingNote(n); setIsModalOpen(true); }} onUpdate={handleUpdateNote} onDelete={() => handleTrashNote(note)} onArchive={() => handleArchiveNote(note)} onTogglePin={() => handleUpdateNote({...note, isPinned: !note.isPinned})} isTrash={currentView === 'trash'} onPermanentDelete={() => handlePermanentDelete(note.id)} projects={projects || []} /></div>)}
+                      <div className={cn("gap-2 sm:gap-4 max-w-7xl mx-auto px-2 sm:px-4", viewMode === 'grid' ? "columns-1 sm:columns-2 lg:columns-3 xl:columns-4" : "flex flex-col")}>
+                        {pinnedNotes.map((note) => <div key={note.id} className="break-inside-avoid-column mb-2 sm:mb-4"><NoteCard note={note} onEdit={(n) => { setEditingNote(n); setIsModalOpen(true); }} onUpdate={handleUpdateNote} onDelete={() => handleTrashNote(note)} onArchive={() => handleArchiveNote(note)} onTogglePin={() => handleUpdateNote({...note, isPinned: !note.isPinned})} isTrash={currentView === 'trash'} onPermanentDelete={() => handlePermanentDelete(note.id)} projects={projects || []} /></div>)}
                       </div>
                     </div>
                   )}
-                  <div className="space-y-4 sm:space-y-6">
+                  <div className="space-y-3 sm:space-y-6">
                     {pinnedNotes.length > 0 && (
                       <div className="flex items-center space-x-2 px-4 sm:px-8 max-w-7xl mx-auto">
-                        <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">Notes</h2>
+                        <h2 className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.3em]">Notes</h2>
                       </div>
                     )}
-                    <div className={cn("gap-3 sm:gap-4 max-w-7xl mx-auto px-4 sm:px-4", viewMode === 'grid' ? "columns-1 sm:columns-2 lg:columns-3 xl:columns-4" : "flex flex-col")}>
-                      {otherNotes.map((note) => <div key={note.id} className="break-inside-avoid-column mb-3 sm:mb-4"><NoteCard note={note} onEdit={(n) => { setEditingNote(n); setIsModalOpen(true); }} onUpdate={handleUpdateNote} onDelete={() => handleTrashNote(note)} onArchive={() => handleArchiveNote(note)} onTogglePin={() => handleUpdateNote({...note, isPinned: !note.isPinned})} isTrash={currentView === 'trash'} onPermanentDelete={() => handlePermanentDelete(note.id)} projects={projects || []} /></div>)}
+                    <div className={cn("gap-2 sm:gap-4 max-w-7xl mx-auto px-2 sm:px-4", viewMode === 'grid' ? "columns-1 sm:columns-2 lg:columns-3 xl:columns-4" : "flex flex-col")}>
+                      {otherNotes.map((note) => <div key={note.id} className="break-inside-avoid-column mb-2 sm:mb-4"><NoteCard note={note} onEdit={(n) => { setEditingNote(n); setIsModalOpen(true); }} onUpdate={handleUpdateNote} onDelete={() => handleTrashNote(note)} onArchive={() => handleArchiveNote(note)} onTogglePin={() => handleUpdateNote({...note, isPinned: !note.isPinned})} isTrash={currentView === 'trash'} onPermanentDelete={() => handlePermanentDelete(note.id)} projects={projects || []} /></div>)}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
-                  <div className="p-8 sm:p-10 bg-primary/5 rounded-full mb-6 border border-primary/10">
-                    <Layers className="h-12 w-12 sm:h-16 sm:w-16 text-primary opacity-40" />
+                <div className="flex flex-col items-center justify-center py-20 sm:py-32 text-muted-foreground text-center">
+                  <div className="p-6 sm:p-10 bg-primary/5 rounded-full mb-4 sm:mb-6 border border-primary/10">
+                    <Layers className="h-10 w-10 sm:h-16 sm:w-16 text-primary opacity-40" />
                   </div>
-                  <p className="text-xl sm:text-2xl font-semibold text-foreground/80">No notes found</p>
+                  <p className="text-lg sm:text-2xl font-semibold text-foreground/80">No notes found</p>
                 </div>
               )}
             </main>

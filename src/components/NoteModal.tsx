@@ -251,7 +251,7 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
         if (!open && !isInteracting.current) performSave(true);
       }}>
         <DialogContent 
-          className="sm:max-w-[950px] w-[98vw] sm:w-[95vw] max-h-[98vh] sm:max-h-[95vh] flex flex-col p-0 border-none rounded-xl sm:rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
+          className="sm:max-w-[950px] w-full sm:w-[95vw] h-full sm:h-auto max-h-[100svh] sm:max-h-[95vh] flex flex-col p-0 border-none rounded-none sm:rounded-2xl overflow-hidden z-[100] bg-background shadow-2xl"
           onPointerDownOutside={(e) => {
             if (isInteracting.current) e.preventDefault();
           }}
@@ -417,8 +417,8 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             />
           )}
 
-          <div className="flex-1 overflow-y-auto pt-6 sm:pt-8 pb-20 scroll-smooth">
-            <div className="px-6 sm:px-10 space-y-6">
+          <div className="flex-1 overflow-y-auto pt-4 sm:pt-8 pb-32 scroll-smooth">
+            <div className="px-6 sm:px-10 space-y-4 sm:space-y-6">
               <Input 
                 placeholder="Note Title" 
                 value={title} 
@@ -451,9 +451,9 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
             </div>
           </div>
 
-          <div className="p-4 sm:p-6 bg-card border-t flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-between items-center px-6 sm:px-10">
+          <div className="p-4 sm:p-6 bg-card border-t flex flex-col sm:flex-row gap-2 sm:gap-4 sm:justify-between items-center px-6 sm:px-10 sticky bottom-0 z-50">
             <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
-              <div className="flex flex-col space-y-0.5 text-[9px] sm:text-[10px] text-muted-foreground/60 font-medium uppercase tracking-tight flex-1">
+              <div className="flex flex-col space-y-0.5 text-[8px] sm:text-[10px] text-muted-foreground/60 font-medium uppercase tracking-tight flex-1">
                 {note && (
                   <>
                     <div className="flex items-center gap-1.5"><span className="font-bold text-primary/40">Created:</span><span>{format(note.createdAt, 'MMM d, yy · HH:mm')}</span></div>
@@ -468,9 +468,9 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               <Button 
                 variant="ghost" 
                 onClick={() => performSave(true)} 
-                className="sm:hidden font-black text-[10px] uppercase tracking-widest h-10 w-full hover:bg-secondary/50"
+                className="sm:hidden font-black text-[10px] uppercase tracking-widest h-9 w-full hover:bg-secondary/50"
               >
-                Close Without Saving
+                Close
               </Button>
               <Button 
                 onClick={() => performSave(true)} 
