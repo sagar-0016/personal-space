@@ -151,7 +151,12 @@ export default function Home() {
       <div className="h-[100svh] flex flex-col w-full bg-background transition-colors duration-700 relative overflow-hidden">
         <Navbar onSearch={setSearchQuery} viewMode={viewMode} onViewModeToggle={() => setViewMode(prev => prev === 'grid' ? 'list' : 'grid')} onOpenSettings={() => setIsSettingsOpen(true)} />
         <div className="flex flex-1 overflow-hidden">
-          <AppSidebar currentView={currentView} onViewChange={setCurrentView} notes={notes || []} />
+          <AppSidebar 
+            currentView={currentView} 
+            onViewChange={setCurrentView} 
+            notes={notes || []} 
+            hideEmptyLabels={hideEmptyLabels}
+          />
           <SidebarInset className="flex-1 overflow-y-auto bg-transparent">
             <main className="container mx-auto pt-4 sm:pt-8 pb-32">
               {(currentView === 'all' || currentView.startsWith('project:')) && <CreateNote onSave={handleCreateNote} defaultProjectId={currentProjectId} />}

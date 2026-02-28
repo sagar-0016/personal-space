@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState } from 'react';
@@ -79,9 +80,11 @@ interface ProjectItemProps {
   currentView: string;
   onViewChange: (view: string) => void;
   userId: string;
+  notes: Note[];
+  hideEmptyLabels: boolean;
 }
 
-function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItemProps) {
+function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEmptyLabels }: ProjectItemProps) {
   const db = useFirestore();
   const isActiveProject = currentView.startsWith(`project:${project.id}`);
   
@@ -98,10 +101,26 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
   
   const { data: labels, isLoading } = useCollection<Label>(labelsQuery);
 
-  // Filter out default labels (like 'Unlabelled') from the sidebar view
+  /**
+   * Determine visible labels based on hideEmptyLabels preference.
+   * As requested, we ignore the 'isDefault' logic for explicit filtering 
+   * and treat it like a normal label that follows the visibility rules.
+   */
   const visibleLabels = React.useMemo(() => {
-    return labels?.filter(l => !l.isDefault) || [];
-  }, [labels]);
+    if (!labels) return [];
+    if (!hideEmptyLabels) return labels;
+    
+    return labels.filter(label => {
+      // Check if this label has any active (non-trash/non-archive) notes
+      const hasNotes = notes.some(n => 
+        n.projectId === project.id && 
+        n.labelId === label.id && 
+        !n.isDeleted && 
+        !n.isArchived
+      );
+      return hasNotes;
+    });
+  }, [labels, notes, project.id, hideEmptyLabels]);
 
   const handleUpdate = () => {
     if (!db || !newName.trim()) {
@@ -307,8 +326,14 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
 export function AppSidebar({ 
   currentView, 
   onViewChange, 
-  notes 
-}: { currentView: string; onViewChange: (v: string) => void; notes: Note[] }) {
+  notes,
+  hideEmptyLabels
+}: { 
+  currentView: string; 
+  onViewChange: (v: string) => void; 
+  notes: Note[];
+  hideEmptyLabels: boolean;
+}) {
   const { user } = useUser();
   const db = useFirestore();
   const [newProjectName, setNewProjectName] = useState('');
@@ -413,6 +438,8 @@ export function AppSidebar({
                 currentView={currentView} 
                 onViewChange={onViewChange}
                 userId={user?.uid || ''}
+                notes={notes}
+                hideEmptyLabels={hideEmptyLabels}
               />
             ))}
           </SidebarMenu>
