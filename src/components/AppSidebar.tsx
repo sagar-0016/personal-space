@@ -98,6 +98,11 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
   
   const { data: labels, isLoading } = useCollection<Label>(labelsQuery);
 
+  // Filter out default labels (like 'Unlabelled') from the sidebar view
+  const visibleLabels = React.useMemo(() => {
+    return labels?.filter(l => !l.isDefault) || [];
+  }, [labels]);
+
   const handleUpdate = () => {
     if (!db || !newName.trim()) {
       setIsEditOpen(false);
@@ -125,10 +130,6 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
     <>
       <Collapsible defaultOpen={isActiveProject} className="group/project">
         <SidebarMenuItem>
-          {/* 
-              FIXED VERTICAL CENTERING: 
-              Isolated row with fixed height and absolute centered actions 
-          */}
           <div className="relative flex items-center h-8 mb-0.5 w-full group/row">
             <CollapsibleTrigger asChild>
               <SidebarMenuButton 
@@ -152,10 +153,6 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
               </SidebarMenuButton>
             </CollapsibleTrigger>
             
-            {/* 
-                Absolute Actions: Anchored to the center of the h-8 row.
-                Locked with style transforms to avoid CSS overriding issues.
-            */}
             <div 
               className="absolute right-3 flex items-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity pointer-events-none"
               style={{ top: '50%', transform: 'translateY(-50%)' }}
@@ -187,16 +184,16 @@ function ProjectItem({ project, currentView, onViewChange, userId }: ProjectItem
                 </DropdownMenuContent>
               </DropdownMenu>
               
-              {!isLoading && labels && labels.length > 0 && (
+              {!isLoading && visibleLabels.length > 0 && (
                 <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 text-muted-foreground/40" />
               )}
             </div>
           </div>
 
-          {!isLoading && labels && labels.length > 0 && (
+          {!isLoading && visibleLabels.length > 0 && (
             <CollapsibleContent>
               <SidebarMenuSub className="bg-primary/5 ml-4 rounded-l-lg border-l-2 border-primary/20 py-1">
-                {labels.map(label => {
+                {visibleLabels.map(label => {
                   const labelView = `project:${project.id}:label:${label.id}`;
                   const isLabelActive = currentView === labelView;
                   
