@@ -46,6 +46,9 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
         <div className="flex items-center space-x-2">
           <div className="relative h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center">
             {/* Dark mode intense glow effect */}
+            {/* <div className="absolute inset-0 bg-primary/40 blur-2xl rounded-full opacity-0 dark:opacity-100 transition-opacity duration-700 scale-[2.2] pointer-events-none" />
+            <div className="absolute inset-0 bg-primary/20 blur-md rounded-full opacity-0 dark:opacity-100 transition-opacity duration-500 scale-[1.5] pointer-events-none" /> */}
+            {/* Dark mode intense glow effect */}
             <div className="absolute inset-0 bg-primary/40 blur-2xl rounded-full opacity-0 dark:opacity-100 transition-opacity duration-700 scale-[2.2] pointer-events-none" />
             <div className="absolute inset-0 bg-primary/20 blur-md rounded-full opacity-0 dark:opacity-100 transition-opacity duration-500 scale-[1.5] pointer-events-none" />
             <Image 
