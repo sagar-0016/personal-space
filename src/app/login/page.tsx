@@ -171,13 +171,15 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border-none shadow-2xl bg-card/50 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="h-20 w-20 flex items-center justify-center transform -rotate-6">
+            <div className="relative h-20 w-20 flex items-center justify-center transform -rotate-6">
+              {/* Dark mode glow effect */}
+              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 dark:opacity-100 transition-opacity duration-700 scale-150" />
               <Image 
                 src={bulbImg} 
                 alt="Personal Space Logo" 
                 width={80} 
                 height={80} 
-                className="object-contain"
+                className="object-contain relative z-10"
                 priority
               />
             </div>

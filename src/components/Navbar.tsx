@@ -43,13 +43,15 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
           <Menu className="h-5 w-5" />
         </Button>
         <div className="flex items-center space-x-2 shrink-0">
-          <div className="h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center">
+          <div className="relative h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center">
+            {/* Dark mode glow effect */}
+            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 dark:opacity-100 transition-opacity duration-500" />
             <Image 
               src={bulbImg} 
               alt="Personal Space Logo" 
               width={32} 
               height={32} 
-              className="object-contain"
+              className="object-contain relative z-10"
               priority
             />
           </div>
@@ -71,7 +73,8 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
       </div>
 
       <div className="flex items-center space-x-1 sm:space-x-2">
-        <div className="flex items-center space-x-1">
+        {/* Toggles always visible on mobile now */}
+        <div className="flex items-center space-x-0.5 sm:space-x-1">
           <ModeToggle />
           <ThemeSelector />
         </div>
