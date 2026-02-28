@@ -74,10 +74,10 @@ export function RichEditor({
           color: rgba(255, 255, 255, 0.9) !important;
           padding: 0.125rem 0.375rem !important;
           border-radius: 0.375rem !important;
-          border: 1px solid rgba(var(--border), 0.3) !important;
+          border: 1px solid hsl(var(--primary) / 0.3) !important;
           font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
           font-size: 0.85em !important;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+          box-shadow: 0 0 0 1px hsl(var(--primary) / 0.1), 0 1px 2px rgba(0, 0, 0, 0.2) !important;
         }
       `}</style>
       <EditorContent editor={editor} />
