@@ -1,7 +1,8 @@
 "use client"
 
 import React from 'react';
-import { Search, Menu, Lightbulb, LayoutGrid, List, Settings, LogOut } from 'lucide-react';
+import Image from 'next/image';
+import { Search, Menu, LayoutGrid, List, Settings, LogOut } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
@@ -17,6 +18,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSidebar } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import bulbImg from '@/app/bulb.webp';
 
 interface NavbarProps {
   onSearch: (val: string) => void;
@@ -41,8 +43,15 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
           <Menu className="h-5 w-5" />
         </Button>
         <div className="flex items-center space-x-2 shrink-0">
-          <div className="h-7 w-7 sm:h-8 sm:w-8 bg-primary rounded-lg flex items-center justify-center">
-            <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
+          <div className="h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center">
+            <Image 
+              src={bulbImg} 
+              alt="Personal Space Logo" 
+              width={32} 
+              height={32} 
+              className="object-contain"
+              priority
+            />
           </div>
           <span className="text-lg sm:text-xl font-headline font-semibold hidden md:inline-block truncate">Personal Space</span>
         </div>

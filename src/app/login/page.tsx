@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,10 +19,11 @@ import {
   updateProfile,
   signOut
 } from 'firebase/auth';
-import { Lightbulb, Loader2, Mail, Lock, User as UserIcon } from 'lucide-react';
+import { Loader2, Mail, Lock, User as UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import bulbImg from '@/app/bulb.webp';
 
 export default function LoginPage() {
   const { user: authUser, isUserLoading } = useUser();
@@ -169,8 +171,15 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border-none shadow-2xl bg-card/50 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="h-16 w-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg transform -rotate-6">
-              <Lightbulb className="h-9 w-9 text-primary-foreground" />
+            <div className="h-20 w-20 flex items-center justify-center transform -rotate-6">
+              <Image 
+                src={bulbImg} 
+                alt="Personal Space Logo" 
+                width={80} 
+                height={80} 
+                className="object-contain"
+                priority
+              />
             </div>
           </div>
           <div className="space-y-1">
