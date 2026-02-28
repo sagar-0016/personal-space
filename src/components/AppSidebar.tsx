@@ -38,6 +38,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Note, Project, Label } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -86,6 +87,8 @@ interface ProjectItemProps {
 
 function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEmptyLabels }: ProjectItemProps) {
   const db = useFirestore();
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
   const isActiveProject = currentView.startsWith(`project:${project.id}`);
   
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -103,15 +106,12 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
 
   /**
    * Determine visible labels based on hideEmptyLabels preference.
-   * As requested, we ignore the 'isDefault' logic for explicit filtering 
-   * and treat it like a normal label that follows the visibility rules.
    */
   const visibleLabels = React.useMemo(() => {
     if (!labels) return [];
     if (!hideEmptyLabels) return labels;
     
     return labels.filter(label => {
-      // Check if this label has any active (non-trash/non-archive) notes
       const hasNotes = notes.some(n => 
         n.projectId === project.id && 
         n.labelId === label.id && 
@@ -149,14 +149,16 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
     <>
       <Collapsible defaultOpen={isActiveProject} className="group/project">
         <SidebarMenuItem>
-          <div className="relative flex items-center h-8 mb-0.5 w-full group/row">
+          <div className="relative flex items-center h-8 mb-0.5 w-full group/row overflow-hidden">
             <CollapsibleTrigger asChild>
               <SidebarMenuButton 
                 asChild
                 tooltip={project.name}
                 isActive={isActiveProject}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all duration-300 h-full relative pr-16 w-full",
+                  "rounded-r-full mr-2 transition-all duration-300 h-full relative w-full",
+                  // Increased padding-right when expanded to accommodate the dots and chevron
+                  !isCollapsed && "pr-14",
                   isActiveProject && "bg-primary/10 text-primary font-bold"
                 )}
               >
@@ -173,7 +175,12 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
             </CollapsibleTrigger>
             
             <div 
-              className="absolute right-3 flex items-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity pointer-events-none"
+              className={cn(
+                "absolute flex items-center gap-0.5 transition-all pointer-events-none",
+                isCollapsed 
+                  ? "right-[-4px] opacity-30 group-hover/row:opacity-100 scale-90" 
+                  : "right-2 opacity-0 group-hover/row:opacity-100"
+              )}
               style={{ top: '50%', transform: 'translateY(-50%)' }}
             >
               <DropdownMenu>
@@ -181,7 +188,10 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-6 w-6 rounded-md hover:bg-primary/10 transition-colors pointer-events-auto"
+                    className={cn(
+                      "h-6 w-6 rounded-md hover:bg-primary/10 transition-colors pointer-events-auto",
+                      isCollapsed && "hover:bg-transparent" // Keep the 'bug' look clean
+                    )}
                   >
                     <MoreHorizontal className="h-3.5 w-3.5" />
                     <span className="sr-only">Project actions</span>
@@ -203,8 +213,8 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
                 </DropdownMenuContent>
               </DropdownMenu>
               
-              {!isLoading && visibleLabels.length > 0 && (
-                <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 text-muted-foreground/40" />
+              {!isCollapsed && !isLoading && visibleLabels.length > 0 && (
+                <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 text-muted-foreground/40 shrink-0" />
               )}
             </div>
           </div>
