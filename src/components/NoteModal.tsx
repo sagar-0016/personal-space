@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -447,16 +448,18 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               ) : editMode === 'visual' ? (
                 <RichEditor editor={editor} className="min-h-[400px]" />
               ) : (
-                <Textarea 
-                  ref={textareaRef} 
-                  value={content} 
-                  onChange={(e) => {
-                    setContent(e.target.value);
-                    adjustTextareaHeight();
-                  }} 
-                  placeholder="Edit Markdown..." 
-                  className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[400px] h-auto resize-none overflow-hidden" 
-                />
+                <div className="min-h-[400px]">
+                  <Textarea 
+                    ref={textareaRef} 
+                    value={content} 
+                    onChange={(e) => {
+                      setContent(e.target.value);
+                      adjustTextareaHeight();
+                    }} 
+                    placeholder="Edit Markdown..." 
+                    className="w-full border-none shadow-none focus-visible:ring-0 px-0 bg-transparent font-mono text-sm leading-relaxed min-h-[400px] h-auto resize-none overflow-hidden" 
+                  />
+                </div>
               )}
             </div>
           </div>

@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -37,15 +38,16 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md px-2 sm:px-4 h-16 flex items-center justify-between gap-2">
-      <div className="flex items-center space-x-1 sm:space-x-4">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md px-2 sm:px-4 h-16 flex items-center justify-between gap-2 overflow-hidden">
+      <div className="flex items-center space-x-1 sm:space-x-4 shrink-0">
         <Button variant="ghost" size="icon" className="rounded-full h-9 w-9" onClick={toggleSidebar}>
           <Menu className="h-5 w-5" />
         </Button>
-        <div className="flex items-center space-x-2 shrink-0">
+        <div className="flex items-center space-x-2">
           <div className="relative h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center">
-            {/* Dark mode glow effect */}
-            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 dark:opacity-100 transition-opacity duration-500" />
+            {/* Dark mode intense glow effect */}
+            <div className="absolute inset-0 bg-primary/40 blur-2xl rounded-full opacity-0 dark:opacity-100 transition-opacity duration-700 scale-[2.2] pointer-events-none" />
+            <div className="absolute inset-0 bg-primary/20 blur-md rounded-full opacity-0 dark:opacity-100 transition-opacity duration-500 scale-[1.5] pointer-events-none" />
             <Image 
               src={bulbImg} 
               alt="Personal Space Logo" 
@@ -55,11 +57,11 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
               priority
             />
           </div>
-          <span className="text-lg sm:text-xl font-headline font-semibold hidden md:inline-block truncate">Personal Space</span>
+          <span className="text-lg sm:text-xl font-headline font-semibold hidden lg:inline-block truncate">Personal Space</span>
         </div>
       </div>
 
-      <div className="flex-1 max-w-xl mx-1 sm:mx-4">
+      <div className="flex-1 max-w-xl mx-1 sm:mx-4 min-w-0">
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
@@ -72,8 +74,7 @@ export function Navbar({ onSearch, viewMode, onViewModeToggle, onOpenSettings }:
         </div>
       </div>
 
-      <div className="flex items-center space-x-1 sm:space-x-2">
-        {/* Toggles always visible on mobile now */}
+      <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
         <div className="flex items-center space-x-0.5 sm:space-x-1">
           <ModeToggle />
           <ThemeSelector />

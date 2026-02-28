@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -168,12 +169,13 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-8">
-      <Card className="w-full max-w-md border-none shadow-2xl bg-card/50 backdrop-blur-sm">
-        <CardHeader className="text-center space-y-4">
+      <Card className="w-full max-w-md border-none shadow-2xl bg-card/50 backdrop-blur-sm relative overflow-hidden">
+        <CardHeader className="text-center space-y-4 relative z-10">
           <div className="flex justify-center">
             <div className="relative h-20 w-20 flex items-center justify-center transform -rotate-6">
-              {/* Dark mode glow effect */}
-              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 dark:opacity-100 transition-opacity duration-700 scale-150" />
+              {/* Intense Dark mode electric glow effect */}
+              <div className="absolute inset-0 bg-primary/40 blur-3xl rounded-full opacity-0 dark:opacity-100 transition-opacity duration-1000 scale-[2.5]" />
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 dark:opacity-100 transition-opacity duration-700 scale-[1.8]" />
               <Image 
                 src={bulbImg} 
                 alt="Personal Space Logo" 
@@ -191,7 +193,7 @@ export default function LoginPage() {
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 relative z-10">
           <form onSubmit={handleEmailAuth} className="space-y-4">
             <div className="space-y-2">
               {isSignUp && (
@@ -296,7 +298,7 @@ export default function LoginPage() {
             </>
           )}
         </CardContent>
-        <CardFooter className="flex flex-col space-y-2">
+        <CardFooter className="flex flex-col space-y-2 relative z-10">
           <Button
             variant="link"
             className="w-full text-sm text-muted-foreground hover:text-primary transition-colors"
