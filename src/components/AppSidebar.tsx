@@ -23,7 +23,18 @@ import {
   Star,
   Heart,
   Target,
-  Compass
+  Compass,
+  Flame,
+  Rocket,
+  Crown,
+  Coffee,
+  Globe,
+  Music,
+  Camera,
+  Cloud,
+  Map,
+  Shield,
+  HelpCircle
 } from 'lucide-react';
 import {
   Sidebar,
@@ -74,6 +85,16 @@ const SAMPLE_ICONS = [
   { name: 'Heart', icon: Heart },
   { name: 'Target', icon: Target },
   { name: 'Compass', icon: Compass },
+  { name: 'Flame', icon: Flame },
+  { name: 'Rocket', icon: Rocket },
+  { name: 'Crown', icon: Crown },
+  { name: 'Coffee', icon: Coffee },
+  { name: 'Globe', icon: Globe },
+  { name: 'Music', icon: Music },
+  { name: 'Camera', icon: Camera },
+  { name: 'Cloud', icon: Cloud },
+  { name: 'Map', icon: Map },
+  { name: 'Shield', icon: Shield },
 ];
 
 interface ProjectItemProps {
@@ -140,7 +161,7 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
     setDeleteConfirm('');
   };
 
-  const IconComponent = (LucideIcons as any)[project.iconName || 'Briefcase'] || Briefcase;
+  const IconComponent = (LucideIcons as any)[project.iconName || 'Briefcase'] || HelpCircle;
 
   return (
     <>
@@ -174,7 +195,7 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
               className={cn(
                 "absolute flex items-center gap-0.5 transition-all pointer-events-none",
                 isDesktopCollapsed 
-                  ? "left-[-17px] opacity-30 group-hover/row:opacity-100 scale-90" 
+                  ? "left-[-15px] opacity-30 group-hover/row:opacity-100 scale-90" 
                   : "right-2 opacity-0 group-hover/row:opacity-100" 
               )}
               style={{ top: '50%', transform: 'translateY(-50%)' }}
@@ -263,15 +284,28 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose Icon</label>
-              <div className="grid grid-cols-5 gap-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Custom Lucide Icon Name</label>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="e.g. Flame, Rocket, Crown..." 
+                  value={selectedIcon} 
+                  onChange={(e) => setSelectedIcon(e.target.value)}
+                />
+                <div className="h-10 w-10 flex items-center justify-center bg-secondary rounded-lg border">
+                  {React.createElement((LucideIcons as any)[selectedIcon] || HelpCircle, { className: "h-5 w-5 text-primary" })}
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose From List</label>
+              <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto pr-1">
                 {SAMPLE_ICONS.map((item) => (
                   <Button
                     key={item.name}
                     variant="outline"
                     size="icon"
                     className={cn(
-                      "h-10 w-10",
+                      "h-10 w-10 rounded-xl",
                       selectedIcon === item.name && "border-primary bg-primary/10 text-primary"
                     )}
                     onClick={() => setSelectedIcon(item.name)}
@@ -285,41 +319,6 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
           <DialogFooter>
             <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
             <Button onClick={handleUpdate}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="z-[1000]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
-              Delete Project
-            </DialogTitle>
-            <DialogDescription>
-              This will permanently delete the project "{project.name}" and all its labels. This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <p className="text-sm font-medium">
-              Please type <span className="font-bold select-none">{project.name}</span> to confirm.
-            </p>
-            <Input 
-              value={deleteConfirm} 
-              onChange={(e) => setDeleteConfirm(e.target.value)}
-              placeholder="Type project name..."
-              onKeyDown={(e) => e.key === 'Enter' && deleteConfirm === project.name && handleDelete()}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-            <Button 
-              variant="destructive" 
-              disabled={deleteConfirm !== project.name}
-              onClick={handleDelete}
-            >
-              Delete Permanently
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -407,15 +406,28 @@ export function AppSidebar({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose Icon</label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Custom Lucide Icon Name</label>
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="e.g. Flame, Rocket, Crown..." 
+                        value={selectedIcon} 
+                        onChange={(e) => setSelectedIcon(e.target.value)}
+                      />
+                      <div className="h-10 w-10 flex items-center justify-center bg-secondary rounded-lg border">
+                        {React.createElement((LucideIcons as any)[selectedIcon] || HelpCircle, { className: "h-5 w-5 text-primary" })}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose From List</label>
+                    <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto pr-1">
                       {SAMPLE_ICONS.map((item) => (
                         <Button
                           key={item.name}
                           variant="outline"
                           size="icon"
                           className={cn(
-                            "h-10 w-10",
+                            "h-10 w-10 rounded-xl",
                             selectedIcon === item.name && "border-primary bg-primary/10 text-primary"
                           )}
                           onClick={() => setSelectedIcon(item.name)}

@@ -23,7 +23,26 @@ import {
   Briefcase, 
   Loader2, 
   Hash,
-  Plus
+  Plus,
+  Flame,
+  Rocket,
+  Crown,
+  Coffee,
+  Globe,
+  Music,
+  Camera,
+  Cloud,
+  Map,
+  Shield,
+  HelpCircle,
+  Zap,
+  Code,
+  Database,
+  Book,
+  Star,
+  Heart,
+  Target,
+  Compass
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -51,15 +70,25 @@ import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
 const lowlight = createLowlight(common);
 
 const SAMPLE_ICONS = [
-  { name: 'Briefcase', icon: LucideIcons.Briefcase },
-  { name: 'Code', icon: LucideIcons.Code },
-  { name: 'Database', icon: LucideIcons.Database },
-  { name: 'Book', icon: LucideIcons.Book },
-  { name: 'Zap', icon: LucideIcons.Zap },
-  { name: 'Star', icon: LucideIcons.Star },
-  { name: 'Heart', icon: LucideIcons.Heart },
-  { name: 'Target', icon: LucideIcons.Target },
-  { name: 'Compass', icon: LucideIcons.Compass },
+  { name: 'Briefcase', icon: Briefcase },
+  { name: 'Code', icon: Code },
+  { name: 'Database', icon: Database },
+  { name: 'Book', icon: Book },
+  { name: 'Zap', icon: Zap },
+  { name: 'Star', icon: Star },
+  { name: 'Heart', icon: Heart },
+  { name: 'Target', icon: Target },
+  { name: 'Compass', icon: Compass },
+  { name: 'Flame', icon: Flame },
+  { name: 'Rocket', icon: Rocket },
+  { name: 'Crown', icon: Crown },
+  { name: 'Coffee', icon: Coffee },
+  { name: 'Globe', icon: Globe },
+  { name: 'Music', icon: Music },
+  { name: 'Camera', icon: Camera },
+  { name: 'Cloud', icon: Cloud },
+  { name: 'Map', icon: Map },
+  { name: 'Shield', icon: Shield },
 ];
 
 interface NoteModalProps {
@@ -514,15 +543,28 @@ export function NoteModal({ note, isOpen, onClose, onSave, onDelete }: NoteModal
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose Icon</label>
-              <div className="grid grid-cols-5 gap-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Custom Lucide Icon Name</label>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="e.g. Flame, Rocket, Crown..." 
+                  value={selectedIcon} 
+                  onChange={(e) => setSelectedIcon(e.target.value)}
+                />
+                <div className="h-10 w-10 flex items-center justify-center bg-secondary rounded-lg border">
+                  {React.createElement((LucideIcons as any)[selectedIcon] || HelpCircle, { className: "h-5 w-5 text-primary" })}
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose From List</label>
+              <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto pr-1">
                 {SAMPLE_ICONS.map((item) => (
                   <Button
                     key={item.name}
                     variant="outline"
                     size="icon"
                     className={cn(
-                      "h-10 w-10",
+                      "h-10 w-10 rounded-xl",
                       selectedIcon === item.name && "border-primary bg-primary/10 text-primary"
                     )}
                     onClick={() => setSelectedIcon(item.name)}
