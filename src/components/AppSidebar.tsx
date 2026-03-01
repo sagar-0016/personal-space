@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState } from 'react';
-import * as LucideIcons from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { 
   Briefcase, 
   Tag, 
@@ -74,7 +74,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -125,6 +124,20 @@ const SAMPLE_ICONS = [
   { name: 'Wrench', icon: Wrench },
 ];
 
+/**
+ * DynamicIcon - On-demand loading of Lucide icons by name.
+ */
+export function DynamicIcon({ name, className, size = 16 }: { name: string; className?: string; size?: number }) {
+  const Icon = dynamic(
+    () => import('lucide-react').then((mod: any) => mod[name] || mod['HelpCircle']),
+    { 
+      ssr: false,
+      loading: () => <div style={{ width: size, height: size }} className="animate-pulse bg-muted rounded-full" />
+    }
+  );
+  return <Icon className={className} size={size} />;
+}
+
 interface ProjectItemProps {
   project: Project;
   currentView: string;
@@ -137,15 +150,13 @@ interface ProjectItemProps {
 function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEmptyLabels }: ProjectItemProps) {
   const db = useFirestore();
   const { state, isMobile } = useSidebar();
-  const isCollapsed = state === "collapsed";
-  const isDesktopCollapsed = isCollapsed && !isMobile;
+  const isDesktopCollapsed = state === "collapsed";
   const isActiveProject = currentView.startsWith(`project:${project.id}`);
   
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [newName, setNewName] = useState(project.name);
   const [selectedIcon, setSelectedIcon] = useState(project.iconName || 'Briefcase');
-  const [deleteConfirm, setDeleteConfirm] = useState('');
 
   const labelsQuery = useMemoFirebase(() => {
     if (!db || !userId) return null;
@@ -182,14 +193,11 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
   };
 
   const handleDelete = async () => {
-    if (!db || deleteConfirm !== project.name) return;
+    if (!db) return;
     setIsDeleteOpen(false);
     await deleteProjectAndLabels(db, userId, project.id);
     if (isActiveProject) onViewChange('all');
-    setDeleteConfirm('');
   };
-
-  const IconComponent = (LucideIcons as any)[project.iconName || 'Briefcase'] || HelpCircle;
 
   return (
     <>
@@ -203,17 +211,15 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
                 isActive={isActiveProject}
                 className={cn(
                   "rounded-xl transition-all duration-300 h-full relative w-full",
-                  !isCollapsed && "pr-14",
+                  !isDesktopCollapsed && "pr-14",
                   isActiveProject && "bg-primary/10 text-primary font-bold shadow-sm"
                 )}
               >
                 <div 
                   className="flex items-center w-full h-full px-2 py-1 cursor-pointer"
-                  onClick={(e) => {
-                    onViewChange(`project:${project.id}`);
-                  }}
+                  onClick={() => onViewChange(`project:${project.id}`)}
                 >
-                  <IconComponent className={cn("h-4 w-4 mr-2 shrink-0", isActiveProject && "text-primary")} />
+                  <DynamicIcon name={project.iconName || 'Briefcase'} className={cn("mr-2 shrink-0", isActiveProject && "text-primary")} />
                   <span className="flex-1 truncate text-sm">{project.name}</span>
                 </div>
               </SidebarMenuButton>
@@ -235,11 +241,10 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
                     size="icon" 
                     className={cn(
                       "h-6 w-6 rounded-md hover:bg-primary/10 transition-colors pointer-events-auto",
-                      isCollapsed && "hover:bg-transparent"
+                      isDesktopCollapsed && "hover:bg-transparent"
                     )}
                   >
                     <MoreHorizontal className="h-3.5 w-3.5" />
-                    <span className="sr-only">Project actions</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="right" align="start" className="z-[100]">
@@ -251,14 +256,14 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
                     <Edit2 className="mr-2 h-4 w-4" />
                     <span>Edit</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive focus:text-destructive">
+                  <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive">
                     <Trash2 className="mr-2 h-4 w-4" />
                     <span>Delete</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               
-              {!isCollapsed && !isLoading && visibleLabels.length > 0 && (
+              {!isDesktopCollapsed && !isLoading && visibleLabels.length > 0 && (
                 <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/project:rotate-90 text-muted-foreground/40 shrink-0" />
               )}
             </div>
@@ -308,24 +313,23 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
                 value={newName} 
                 onChange={(e) => setNewName(e.target.value)} 
                 onKeyDown={(e) => e.key === 'Enter' && handleUpdate()}
-                autoFocus 
               />
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Custom Lucide Icon Name</label>
               <div className="flex gap-2">
                 <Input 
-                  placeholder="e.g. Flame, Rocket, Crown..." 
+                  placeholder="e.g. Flame, Rocket, Github..." 
                   value={selectedIcon} 
                   onChange={(e) => setSelectedIcon(e.target.value)}
                 />
-                <div className="h-10 w-10 flex items-center justify-center bg-secondary rounded-lg border">
-                  {React.createElement((LucideIcons as any)[selectedIcon] || HelpCircle, { className: "h-5 w-5 text-primary" })}
+                <div className="h-10 w-10 flex items-center justify-center bg-secondary rounded-xl border">
+                  <DynamicIcon name={selectedIcon} className="text-primary" size={20} />
                 </div>
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose From List</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Quick Select</label>
               <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto pr-1">
                 {SAMPLE_ICONS.map((item) => (
                   <Button
@@ -413,11 +417,9 @@ export function AppSidebar({
           <div className="flex items-center justify-between px-6 mb-2">
             <SidebarGroupLabel className="p-0 text-[10px] uppercase tracking-widest font-black opacity-60 text-primary">Projects</SidebarGroupLabel>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-5 w-5 rounded-full hover:bg-primary/10">
-                  <Plus className="h-3 w-3 text-primary" />
-                </Button>
-              </DialogTrigger>
+              <Button variant="ghost" size="icon" onClick={() => setIsDialogOpen(true)} className="h-5 w-5 rounded-full hover:bg-primary/10">
+                <Plus className="h-3 w-3 text-primary" />
+              </Button>
               <DialogContent className="sm:max-w-[425px] z-[1000]">
                 <DialogHeader>
                   <DialogTitle>Create New Project</DialogTitle>
@@ -430,24 +432,23 @@ export function AppSidebar({
                       value={newProjectName} 
                       onChange={(e) => setNewProjectName(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
-                      autoFocus
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Custom Lucide Icon Name</label>
                     <div className="flex gap-2">
                       <Input 
-                        placeholder="e.g. Flame, Rocket, Crown..." 
+                        placeholder="e.g. Flame, Rocket, Github..." 
                         value={selectedIcon} 
                         onChange={(e) => setSelectedIcon(e.target.value)}
                       />
-                      <div className="h-10 w-10 flex items-center justify-center bg-secondary rounded-lg border">
-                        {React.createElement((LucideIcons as any)[selectedIcon] || HelpCircle, { className: "h-5 w-5 text-primary" })}
+                      <div className="h-10 w-10 flex items-center justify-center bg-secondary rounded-xl border">
+                        <DynamicIcon name={selectedIcon} className="text-primary" size={20} />
                       </div>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose From List</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Quick Select</label>
                     <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto pr-1">
                       {SAMPLE_ICONS.map((item) => (
                         <Button

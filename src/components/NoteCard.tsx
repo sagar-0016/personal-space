@@ -2,14 +2,14 @@
 "use client"
 
 import React, { useRef } from 'react';
-import * as LucideIcons from 'lucide-react';
 import { Note, Project } from '@/lib/types';
 import { Card } from '@/components/ui/card';
-import { Trash2, Edit3, Pin, Archive, RotateCcw, Tag, Briefcase } from 'lucide-react';
+import { Trash2, Edit3, Pin, Archive, RotateCcw, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { DynamicIcon } from './AppSidebar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,7 +54,6 @@ export function NoteCard({
   const cardRef = useRef<HTMLDivElement>(null);
   
   const currentProject = projects.find(p => p.id === note.projectId);
-  const ProjectIcon = (LucideIcons as any)[currentProject?.iconName || 'Briefcase'] || Briefcase;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -78,15 +77,11 @@ export function NoteCard({
         onClick={() => !isTrash && onEdit(note)}
         className={cn(
           "relative z-10 flex flex-col p-5 cursor-default transition-all duration-300 border border-border/40 bg-card hover:bg-card/95 rounded-xl overflow-hidden h-fit",
-          // shadow color source (defaults to your normal border token)
           "[--shadow-color:var(--border)] hover:-translate-y-1 hover:shadow-[0_6px_18px_hsl(var(--shadow-color)/0.18)]",
-          // keep pinned border rule as-is
           note.isPinned && "border-primary/30",
-          // when pinned, only swap the shadow color token (subtle)
           note.isPinned && "[--shadow-color:var(--primary)]"
         )}
       >
-        {/* Subtle interior spotlight */}
         <div 
           className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0"
           style={{
@@ -99,7 +94,7 @@ export function NoteCard({
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-1.5 text-[9px] font-black text-primary/60 uppercase tracking-widest cursor-pointer hover:text-primary transition-colors">
-                  <ProjectIcon className="h-2.5 w-2.5" />
+                  <DynamicIcon name={currentProject?.iconName || 'Briefcase'} size={10} />
                   {currentProject?.name || "Uncategorized"}
                 </div>
               </DropdownMenuTrigger>
@@ -108,7 +103,7 @@ export function NoteCard({
                 {projects.map(p => (
                   <DropdownMenuItem key={p.id} onClick={() => onUpdate({ ...note, projectId: p.id })}>
                     <div className="flex items-center gap-2">
-                      {(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
+                      <DynamicIcon name={p.iconName || 'Briefcase'} size={14} />
                       {p.name}
                     </div>
                   </DropdownMenuItem>
