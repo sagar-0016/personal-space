@@ -31,7 +31,22 @@ import {
   Cloud,
   Map,
   Shield,
-  HelpCircle
+  HelpCircle,
+  Brain,
+  Cpu,
+  Fingerprint,
+  Ghost,
+  GraduationCap,
+  HardDrive,
+  Keyboard,
+  Microscope,
+  Palette,
+  School,
+  Terminal,
+  Trophy,
+  Umbrella,
+  Wallet,
+  Wrench
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RichEditor, CodeBlockComponent } from './RichEditor';
@@ -47,8 +62,6 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
-import Image from '@tiptap/extension-image';
-import Link from '@tiptap/extension-link';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 import { Markdown } from 'tiptap-markdown';
@@ -101,6 +114,21 @@ const SAMPLE_ICONS = [
   { name: 'Cloud', icon: Cloud },
   { name: 'Map', icon: Map },
   { name: 'Shield', icon: Shield },
+  { name: 'Brain', icon: Brain },
+  { name: 'Cpu', icon: Cpu },
+  { name: 'Fingerprint', icon: Fingerprint },
+  { name: 'Ghost', icon: Ghost },
+  { name: 'GraduationCap', icon: GraduationCap },
+  { name: 'HardDrive', icon: HardDrive },
+  { name: 'Keyboard', icon: Keyboard },
+  { name: 'Microscope', icon: Microscope },
+  { name: 'Palette', icon: Palette },
+  { name: 'School', icon: School },
+  { name: 'Terminal', icon: Terminal },
+  { name: 'Trophy', icon: Trophy },
+  { name: 'Umbrella', icon: Umbrella },
+  { name: 'Wallet', icon: Wallet },
+  { name: 'Wrench', icon: Wrench },
 ];
 
 interface CreateNoteProps {

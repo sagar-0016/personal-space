@@ -42,7 +42,22 @@ import {
   Star,
   Heart,
   Target,
-  Compass
+  Compass,
+  Brain,
+  Cpu,
+  Fingerprint,
+  Ghost,
+  GraduationCap,
+  HardDrive,
+  Keyboard,
+  Microscope,
+  Palette,
+  School,
+  Terminal,
+  Trophy,
+  Umbrella,
+  Wallet,
+  Wrench
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -89,6 +104,21 @@ const SAMPLE_ICONS = [
   { name: 'Cloud', icon: Cloud },
   { name: 'Map', icon: Map },
   { name: 'Shield', icon: Shield },
+  { name: 'Brain', icon: Brain },
+  { name: 'Cpu', icon: Cpu },
+  { name: 'Fingerprint', icon: Fingerprint },
+  { name: 'Ghost', icon: Ghost },
+  { name: 'GraduationCap', icon: GraduationCap },
+  { name: 'HardDrive', icon: HardDrive },
+  { name: 'Keyboard', icon: Keyboard },
+  { name: 'Microscope', icon: Microscope },
+  { name: 'Palette', icon: Palette },
+  { name: 'School', icon: School },
+  { name: 'Terminal', icon: Terminal },
+  { name: 'Trophy', icon: Trophy },
+  { name: 'Umbrella', icon: Umbrella },
+  { name: 'Wallet', icon: Wallet },
+  { name: 'Wrench', icon: Wrench },
 ];
 
 interface NoteModalProps {
