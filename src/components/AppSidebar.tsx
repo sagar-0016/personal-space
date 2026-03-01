@@ -179,7 +179,7 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
               className={cn(
                 "absolute flex items-center gap-0.5 transition-all pointer-events-none",
                 isDesktopCollapsed 
-                  ? "left-[-12px] opacity-30 group-hover/row:opacity-100 scale-90" // Center dots at edge (0 coordinate)
+                  ? "left-[-17px] opacity-30 group-hover/row:opacity-100 scale-90" // Center dots past edge (base -12px + -5px offset)
                   : "right-2 opacity-0 group-hover/row:opacity-100" // Normal right-side position
               )}
               style={{ top: '50%', transform: 'translateY(-50%)' }}
