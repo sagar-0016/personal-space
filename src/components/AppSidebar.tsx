@@ -87,8 +87,9 @@ interface ProjectItemProps {
 
 function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEmptyLabels }: ProjectItemProps) {
   const db = useFirestore();
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const isDesktopCollapsed = isCollapsed && !isMobile;
   const isActiveProject = currentView.startsWith(`project:${project.id}`);
   
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -106,17 +107,13 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
 
   /**
    * Determine visible labels based on hideEmptyLabels preference.
-   * Also hide the default "Unlabelled" label to keep the sidebar clean.
    */
   const visibleLabels = React.useMemo(() => {
     if (!labels) return [];
     
-    // Filter out the default label logic
-    const nonDefaultLabels = labels.filter(l => !l.isDefault);
+    if (!hideEmptyLabels) return labels;
     
-    if (!hideEmptyLabels) return nonDefaultLabels;
-    
-    return nonDefaultLabels.filter(label => {
+    return labels.filter(label => {
       const hasNotes = notes.some(n => 
         n.projectId === project.id && 
         n.labelId === label.id && 
@@ -181,9 +178,9 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
             <div 
               className={cn(
                 "absolute flex items-center gap-0.5 transition-all pointer-events-none",
-                isCollapsed 
-                  ? "left-[-10px] opacity-30 group-hover/row:opacity-100 scale-90" 
-                  : "right-2 opacity-0 group-hover/row:opacity-100"
+                isDesktopCollapsed 
+                  ? "left-[-12px] opacity-30 group-hover/row:opacity-100 scale-90" // Center dots at edge (0 coordinate)
+                  : "right-2 opacity-0 group-hover/row:opacity-100" // Normal right-side position
               )}
               style={{ top: '50%', transform: 'translateY(-50%)' }}
             >
