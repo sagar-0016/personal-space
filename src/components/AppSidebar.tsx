@@ -105,14 +105,9 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
   
   const { data: labels, isLoading } = useCollection<Label>(labelsQuery);
 
-  /**
-   * Determine visible labels based on hideEmptyLabels preference.
-   */
   const visibleLabels = React.useMemo(() => {
     if (!labels) return [];
-    
     if (!hideEmptyLabels) return labels;
-    
     return labels.filter(label => {
       const hasNotes = notes.some(n => 
         n.projectId === project.id && 
@@ -151,16 +146,16 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
     <>
       <Collapsible defaultOpen={isActiveProject} className="group/project">
         <SidebarMenuItem>
-          <div className="relative flex items-center h-8 mb-0.5 w-full group/row overflow-hidden">
+          <div className="relative flex items-center h-8 mb-1 w-full group/row overflow-hidden">
             <CollapsibleTrigger asChild>
               <SidebarMenuButton 
                 asChild
                 tooltip={project.name}
                 isActive={isActiveProject}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all duration-300 h-full relative w-full",
+                  "rounded-xl transition-all duration-300 h-full relative w-full",
                   !isCollapsed && "pr-14",
-                  isActiveProject && "bg-primary/10 text-primary font-bold"
+                  isActiveProject && "bg-primary/10 text-primary font-bold shadow-sm"
                 )}
               >
                 <div 
@@ -179,8 +174,8 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
               className={cn(
                 "absolute flex items-center gap-0.5 transition-all pointer-events-none",
                 isDesktopCollapsed 
-                  ? "left-[-17px] opacity-30 group-hover/row:opacity-100 scale-90" // Center dots past edge (base -12px + -5px offset)
-                  : "right-2 opacity-0 group-hover/row:opacity-100" // Normal right-side position
+                  ? "left-[-15px] opacity-30 group-hover/row:opacity-100 scale-90" 
+                  : "right-2 opacity-0 group-hover/row:opacity-100" 
               )}
               style={{ top: '50%', transform: 'translateY(-50%)' }}
             >
@@ -222,7 +217,7 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
 
           {!isLoading && visibleLabels.length > 0 && (
             <CollapsibleContent>
-              <SidebarMenuSub className="bg-primary/5 ml-4 rounded-l-lg border-l-2 border-primary/20 py-1">
+              <SidebarMenuSub className="bg-primary/5 ml-4 rounded-xl border-l-2 border-primary/20 py-1">
                 {visibleLabels.map(label => {
                   const labelView = `project:${project.id}:label:${label.id}`;
                   const isLabelActive = currentView === labelView;
@@ -234,7 +229,7 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
                         isActive={isLabelActive}
                         onClick={() => onViewChange(labelView)}
                         className={cn(
-                          "cursor-pointer transition-colors px-4 py-2 h-auto",
+                          "cursor-pointer transition-colors px-4 py-2 h-auto rounded-lg",
                           isLabelActive ? "text-primary font-bold bg-primary/10" : "hover:bg-primary/5"
                         )}
                       >
@@ -252,7 +247,6 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
         </SidebarMenuItem>
       </Collapsible>
 
-      {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-[425px] z-[1000]">
           <DialogHeader>
@@ -295,7 +289,6 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent className="z-[1000]">
           <DialogHeader>
@@ -378,7 +371,7 @@ export function AppSidebar({
                 isActive={currentView === 'all'}
                 onClick={() => onViewChange('all')}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all duration-300",
+                  "rounded-xl transition-all duration-300",
                   currentView === 'all' && "bg-primary/15 text-primary font-bold shadow-sm"
                 )}
               >
@@ -464,7 +457,7 @@ export function AppSidebar({
                 isActive={currentView === 'uncategorized'}
                 onClick={() => onViewChange('uncategorized')}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all duration-300",
+                  "rounded-xl transition-all duration-300",
                   currentView === 'uncategorized' && "bg-primary/15 text-primary font-bold shadow-sm"
                 )}
               >
@@ -478,7 +471,7 @@ export function AppSidebar({
                 isActive={currentView === 'archive'}
                 onClick={() => onViewChange('archive')}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all duration-300",
+                  "rounded-xl transition-all duration-300",
                   currentView === 'archive' && "bg-primary/15 text-primary font-bold shadow-sm"
                 )}
               >
@@ -492,7 +485,7 @@ export function AppSidebar({
                 isActive={currentView === 'trash'}
                 onClick={() => onViewChange('trash')}
                 className={cn(
-                  "rounded-r-full mr-2 transition-all duration-300",
+                  "rounded-xl transition-all duration-300",
                   currentView === 'trash' && "bg-primary/15 text-primary font-bold shadow-sm"
                 )}
               >
