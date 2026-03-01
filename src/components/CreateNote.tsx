@@ -90,7 +90,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, addDoc } from 'firebase/firestore';
 import { createProjectWithDefaultLabel } from '@/firebase/non-blocking-updates';
 import { Project, Label } from '@/lib/types';
-import * as LucideIcons from 'lucide-react';
+import { DynamicIcon } from './AppSidebar';
 
 const lowlight = createLowlight(common);
 
@@ -503,7 +503,7 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
                         p.id ? <SelectItem 
                                   key={p.id} 
                                   value={p.id}
-                                  icon={(LucideIcons as any)[p.iconName || 'Briefcase'] && React.createElement((LucideIcons as any)[p.iconName || 'Briefcase'], { className: "h-3.5 w-3.5" })}
+                                  icon={<DynamicIcon name={p.iconName || 'Briefcase'} />}
                                 >
                                   {p.name}
                                 </SelectItem> : null
@@ -573,12 +573,12 @@ export function CreateNote({ onSave, defaultProjectId }: CreateNoteProps) {
               <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Custom Lucide Icon Name</label>
               <div className="flex gap-2">
                 <Input 
-                  placeholder="e.g. Flame, Rocket, Crown..." 
+                  placeholder="e.g. flame, rocket, github..." 
                   value={selectedIcon} 
                   onChange={(e) => setSelectedIcon(e.target.value)}
                 />
                 <div className="h-10 w-10 flex items-center justify-center bg-secondary rounded-lg border">
-                  {React.createElement((LucideIcons as any)[selectedIcon] || HelpCircle, { className: "h-5 w-5 text-primary" })}
+                  <DynamicIcon name={selectedIcon} className="text-primary" size={20} />
                 </div>
               </div>
             </div>

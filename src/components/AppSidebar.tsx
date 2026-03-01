@@ -126,10 +126,16 @@ const SAMPLE_ICONS = [
 
 /**
  * DynamicIcon - On-demand loading of Lucide icons by name.
+ * Automatically converts kebab-case (camera-off) or space-separated to PascalCase (CameraOff).
  */
 export function DynamicIcon({ name, className, size = 16 }: { name: string; className?: string; size?: number }) {
+  const pascalName = (name || 'HelpCircle')
+    .split(/[- ]/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('');
+
   const Icon = dynamic(
-    () => import('lucide-react').then((mod: any) => mod[name] || mod['HelpCircle']),
+    () => import('lucide-react').then((mod: any) => mod[pascalName] || mod['HelpCircle']),
     { 
       ssr: false,
       loading: () => <div style={{ width: size, height: size }} className="animate-pulse bg-muted rounded-full" />
@@ -319,7 +325,7 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
               <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Custom Lucide Icon Name</label>
               <div className="flex gap-2">
                 <Input 
-                  placeholder="e.g. Flame, Rocket, Github..." 
+                  placeholder="e.g. flame, rocket, github..." 
                   value={selectedIcon} 
                   onChange={(e) => setSelectedIcon(e.target.value)}
                 />
@@ -438,7 +444,7 @@ export function AppSidebar({
                     <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Custom Lucide Icon Name</label>
                     <div className="flex gap-2">
                       <Input 
-                        placeholder="e.g. Flame, Rocket, Github..." 
+                        placeholder="e.g. flame, rocket, github..." 
                         value={selectedIcon} 
                         onChange={(e) => setSelectedIcon(e.target.value)}
                       />
