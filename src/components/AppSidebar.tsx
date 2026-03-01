@@ -106,12 +106,17 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
 
   /**
    * Determine visible labels based on hideEmptyLabels preference.
+   * Also hide the default "Unlabelled" label to keep the sidebar clean.
    */
   const visibleLabels = React.useMemo(() => {
     if (!labels) return [];
-    if (!hideEmptyLabels) return labels;
     
-    return labels.filter(label => {
+    // Filter out the default label logic
+    const nonDefaultLabels = labels.filter(l => !l.isDefault);
+    
+    if (!hideEmptyLabels) return nonDefaultLabels;
+    
+    return nonDefaultLabels.filter(label => {
       const hasNotes = notes.some(n => 
         n.projectId === project.id && 
         n.labelId === label.id && 
@@ -157,7 +162,6 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
                 isActive={isActiveProject}
                 className={cn(
                   "rounded-r-full mr-2 transition-all duration-300 h-full relative w-full",
-                  // Increased padding-right when expanded to accommodate the dots and chevron
                   !isCollapsed && "pr-14",
                   isActiveProject && "bg-primary/10 text-primary font-bold"
                 )}
@@ -178,7 +182,7 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
               className={cn(
                 "absolute flex items-center gap-0.5 transition-all pointer-events-none",
                 isCollapsed 
-                  ? "right-[-4px] opacity-30 group-hover/row:opacity-100 scale-90" 
+                  ? "left-[-10px] opacity-30 group-hover/row:opacity-100 scale-90" 
                   : "right-2 opacity-0 group-hover/row:opacity-100"
               )}
               style={{ top: '50%', transform: 'translateY(-50%)' }}
@@ -190,7 +194,7 @@ function ProjectItem({ project, currentView, onViewChange, userId, notes, hideEm
                     size="icon" 
                     className={cn(
                       "h-6 w-6 rounded-md hover:bg-primary/10 transition-colors pointer-events-auto",
-                      isCollapsed && "hover:bg-transparent" // Keep the 'bug' look clean
+                      isCollapsed && "hover:bg-transparent"
                     )}
                   >
                     <MoreHorizontal className="h-3.5 w-3.5" />
